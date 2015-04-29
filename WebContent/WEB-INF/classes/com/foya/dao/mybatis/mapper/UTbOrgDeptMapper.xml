@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbOrgDeptMapper">
+	<resultMap id="BaseResultMap" type="com.foya.noms.dto.org.DeptDTO">
+		<id column="DEPT_ID" property="DEPT_ID" jdbcType="VARCHAR" />
+		<result column="DEPT_NAME" property="DEPT_NAME" jdbcType="VARCHAR" />
+		<result column="PARENT_DEPT_ID" property="PARENT_DEPT_ID"
+			jdbcType="VARCHAR" />
+		<result column="TYPE" property="TYPE" jdbcType="VARCHAR" />
+		<result column="DOMAIN" property="DOMAIN" jdbcType="VARCHAR" />
+		<result column="MANAGER" property="MANAGER" jdbcType="VARCHAR" />
+		<result column="MD_USER" property="MD_USER" jdbcType="VARCHAR" />
+		<result column="MD_TIME" property="MD_TIME" jdbcType="TIMESTAMP" />
+		<result column="DEPT_LEVEL" property="DEPT_LEVEL" jdbcType="CHAR" />
+		<result column="CODE_RULE" property="CODE_RULE" jdbcType="VARCHAR" />
+		<result column="HR_DEPT_ID" property="HR_DEPT_ID" jdbcType="VARCHAR" />
+		<result column="DOMAIN_NAME" property="DOMAIN_NAME" jdbcType="VARCHAR" />
+		<result column="level" property="level" jdbcType="INTEGER" />
+		<result column="posName" property="posName" jdbcType="VARCHAR" />
+		<result column="posId" property="posId" jdbcType="VARCHAR" />
+		<result column="pos_Type" property="posType" jdbcType="VARCHAR" />
+		<result column="HIERARCHY" property="HIERARCHY" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		DEPT_ID, DEPT_NAME, PARENT_DEPT_ID, TYPE, DOMAIN, MANAGER, MD_USER, MD_TIME, DEPT_LEVEL, CODE_RULE, HR_DEPT_ID
+	</sql>
+
+	<select id="getDeptTree" resultMap="BaseResultMap">
+		WITH depttree (dept_id, dept_name,Parent_dept_id, type,level,dept_level) AS (
+		SELECT dept_id, dept_name,Parent_dept_id, type,1,dept_level FROM TB_ORG_DEPT
+		WHERE Parent_dept_id is Null
+		UNION ALL
+		SELECT t.dept_id, t.dept_name,t.Parent_dept_id, t.type,level+1,t.dept_level FROM TB_ORG_DEPT t
+		INNER JOIN depttree ON depttree.dept_id =t.Parent_dept_id )
+		SELECT DISTINCT m.* FROM depttree m order by level,Parent_dept_id,dept_id,dept_level
+	</select>
+
+	<select id="searchDeptByIdName" resultMap="BaseResultMap">
+		select
+		orgDept.DEPT_ID, orgDept.DEPT_NAME, orgDept.TYPE, domain.NAME as
+		DOMAIN_NAME
+
+		from TB_ORG_DEPT as orgDept
+		inner join TB_ORG_DOMAIN as
+		domain
+		on domain.ID = orgDept.DOMAIN
+		<where>
+			<if test="deptId!=null and deptId!=''">
+				AND DEPT_ID = #{deptId}
+			</if>
+			<if test="deptName!=null and deptName!='' ">
+				AND DEPT_NAME LIKE '%'+#{deptName}+'%'
+			</if>
+		</where>
+	</select>
+
+	<select id="searchPositionByDeptId" resultMap="BaseResultMap">
+		SELECT
+		position.POS_ID posId, position.POS_NAME posName,
+		deptPos.PARENT_DEPT_POS_ID PARENT_DEPT_ID,deptPos.pos_Type,
+		orgDept.DEPT_ID DEPT_ID,orgDept.DEPT_NAME DEPT_NAME
+		FROM TB_ORG_DEPT as
+		orgDept
+		inner join TB_ORG_DEPT_POS as deptPos
+		on orgDept.DEPT_ID =
+		deptPos.DEPT_ID
+		inner join TB_ORG_POSITION position
+		on deptPos.POS_ID =
+		position.POS_ID
+		where orgDept.DEPT_ID = #{deptId}
+	</select>
+
+	<update id="updateByPrimaryKeySelective">
+		update TB_ORG_DEPT
+		set MANAGER =#{dpetPosId}
+		where
+		DEPT_ID =#{deptId}
+	</update>
+
+	<select id="searchParentByChild" resultMap="BaseResultMap">
+		WITH depttree (dept_id, dept_name,Parent_dept_id, type,level,dept_level) AS (
+		SELECT dept_id, dept_name,Parent_dept_id, type,1,dept_level FROM TB_ORG_DEPT
+		WHERE dept_id = #{deptId}
+		UNION ALL
+		SELECT t.dept_id, t.dept_name,t.Parent_dept_id, t.type,level+1,t.dept_level FROM TB_ORG_DEPT t
+		INNER JOIN depttree ON depttree.Parent_dept_id = t.dept_id )
+		SELECT DISTINCT m.* FROM depttree m
+		order by level,Parent_dept_id,dept_id,dept_level
+
+	</select>
+	
+		<select id="searchDeptByIdLike" resultMap="BaseResultMap">
+			select * from TB_ORG_DEPT where dept_id like '4%'
+		</select>
+
+		<select id="searchDeptById" resultMap="BaseResultMap">
+			select * from TB_ORG_DEPT where dept_id = #{deptId}
+		</select>
+		
+	<select id="selectDeptByDomainList" resultMap="BaseResultMap">
+		select * from TB_ORG_DEPT 
+		<if test="list != null and list.size()>0">
+     	 where  Domain in 
+	          <foreach collection="list" item="listItem" open="(" close=")" separator="," >
+	          	#{listItem}
+	        </foreach>
+   		 </if>
+   		 order by DEPT_NAME,DEPT_ID
+	</select>
+	
+	<select id="selecPosByDept" resultMap="BaseResultMap">
+		select POS_ID posId,POS_NAME posName,POS_TYPE pos_Type from TB_ORG_POSITION
+		where POS_ID in (
+		select POS_ID from TB_ORG_DEPT_POS
+		where DEPT_ID=(select DEPT_ID from TB_ORG_DEPT
+		where DEPT_ID=#{deptId}))
+		and POS_TYPE='N'
+	</select>
+</mapper>

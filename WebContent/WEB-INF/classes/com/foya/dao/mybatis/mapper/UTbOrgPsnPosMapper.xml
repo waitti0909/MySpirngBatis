@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbOrgPsnPosMapper" >
+  <resultMap id="BaseResultMap" type="com.foya.noms.dto.org.PsnPosDTO" >
+    <id column="PSN_NO" property="PSN_NO" jdbcType="VARCHAR" />
+    <id column="DEPT_POS_ID" property="DEPT_POS_ID" jdbcType="VARCHAR" />
+    <result column="MD_USER" property="MD_USER" jdbcType="DECIMAL" />
+    <result column="MD_TIME" property="MD_TIME" jdbcType="TIMESTAMP" />
+    <result column="primaryJobPos" property="primaryJobPos" jdbcType="VARCHAR" />
+    <result column="psnName" property="psnName" jdbcType="VARCHAR" />
+    <result column="psnEmail" property="psnEmail" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    PSN_NO, DEPT_POS_ID, MD_USER, MD_TIME
+  </sql>
+  <select id="getPsnPosDTOByDeptPosId" resultMap="BaseResultMap">
+    select 
+    psnPos.PSN_NO, psnPos.DEPT_POS_ID,psnPos.MD_USER, psnPos.MD_TIME
+	,psn.CHN_NM as psnName,psn.E_MAIL as psnEmail ,psn.PRIMARY_DEPT_POS_ID as primaryJobPos
+	 from TB_ORG_PSN_POS psnPos
+    inner join TB_AUTH_PERSONNEL psn
+    on psn.PSN_NO = psnPos.PSN_NO 
+    where psnPos.DEPT_POS_ID =  #{deptPosId}
+  </select>
+  
+</mapper>

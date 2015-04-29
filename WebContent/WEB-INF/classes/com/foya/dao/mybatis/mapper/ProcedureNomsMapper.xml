@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.foya.dao.mybatis.mapper.ProcedureNomsMapper">
+	<!-- 租約異動  #1-->
+	<select id="PAY_PC_GET_APP_AMT" statementType="CALLABLE" parameterType="map" resultType="map">
+		{call PAY_PC_GET_APP_AMT(
+		#{PI_TIME_STAMP, mode=IN, jdbcType=NVARCHAR}, 
+		#{PI_DOMAIN, mode=IN, jdbcType=NVARCHAR}, 
+		#{PI_CONTRACT_NO, mode=IN, jdbcType=NVARCHAR}, 
+		#{PI_LOCATION_ID, mode=IN, jdbcType=NVARCHAR}, 
+		#{PI_ENERGY_METER, mode=IN, jdbcType=NVARCHAR}, 		
+		#{PI_PAYMENT_ITEM, mode=IN, jdbcType=NVARCHAR}, 
+		#{PI_APP_DATE, mode=IN, jdbcType=DATE},  
+		#{PI_PAYMENT_PERIOD, mode=IN, jdbcType=NVARCHAR}, 		
+		#{PI_AP_YYYYMM, mode=IN, jdbcType=NVARCHAR}, 
+		#{PI_APP_TYPE, mode=IN, jdbcType=NVARCHAR}, 
+		#{PO_TOT_APP_AMT, mode=OUT, jdbcType=INTEGER}, 
+		#{PO_TOT_BS_TAX_AMT, mode=OUT, jdbcType=INTEGER}, 
+		#{PO_TOT_IN_TAX_AMT, mode=OUT, jdbcType=INTEGER}, 
+		#{PO_TOT_HS_AMT, mode=OUT, jdbcType=INTEGER}, 
+		#{PO_PRE_LEFT_AMT, mode=OUT, jdbcType=INTEGER},		
+		#{PO_APP_START_DATE, mode=OUT, jdbcType=DATE}, 
+		#{PO_APP_END_DATE, mode=OUT, jdbcType=DATE}, 		
+		#{PO_TIMESTAMP, mode=OUT, jdbcType=NVARCHAR}, 
+		#{PO_ERR_CDE, mode=OUT, jdbcType=NVARCHAR}, 
+		#{PO_ERR_MSG, mode=OUT, jdbcType=NVARCHAR})}
+	</select>
+	<!-- 租約異動 #2-->
+	<select id="PAY_PC_PROC_APP_AMT" statementType="CALLABLE" parameterType="map">
+		{call PAY_PC_PROC_APP_AMT(
+		#{PI_TIME_STAMP, mode=IN, jdbcType=NVARCHAR}, 
+		#{PI_PROC_TYPE, mode=IN, jdbcType=NVARCHAR},
+		#{PI_PROCESS_TYPE, mode=IN, jdbcType=NVARCHAR}, 
+		#{PI_PAYMENT_PERIOD, mode=IN, jdbcType=NVARCHAR},
+		#{PI_AP_YYYYMM, mode=IN, jdbcType=NVARCHAR}, 
+		#{PI_APP_USER, mode=IN, jdbcType=NVARCHAR}, 
+		#{PI_APP_DATE, mode=IN, jdbcType=DATE}, 		
+		#{PO_CASH_REQ_NO, mode=OUT, jdbcType=NVARCHAR}, 
+		#{PO_ERR_CDE, mode=OUT, jdbcType=NVARCHAR}, 
+		#{PO_ERR_MSG, mode=OUT, jdbcType=NVARCHAR})}
+	</select>
+	<!-- 計算所得稅/健保費/營業稅   PAY_FN_GET_TAX : @PI_TYPE 1:所得稅/2:健保費/3:營業稅-->
+	<select id="PAY_FN_GET_TAX" statementType="CALLABLE" parameterType="map">
+		{#{RETURN_VALUE,mode=OUT,jdbcType=INTEGER} = call PAY_FN_GET_TAX(
+		#{PI_TYPE,mode=IN,jdbcType=NVARCHAR},
+		#{PI_AMT,mode=IN,jdbcType=DECIMAL},
+		#{PI_INCLUDE_TAX,mode=IN,jdbcType=NVARCHAR})}
+	</select>	
+			
+	<!-- 自動產生單號 -->
+	<select id="PAY_PC_GET_SEQNO" statementType="CALLABLE" parameterType="map">
+		{call PAY_PC_GET_SEQNO(
+		#{PI_PREFIX,mode=IN,jdbcType=NVARCHAR},
+		#{PI_APP_DATE,mode=IN,jdbcType=NVARCHAR},
+		#{PO_SEQNO,mode=OUT,jdbcType=NVARCHAR},
+		#{PO_ERR_CDE,mode=OUT,jdbcType=NVARCHAR},
+		#{PO_ERR_MSG,mode=OUT,jdbcType=NVARCHAR})}
+	</select>
+	
+
+	
+	<!--用電方式=借電_抄表時 取得請款金額-->
+	<select id="PAY_PC_GET_ELEC_AMT" statementType="CALLABLE" parameterType="map" resultType="map">
+		{call PAY_PC_GET_ELEC_AMT(
+		#{PI_LS_NO,mode=IN,jdbcType=VARCHAR},
+		#{PI_LOCATION_ID,mode=IN,jdbcType=VARCHAR},
+		#{PI_ENERGY_METER,mode=IN,jdbcType=NVARCHAR},
+		#{PI_ELEC_DEGS,mode=IN,jdbcType=DECIMAL},
+		#{PI_APP_DATES,mode=IN,jdbcType=DATE},
+		#{PI_APP_DATEE,mode=IN,jdbcType=DATE},
+		#{PI_ELECTRICITY_TYPE,mode=IN,jdbcType=VARCHAR},
+		#{PO_ELEC_DEGS,mode=OUT,jdbcType=DECIMAL},
+		#{PO_APP_ELEC_AMT,mode=OUT,jdbcType=DECIMAL},
+		#{PO_BTAX_AMT,mode=OUT,jdbcType=DECIMAL},
+		#{PO_ERR_CDE,mode=OUT,jdbcType=VARCHAR},
+		#{PO_ERR_MSG,mode=OUT,jdbcType=VARCHAR})}
+	</select>
+	
+
+	<!-- 止付作業  -->
+	<select id="PAY_PC_SUSPEND_APP" statementType="CALLABLE" parameterType="map">
+		{call PAY_PC_SUSPEND_APP(
+			#{PI_CASH_REQ_NO,mode=IN,jdbcType=VARCHAR},
+			#{PI_DOMAIN,mode=IN,jdbcType=VARCHAR},
+			#{PI_CONTRACT_NO,mode=IN,jdbcType=VARCHAR},
+			#{PI_SUSPEND_REASON,mode=IN,jdbcType=VARCHAR},
+			#{PI_SUSPEND_MEMO,mode=IN,jdbcType=VARCHAR},
+			#{PI_SUSPEND_USER,mode=IN,jdbcType=VARCHAR},
+			#{PO_ERR_CDE,mode=OUT,jdbcType=VARCHAR},
+			#{PO_ERR_MSG,mode=OUT,jdbcType=VARCHAR}
+		)
+		}		
+	</select>
+
+</mapper>

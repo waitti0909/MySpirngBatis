@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.foya.dao.mybatis.mapper.UTodoOrdersMapper">
+
+	<resultMap id="TodoOrdersDTO" type="com.foya.noms.dto.profile.TodoOrdersDTO">
+		<result column="workId" property="workId" jdbcType="VARCHAR" />
+		<result column="orderId" property="orderId" jdbcType="VARCHAR" />
+		<result column="orderType" property="orderType" jdbcType="VARCHAR" />
+		<result column="orderSeq" property="orderSeq" jdbcType="INTEGER" />
+		<result column="orderTypeDesc" property="orderTypeDesc" jdbcType="VARCHAR" />
+		<result column="appUser" property="appUser" jdbcType="VARCHAR" />
+		<result column="appUserName" property="appUserName" jdbcType="VARCHAR" />
+		<result column="appTime" property="appTime" jdbcType="TIMESTAMP" />
+		<result column="orderStatus" property="orderStatus" jdbcType="VARCHAR" />
+		<result column="orderStatusDesc" property="orderStatusDesc" jdbcType="VARCHAR" />
+		<result column="orderInfo" property="orderInfo" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="SELECT_SITE_INFO">
+	<![CDATA[
+		SELECT o.ORDER_ID as orderId, o.ODR_STATUS as orderStatus, o.odr_seq as orderSeq, o.work_id as workId,
+		t.OD_TYPE_ID as ordertype, t.OD_TYPE_NAME as ordertypedesc, w.BTS_SITE_ID as orderInfo, 
+		p.PSN_NO as appUser, p.CHN_NM as appUserName, o.CR_TIME as apptime
+        ,(case when o.ODR_STATUS='OR01' then '草稿' 
+               when o.ODR_STATUS='OR02' then '審核中' 
+			   when o.ODR_STATUS='OR03' then '待派工' 
+			   when o.ODR_STATUS='OR04' then '已派工' 
+			   when o.ODR_STATUS='OR05' then '已接工' 
+			   when o.ODR_STATUS='OR06' then '已委外' 
+			   when o.ODR_STATUS='OR07' then '已退工' 
+               when o.ODR_STATUS='OR08' then '完工審核' 
+               when o.ODR_STATUS='OR09' then '已完工'
+               else '' end)   as OrderStatusDesc,
+         (case when w.WORK_TYPE in ('NSR', 'SH') and o.ODR_STATUS = 'OR08' then '/st/st003/updatePage?orderId=' + o.ORDER_ID  + '&status=view' 
+               when w.WORK_TYPE in ('NSR', 'SH') and o.ODR_STATUS != 'OR08' then '/st/st003/updatePage?orderId=' + o.ORDER_ID  + '&status=edit'
+               when o.ODR_STATUS = 'OR08' then '/st/st005/updatePage?orderId=' + o.ORDER_ID  + '&status=view'+ '&siteId=' + w.SITE_ID
+               else '/st/st005/updatePage?orderId=' + o.ORDER_ID  + '&status=edit'+ '&siteId=' + w.SITE_ID end) as linkURL		
+		FROM TB_SITE_WORK_ORDER o
+		join TB_SYS_ORDER_TYPE t on o.ORDER_TYPE = t.OD_TYPE_ID
+		join TB_AUTH_PERSONNEL p on o.CR_USER = p.PSN_NO
+		join TB_SITE_WORK w on o.WORK_ID = w.WORK_ID
+		
+		WHERE o.IS_ACTIVE = 'Y' and w.WORK_STATUS = 'W05' 
+		]]>
+	</sql>
+	
+	<!-- 尋點待派工工單 主管-->
+	<select id="selectOR03orders" resultMap="TodoOrdersDTO">
+	<![CDATA[
+		SELECT * FROM
+		(
+		SELECT a.*, CASE WHEN B.odr_status in ('OR03','OR04', 'OR05', 'OR06', 'OR08') THEN '待派工' ELSE '待派工(可執行)'
+		END AS OrderStatusDesc FROM
+		(		
+		        SELECT  
+						o.ORDER_ID as orderId,O.ODR_SEQ,o.WORK_ID,
+						o.ODR_STATUS as orderStatus,
+						o.CR_TIME as apptime,
+						t.OD_TYPE_ID as ordertype, t.OD_TYPE_NAME as ordertypedesc,               
+						a.PSN_NO as appUser, a.CHN_NM as appUserName, w.BTS_SITE_ID as orderInfo, 			
+						(case when w.WORK_TYPE in ('NSR', 'SH') then 
+		                                  '/st/st003/assignPage?orderId=' + o.ORDER_ID 
+		                                   + '&workId='+o.WORK_ID 
+		                                   + '&rep_DEPT=' + o.REP_DEPT
+		                                   + '&status=edit' 
+		                when w.WORK_TYPE = 'SGL' then 
+										   '/st/st010/assignPage?orderId=' + o.ORDER_ID 
+						                   + '&workId='+o.WORK_ID 
+		                                   + '&rep_DEPT=' + o.REP_DEPT
+		                                   + '&status=edit' 
+		            	else '/st/st005/assignPage?orderId=' + o.ORDER_ID 
+						                           + '&workId='+o.WORK_ID 
+		                                   + '&rep_DEPT=' + o.REP_DEPT
+		                                   + '&status=edit' 
+		                end) as  linkURL	                     
+						FROM TB_SITE_WORK_ORDER o
+						JOIN TB_ORG_DEPT_POS D ON O.REP_DEPT = D.DEPT_ID AND D.POS_ID='WF_DEPT_MANAGER'
+						JOIN TB_ORG_PSN_POS P ON P.DEPT_POS_ID = D.DEPT_POS_ID  AND P.PSN_NO = #{repUser}
+						JOIN TB_SYS_ORDER_TYPE t on o.ORDER_TYPE = t.OD_TYPE_ID
+						JOIN TB_AUTH_PERSONNEL a on o.CR_USER = a.PSN_NO
+						JOIN TB_ORG_DEPT E ON E.DEPT_ID = O.REP_DEPT
+						JOIN TB_SITE_WORK w on o.WORK_ID = w.WORK_ID
+						WHERE 
+						o.ODR_STATUS = 'OR03' and o.IS_ACTIVE = 'Y'
+		) a
+		LEFT JOIN (SELECT WORK_ID,ODR_SEQ,odr_status FROM TB_SITE_WORK_ORDER WHERE odr_status in ('OR03','OR04','OR05','OR06','OR08')) B
+		ON (A.ODR_SEQ-1)= B.ODR_SEQ AND A.WORK_ID=B.WORK_ID
+		) ALLS
+		GROUP BY ORDERID,ODR_SEQ,WORK_ID,ORDERSTATUS,APPTIME,ORDERSTATUSDESC,ORDERTYPE,ORDERTYPEDESC,APPUSER,APPUSERNAME,LINKURL,OrderStatusDesc,orderInfo
+		ORDER BY WORK_ID, ORDERID
+	]]>
+	</select>
+	
+	<!-- 尋點已派工工單 -->
+	<select id="selectOR04orders" resultMap="TodoOrdersDTO" >
+		<include refid="SELECT_SITE_INFO" /> 
+		
+		and o.ODR_STATUS in ('OR04', 'OR05', 'OR06', 'OR08') and o.REP_USER = #{repUser} 
+	</select>
+	<!-- 尋點待派工委外申請單 -->
+	<select id="selectOS04orders" resultMap="TodoOrdersDTO">
+	<![CDATA[
+		select 
+		t.OD_TYPE_NAME as ordertype,
+		u.OS_ID  as orderId,
+		a.PSN_NO as appUser, a.CHN_NM as appUserName,
+		u.APL_TIME as apptime,
+		u.STATUS as orderStatus,
+		w.BTS_SITE_ID as orderInfo, 
+		(case when u.STATUS ='OS01' then '草稿' 
+					when u.STATUS ='OS02' then '審核中' 
+					when u.STATUS ='OS03' then '駁回' 
+					when u.STATUS ='OS04' then '待派工(委外)' 
+					when u.STATUS ='OS05' then '已派工(委外)' 
+					when u.STATUS ='OS06' then '驗收審核' 
+					when u.STATUS ='OS07' then '已驗收' 
+				  when o.ODR_STATUS='OR08' then '已取消' 
+					else '' end)   as OrderStatusDesc,
+		t.OD_TYPE_ID as ordertype, t.OD_TYPE_NAME as ordertypedesc,
+		
+		 (case when w.WORK_TYPE in ('NSR', 'SH') then '/st/st003/updatePage?orderId=' + o.ORDER_ID  + '&status=edit' 
+          else '/st/st005/updatePage?orderId=' + o.ORDER_ID  + '&status=edit'+ '&siteId=' + w.SITE_ID end) as linkURL				
+		from 
+		dbo.TB_SITE_OUTSOURCING u
+		JOIN TB_SITE_WORK_ORDER o on o.ORDER_ID = u.ORDER_ID
+		JOIN TB_SYS_ORDER_TYPE t on o.ORDER_TYPE = t.OD_TYPE_ID
+		JOIN TB_AUTH_PERSONNEL a on o.CR_USER = a.PSN_NO
+		JOIN TB_SITE_WORK w on o.WORK_ID = w.WORK_ID
+		WHERE
+		u.APL_USER = #{repUser} 
+		AND u.STATUS ='OS04'
+		AND o.IS_ACTIVE = 'Y'
+		]]>
+	</select>
+	<!-- (建站)核網設定→核網部門人員  URL 無法做 無頁面 'P12104462'-->
+	<select id="selectLA04LineApply" resultMap="TodoOrdersDTO">
+	<![CDATA[
+		SELECT 
+		l.ORDER_ID as orderId,
+		l.app_status as orderStatus,
+		l.CR_TIME as apptime,
+		(case when l.app_STATUS='LA04' then '核網設定' 
+		              else '' end)   as OrderStatusDesc,
+		
+		 a.PSN_NO as appUser, a.CHN_NM as appUserName,
+		 U.CODE  as ordertype,
+         U.NAME  as ordertypedesc,
+         W.BTS_SITE_ID as orderInfo,
+         (case when l.LINE_PURPOSE in ('B', 'M', 'P') then '/st/line/lineApply/initLineApplyM?appId='+ l.APP_ID + '&viewType=edit' 
+          else '/st/line/lineApply/updateNonLine?appId=' + l.APP_ID + '&status=edit' end) as linkURL
+		FROM 
+		dbo.TB_SITE_LINE_APPLY l
+		JOIN TB_ORG_DEPT_POS D ON l.APP_DEPT = D.DEPT_ID AND D.POS_ID='OD_LINE_IP_SETING'
+		JOIN TB_ORG_PSN_POS P ON P.DEPT_POS_ID = D.DEPT_POS_ID  AND P.PSN_NO= #{repUser} 
+		JOIN TB_AUTH_PERSONNEL a on l.APP_USER = a.PSN_NO
+		JOIN TB_SYS_LOOKUP U ON U.TYPE='LINE_APPLY_TYPE' AND U.CODE=L.APP_TYPE
+		JOIN TB_SITE_WORK_ORDER O ON l.ORDER_ID = O.ORDER_ID
+		JOIN TB_SITE_WORK W ON O.WORK_ID = W.WORK_ID
+		WHERE L.APP_STATUS = 'LA04'
+	
+    ]]>
+	</select>
+</mapper>
+  

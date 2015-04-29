@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbSysBulletinboardMapper">
+
+	<resultMap id="BulletinboardDTO" type="com.foya.noms.dto.system.BulletinboardDTO">
+		<id column="BULLETIN_ID" jdbcType="DECIMAL" property="bulletinID" />
+		<result column="STARTDATE" jdbcType="TIMESTAMP" property="startDate" />
+		<result column="ENDDATE" jdbcType="TIMESTAMP" property="endDate" />
+		<result column="SUBJECT" jdbcType="VARCHAR" property="subject" />
+		<result column="CONTENTS" jdbcType="VARCHAR" property="contents" />
+		<result column="PRIORITY" jdbcType="INTEGER" property="priority" />
+		<result column="TYPES" jdbcType="INTEGER" property="types" />
+		<result column="VALUE1" jdbcType="VARCHAR" property="typesName" />
+		<result column="ATTACHMENT" jdbcType="VARCHAR" property="attachment" />
+		<result column="DEPT_NAME" jdbcType="VARCHAR" property="deptName" />
+		<result column="CR_USER" jdbcType="VARCHAR" property="crUser" />
+		<result column="CR_PSN_NO" jdbcType="VARCHAR" property="crPsnNO" />
+		<result column="CR_TIME" jdbcType="TIMESTAMP" property="crTime" />
+		<result column="MD_USER" jdbcType="VARCHAR" property="mdUser" />
+		<result column="MD_TIME" jdbcType="TIMESTAMP" property="mdTime" />	
+		<result column="ENG_NM" jdbcType="VARCHAR" property="engNM" />
+		<result column="CHN_NM" jdbcType="VARCHAR" property="chnNM" />
+		<result column="DEPT_ID" jdbcType="VARCHAR" property="deptID" />
+	</resultMap>
+
+	<!-- 根據登入時間查詢公佈欄 -->
+	<select id="searchBulletinboardByDate" resultMap="BulletinboardDTO"
+		parameterType="java.sql.Timestamp">
+		
+	    SELECT A.BULLETIN_ID,A.STARTDATE,A.SUBJECT,A.TYPES,A.CR_USER,A.ATTACHMENT
+	    ,B.VALUE1,C.ENG_NM,C.CHN_NM,C.DEPT_ID,D.DEPT_NAME
+		FROM(SELECT * FROM TB_SYS_BULLETINBOARD
+			 WHERE #{loginDate,jdbcType=TIMESTAMP} >=STARTDATE
+			 AND ((ENDDATE IS NULL) OR (ENDDATE >=  #{loginDate,jdbcType=TIMESTAMP}))) A
+		LEFT JOIN TB_SYS_LOOKUP B
+		ON TYPE = 'BULLETINTYPE' AND A.TYPES = B.CODE
+		LEFT JOIN TB_AUTH_PERSONNEL C
+		ON A.CR_USER = C.ENG_NM
+		LEFT JOIN TB_ORG_DEPT D
+		ON C.DEPT_ID=D.DEPT_ID			
+		ORDER BY A.STARTDATE DESC,A.PRIORITY
+	</select>
+	
+	
+	<!-- 根據公佈欄ID查詢詳細資訊 -->
+	<select id="searchBulletinboardById" resultMap="BulletinboardDTO"
+		parameterType="java.math.BigDecimal">
+		
+		SELECT A.*,B.CHN_NM,B.ENG_NM,B.DEPT_ID,C.DEPT_NAME
+		FROM 
+		(SELECT * FROM TB_SYS_BULLETINBOARD
+		 WHERE BULLETIN_ID=#{bulletinId}) A
+		LEFT JOIN TB_AUTH_PERSONNEL B
+		ON A.CR_USER = B.ENG_NM
+		LEFT JOIN TB_ORG_DEPT C
+		ON B.DEPT_ID = C.DEPT_ID
+	</select>
+	
+	<!-- 根據查詢條件查詢公佈欄 -->
+	<select id="searchBulletinboardByCond" resultMap="BulletinboardDTO"
+		parameterType="map">
+		SELECT C.*,D.ENG_NM,D.CHN_NM,D.DEPT_ID,E.DEPT_NAME
+		FROM(
+		SELECT A.*, B.VALUE1
+		FROM TB_SYS_BULLETINBOARD A
+		LEFT JOIN TB_SYS_LOOKUP B
+		on TYPE = 'BULLETINTYPE'
+		and A.TYPES = B.CODE
+		<where>
+		 <if test="subject!=null and subject!='' ">  
+		  	A.SUBJECT LIKE  '%'+#{subject} +'%'
+		 </if>
+         <if test="startDate!=null and startDate!='' ">  
+         AND CONVERT(VARCHAR(10) , A.STARTDATE, 111 ) >= #{startDate}
+         </if>
+         <if test="endDate!=null and endDate!='' ">  
+         AND #{endDate} >= CONVERT(VARCHAR(10) , A.ENDDATE, 111 )
+         </if>
+         <if test="types!=null and types!='' ">  
+         AND TYPES = #{types}
+         </if>
+         </where>
+		 ) C
+		 LEFT JOIN TB_AUTH_PERSONNEL D
+		ON C.CR_USER = D.ENG_NM
+		LEFT JOIN TB_ORG_DEPT E
+		ON D.DEPT_ID = E.DEPT_ID
+	</select>
+	
+</mapper>
+
+

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbWorkflowCfgMapper">
+	<resultMap id="BaseResultMap" type="com.foya.dao.mybatis.model.TbWorkflowCfg">
+		<id column="ID" property="ID" jdbcType="INTEGER" />
+		<result column="PROCESS_TYPE" property="PROCESS_TYPE" jdbcType="VARCHAR" />
+		<result column="PROCESS_NAME" property="PROCESS_NAME" jdbcType="VARCHAR" />
+		<result column="GROUP_TYPE" property="GROUP_TYPE" jdbcType="VARCHAR" />
+		<result column="ALLOW_BATCH" property="ALLOW_BATCH" jdbcType="CHAR" />
+		<result column="DETAIL_PAGE_URL" property="DETAIL_PAGE_URL" jdbcType="VARCHAR" />
+		<result column="REST_IMP_URI" property="REST_IMP_URI" jdbcType="VARCHAR" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		ID, PROCESS_TYPE, PROCESS_NAME, GROUP_TYPE, ALLOW_BATCH, DETAIL_PAGE_URL, REST_IMP_URI
+	</sql>
+	<select id="findSameGroupByProcessType" resultMap="BaseResultMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM TB_WORKFLOW_CFG AS TB_WORKFLOW_CFG_2
+		WHERE GROUP_TYPE =
+		(SELECT
+		GROUP_TYPE
+		FROM TB_WORKFLOW_CFG AS TB_WORKFLOW_CFG_1
+		WHERE (PROCESS_TYPE
+		= #{processType})
+		)
+	</select>
+</mapper>

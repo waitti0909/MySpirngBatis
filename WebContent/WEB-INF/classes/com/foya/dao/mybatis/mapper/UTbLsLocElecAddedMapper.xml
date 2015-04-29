@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbLsLocElecAddedMapper">
+
+		<select id="searchTbLsLocElec" resultType="com.foya.noms.dto.pay.TbLsLocElecDTO"
+		parameterType="String">
+		Select 
+		b.NAME as siteName,
+		a.LS_NO as LS_NO,
+		a.LS_VER as LS_VER,
+		a.LOCATION_ID as LOCATION_ID,
+		a.ENERGY_METER as ENERGY_METER,
+		a.ELEC_BEGIN_DATE as ELEC_BEGIN_DATE,
+		a.ELEC_END_DATE as ELEC_END_DATE,
+		a.ELEC_MODE as ELEC_MODE,
+		a.CHRG_MODE as CHRG_MODE,
+		a.BEGIN_DEGREE as BEGIN_DEGREE,
+		a.END_DEGREE as END_DEGREE,
+		a.ELEC_PLEDGE as ELEC_PLEDGE,
+		a.PLDG_PAY_DATE as PLDG_PAY_DATE,
+		a.ELEC_CUST_NAME as ELEC_CUST_NAME,
+		a.ELEC_ADDR as ELEC_ADDR,
+		a.ELEC_ADDR_STD as ELEC_ADDR_STD,
+		a.PENALTY_DAY as PENALTY_DAY,
+		a.PENALTY_DESC as PENALTY_DESC,
+		a.SIGN_AGREEMENT as SIGN_AGREEMENT,
+		a.FORM_ID as FORM_ID,
+		a.CR_USER as CR_USER,
+		a.CR_TIME as CR_TIME,
+		a.MD_USER as MD_USER,
+		a.MD_TIME as MD_TIME,
+		a.CHG_DATE as CHG_DATE
+		from TB_LS_LOC_ELEC_ADDED as a
+		left join TB_SYS_LOOKUP as b
+		on a.ELEC_MODE = b.CODE and b.TYPE = 'LS_ELEC_MODE'
+		where
+		a.ls_no = #{lsNo}
+		and a.LOCATION_ID = #{locId}
+		and a.APP_SEQ = #{appSql}
+		and a.ADDED_STATE = #{addedState}
+		Order By 'ENERGY_METER'
+	</select>
+	
+	<select id = "selectTblslocelecMAxVerByLsNo" parameterType="String" resultType="com.foya.dao.mybatis.model.TbLsLocElec">
+	SELECT
+	MAX (TEMP.LS_VER) AS LS_VER
+	FROM
+	(
+		SELECT
+			CONVERT (INT, LS_VER) AS LS_VER
+		FROM
+			TB_LS_LOC_ELEC
+		WHERE
+			LS_NO = #{lsNo}
+			<if test="locationId!=null and locationId!=''">
+			AND LOCATION_ID = #{locationId}
+			</if>
+	) TEMP
+	</select>
+
+</mapper>

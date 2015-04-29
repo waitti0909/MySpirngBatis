@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbAuthRoleMenuFunMapper">
+  	<resultMap id="RoleMenuFunDTO" type="com.foya.noms.dto.auth.RoleMenuFunDTO">
+		<result column="FUN_CODE" property="funCode" jdbcType="VARCHAR" />
+		<result column="VALUE1" property="btnName" jdbcType="VARCHAR" />
+		<result column="VALUE2" property="btnI18n" jdbcType="VARCHAR" />
+		<result column="VALUE3" property="btnClass" jdbcType="VARCHAR" />
+		<result column="VALUE4" property="btnIconClass" jdbcType="VARCHAR" />
+		<result column="DISPLAY_ORDER" property="displayOrder" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<resultMap id="RoleMenuFunDepDTO" type="com.foya.noms.dto.auth.RoleMenuFunDepDTO">
+		<result column="role_id" property="roleId" jdbcType="NUMERIC" />
+		<result column="menu_id" property="menuId" jdbcType="NUMERIC" />
+		<result column="md_user" property="md_user" jdbcType="VARCHAR" />
+		<result column="menu_name" property="menuName" jdbcType="VARCHAR" />
+		<result column="menu_desc" property="menuDesc" jdbcType="VARCHAR" />
+		<result column="role_name" property="roleName" jdbcType="VARCHAR" />
+		<result column="role_desc" property="roleDesc" jdbcType="VARCHAR" />
+		<result column="md_time" property="md_time" jdbcType="TIMESTAMP" />
+		
+		<result column="fun_code" property="funCode" jdbcType="VARCHAR" />
+		<result column="fun_name" property="funName" jdbcType="VARCHAR" />
+		<result column="depId" property="depId" jdbcType="VARCHAR" />
+		<result column="depName" property="depName" jdbcType="VARCHAR" />
+		<result column="menu_fun_id" property="menuFunId" jdbcType="NUMERIC" />	
+	</resultMap>
+	<!-- 根據psnId, menuId查詢Buttons -->
+	<select id="findFunctionByPsnAndMenuId" resultMap="RoleMenuFunDTO" parameterType="hashmap">
+		select distinct mf.FUN_CODE,l.value1,l.value2,l.value3,l.value4 ,mf.DISPLAY_ORDER 
+		from TB_AUTH_MENU_FUN mf , TB_AUTH_ROLE_MENU_FUN rmf ,(select * from TB_SYS_LOOKUP where TYPE='FUNBTNGROUP') l 
+		where mf.MENU_FUN_ID = rmf.MENU_FUN_ID 
+		and mf.FUN_CODE = l.code 
+		and rmf.ROLE_ID in (select role_id from TB_AUTH_PSN_ROLE where psn_id = #{psnId}) 
+		and mf.MENU_ID = #{menuId} 
+		order by mf.DISPLAY_ORDER
+	</select>
+	
+	
+	<select id="findRoleMenuByRoleId" resultMap="RoleMenuFunDepDTO" parameterType="java.lang.Integer">
+<!-- 		select distinct mf.FUN_CODE,l.value1 as fun_Name,role.ROLE_NAME,rmf.ROLE_ID,rmf.DEP_ID,menu.MENU_NAME,mf.MENU_ID,mf.DISPLAY_ORDER  -->
+<!-- 		from TB_AUTH_MENU_FUN mf , TB_AUTH_ROLE_MENU_FUN rmf ,(select code,value1  from TB_SYS_LOOKUP where TYPE='FUNBTNGROUP') l , -->
+<!--         TB_AUTH_MENU menu,TB_AUTH_ROLE_MAST role  -->
+<!-- 		where mf.MENU_FUN_ID = rmf.MENU_FUN_ID and rmf.role_id=role.role_id    -->
+<!-- 		and mf.FUN_CODE = l.code and menu.MENU_ID=mf.MENU_ID -->
+
+<!-- 		select distinct role.ROLE_NAME, rmf.ROLE_ID, menu.MENU_NAME,mf.MENU_ID -->
+<!-- 		from TB_AUTH_MENU_FUN mf , TB_AUTH_ROLE_MENU_FUN rmf ,(select code,value1  from TB_SYS_LOOKUP where TYPE='FUNBTNGROUP') l , -->
+<!--         TB_AUTH_MENU menu,TB_AUTH_ROLE_MAST role  -->
+<!-- 		where mf.MENU_FUN_ID = rmf.MENU_FUN_ID and rmf.role_id=role.role_id    -->
+<!-- 		and mf.FUN_CODE = l.code and menu.MENU_ID=mf.MENU_ID -->
+<!-- 		and rmf.ROLE_ID =#{roleId}  -->
+
+		select role.ROLE_NAME, role.ROLE_ID, menu.MENU_NAME, menu.MENU_ID
+		from 
+        TB_AUTH_MENU menu,
+        TB_AUTH_ROLE_MAST role,
+        TB_AUTH_ROLE_MENU roleMenu
+		where roleMenu.ROLE_ID = role.ROLE_ID
+		and roleMenu.MENU_ID = menu.MENU_ID
+		and role.ROLE_ID = #{roleId} 
+		
+	</select>
+	
+	
+	<select id="findRoleMenuByMenuId" resultMap="RoleMenuFunDepDTO" parameterType="java.lang.Integer">
+<!-- 		select  mf.FUN_CODE,l.value1 as fun_Name,role.ROLE_NAME,rmf.ROLE_ID,rmf.DEP_ID,menu.MENU_NAME,mf.MENU_ID,mf.DISPLAY_ORDER  -->
+<!-- 		from TB_AUTH_MENU_FUN mf , TB_AUTH_ROLE_MENU_FUN rmf ,(select code,value1 from TB_SYS_LOOKUP where TYPE='FUNBTNGROUP') l , -->
+<!--         TB_AUTH_MENU menu,TB_AUTH_ROLE_MAST role  -->
+<!-- 		where mf.MENU_FUN_ID = rmf.MENU_FUN_ID and rmf.role_id=role.role_id    -->
+<!-- 		and mf.FUN_CODE = l.code and menu.MENU_ID=mf.MENU_ID -->
+
+		select distinct role.ROLE_NAME, rmf.ROLE_ID, menu.MENU_NAME,mf.MENU_ID
+		from TB_AUTH_MENU_FUN mf , TB_AUTH_ROLE_MENU_FUN rmf ,(select code,value1  from TB_SYS_LOOKUP where TYPE='FUNBTNGROUP') l ,
+        TB_AUTH_MENU menu,TB_AUTH_ROLE_MAST role 
+		where mf.MENU_FUN_ID = rmf.MENU_FUN_ID and rmf.role_id=role.role_id   
+		and mf.FUN_CODE = l.code and menu.MENU_ID=mf.MENU_ID
+		and mf.MENU_ID =#{menuId} 
+	</select>
+	
+	<select id="findFuncDeptByRoleAndMenu" resultMap="RoleMenuFunDepDTO" parameterType="hashmap">
+		select l.code as fun_code, l.value1 as fun_Name,rmf.DEP_ID,mf.DISPLAY_ORDER ,mf.MENU_ID, rmf.MENU_FUN_ID
+		from TB_AUTH_MENU_FUN mf , TB_AUTH_ROLE_MENU_FUN rmf ,(select code,value1 from TB_SYS_LOOKUP where TYPE='FUNBTNGROUP') l ,
+        TB_AUTH_MENU menu,TB_AUTH_ROLE_MAST role 
+		where mf.MENU_FUN_ID = rmf.MENU_FUN_ID and rmf.role_id=role.role_id   
+		and mf.FUN_CODE = l.code and menu.MENU_ID = mf.MENU_ID
+		and rmf.ROLE_ID = #{roleId} 
+		and mf.MENU_ID = #{menuId} 
+	</select>
+	
+	<select id="selectRoleMenuFunByMenuId" resultMap="RoleMenuFunDTO">
+		select 
+		menu_fun.FUN_CODE,menu_fun.DISPLAY_ORDER
+		from TB_AUTH_ROLE_MENU_FUN role_menu_fun
+		LEFT JOIN TB_AUTH_MENU_FUN menu_fun
+    	on role_menu_fun.MENU_FUN_ID = menu_fun.MENU_FUN_ID
+		where role_menu_fun.MENU_ID =#{menuId} 
+	</select>
+</mapper>
+
+

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbAuthRoleMastMapper">
+
+	<resultMap id="RoleMastDTO" type="com.foya.noms.dto.auth.RoleMastDTO">
+		<id column="role_id" property="roleId" jdbcType="INTEGER" />
+		<result column="role_name" property="roleName" jdbcType="VARCHAR" />
+		<result column="role_desc" property="roleDesc" jdbcType="VARCHAR" />
+		<result column="psn_no" property="mdyuser" jdbcType="VARCHAR" />
+		<result column="md_user" property="mdUser" jdbcType="VARCHAR" />
+		<result column="md_time" property="mdTime" jdbcType="TIMESTAMP" />
+		<result column="psn_Member" property="psnMember" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<resultMap id="Role" type="com.foya.noms.dto.auth.RoleDTO">
+		<id column="role_id" property="id" jdbcType="INTEGER" />
+		<result column="role_name" property="name" jdbcType="VARCHAR" />
+		<result column="role_desc" property="desc" jdbcType="VARCHAR" />
+		<result column="mdy_psn_id" property="mdyuser" jdbcType="INTEGER" />
+		<result column="mdy_tstmp" property="mdytstmp" jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<sql id="base_columns">
+		role_id,role_name,role_desc
+	</sql>
+
+	<!-- 根據角色id查詢角色 -->
+	<select id="searchRole" resultMap="RoleMastDTO" parameterType="java.lang.Integer">
+		SELECT
+		role.role_id,role.role_name,role.role_desc,person.psn_no,role.md_time
+		FROM tb_auth_role_mast role
+		LEFT JOIN tb_auth_personnel person
+		on
+		role.md_user = person.psn_id
+		<where>
+			<if test="_parameter!=null and _parameter!=''">
+				AND role_id=#{roleId}
+			</if>
+		</where>
+	</select>
+
+
+	<!-- 根據角色id查詢角色與包含之成員 -->
+	<select id="searchRoleWithPsn" resultMap="RoleMastDTO" parameterType="java.lang.Integer">
+		select
+		k.role_id,k.role_name,k.role_desc,k.md_user,k.md_time,g.psn_Member
+		from
+		(
+		SELECT
+		role.role_id,role.role_name,role.role_desc,role.md_user,role.md_time
+		FROM tb_auth_role_mast role
+		<where>
+			<if test="_parameter!=null and _parameter!=''">
+				AND role_id=#{roleId}
+			</if>
+		</where>
+		) k
+		LEFT JOIN
+		(
+		SELECT ROLE_ID,
+		(
+		SELECT CONVERT(VARCHAR, ENG_NM) + ','
+		FROM
+		(select
+		a.PSN_ID,c.ROLE_NAME,a.PSN_NO,b.ROLE_ID,a.ENG_NM from TB_AUTH_PERSONNEL a,
+		TB_AUTH_PSN_ROLE b, TB_AUTH_ROLE_MAST c
+		where a.PSN_ID=b.PSN_ID and
+		b.ROLE_ID=c.ROLE_ID) as s2
+		WHERE s1.ROLE_ID=s2.ROLE_ID
+		FOR XML PATH('')
+		) as psn_Member
+		FROM TB_AUTH_PSN_ROLE as s1
+		group by ROLE_ID
+		) g
+		on k.ROLE_ID=g.ROLE_ID
+	</select>
+
+	<!-- 根據用戶id查詢角色集合 -->
+	<select id="selectByUserId" resultMap="Role" parameterType="java.lang.Integer">
+		SELECT
+		<include refid="base_columns" />
+		FROM tb_auth_role_mast
+		WHERE
+		role_id IN (SELECT role_id FROM
+		tb_auth_psn_role WHERE psn_id=#{userId})
+	</select>
+
+	<select id="selectAll" resultMap="Role">
+		SELECT
+		<include refid="base_columns" />
+		FROM tb_auth_role_mast
+	</select>
+</mapper>
+
+

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbWorkflowVersionMapper">
+	<resultMap id="BaseResultMap" type="com.foya.noms.dto.common.WorkflowVersionDTO">
+		<result column="DEPLOYMENT_ID" property="deploymentId"
+			jdbcType="VARCHAR" />
+		<result column="PROCESS_ID" property="processId" jdbcType="VARCHAR" />
+		<result column="PROCESS_TYPE" property="processType" jdbcType="VARCHAR" />
+		<result column="PROCESS_NAME" property="processName" jdbcType="VARCHAR" />
+		<result column="START_TIME" property="startTime" jdbcType="TIMESTAMP" />
+		<result column="END_TIME" property="endTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+
+
+	<sql id="Base_Column_List">
+		CONCAT(GROUP_ID,':',ARTIFACT_ID,':',VERSION) as
+		DEPLOYMENT_ID,
+		PROCESS_ID, v.PROCESS_TYPE, PROCESS_NAME, START_TIME,
+		END_TIME
+	</sql>
+
+	<select id="findWorkflowVersionDto" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from TB_WORKFLOW_VERSION AS v INNER JOIN
+		TB_WORKFLOW_CFG AS c ON
+		v.PROCESS_TYPE = c.PROCESS_TYPE
+	</select>
+
+	<select id="findWorkflowVersionDtoByProcessTypes" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from TB_WORKFLOW_VERSION AS v INNER JOIN
+		TB_WORKFLOW_CFG AS c ON
+		v.PROCESS_TYPE = c.PROCESS_TYPE where v.PROCESS_TYPE in
+		<foreach item="item" index="index" collection="processTypes"
+			open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+
+	<select id="findActiveWorkflowVersionDtoByProcessTypesAndTime"
+		resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from TB_WORKFLOW_VERSION AS v INNER JOIN
+		TB_WORKFLOW_CFG AS c ON
+		v.PROCESS_TYPE = c.PROCESS_TYPE where
+
+		<if test="processTypes !=null">
+			v.PROCESS_TYPE in
+			<foreach item="item" index="index" collection="processTypes"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+			and 
+		</if>
+		<if test="startTime != null">
+			(<![CDATA[v.START_TIME <= #{startTime}]]>
+		</if>
+
+		and v.START_TIME is not null
+		<choose>
+			<when test="endTime !=null">
+				and <![CDATA[v.END_TIME >= #{endTime}]]>
+				)
+			</when>
+			<otherwise>
+				) or (v.END_TIME is null)
+			</otherwise>
+		</choose>
+	</select>
+
+</mapper>

@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbLsLocElecMapper">
+	<resultMap id="ResultMap" type="com.foya.dao.mybatis.model.TbLsLocElec">
+		<id column="LS_NO" property="LS_NO" jdbcType="VARCHAR" />
+		<result column="ENERGY_METER" property="ENERGY_METER" jdbcType="VARCHAR" />
+		
+	</resultMap>
+	
+	<resultMap id="DTOResultMap" type="com.foya.noms.dto.pay.TbLsLocElecDTO">
+		<result column="ELECTRICITY_METER_NBR" property="ELECTRICITY_METER_NBR" jdbcType="VARCHAR" />
+		<result column="electricityType" property="electricityType" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<select id="getLsNoList" resultMap="ResultMap">
+		SELECT LS_NO FROM TB_LS_LOC_ELEC 
+		WHERE convert(date,GETDATE()) BETWEEN ELEC_BEGIN_DATE AND ELEC_END_DATE
+	</select>
+	
+	<select id="getContractNo" resultMap="ResultMap">
+		SELECT LS_NO FROM TB_LS_LOC_ELEC 
+		WHERE convert(date,GETDATE()) BETWEEN ELEC_BEGIN_DATE AND ELEC_END_DATE
+		    AND ENERGY_METER =  #{electricityMeterNbr}
+	</select>
+
+	<select id="getEnergyMeterList" resultMap="ResultMap" parameterType="java.lang.String">
+		SELECT ENERGY_METER
+		  FROM TB_LS_LOC_ELEC
+		 WHERE LS_NO = #{contractNo}
+		      AND convert(date,GETDATE()) BETWEEN ELEC_BEGIN_DATE AND ELEC_END_DATE
+	</select>
+
+	<select id="getSiteIdList" resultType="com.foya.noms.dto.pay.TbLsLocElecDTO" parameterType="hashmap">
+		SELECT B.SITE_ID siteId,
+		       (SELECT SITE_NAME FROM TB_SITE_MAIN WHERE SITE_ID = B.SITE_ID) siteName
+		  FROM TB_LS_LOC_ELEC A, TB_LS_SITE B
+		 WHERE A.LS_NO = B.LS_NO
+		   AND A.LOCATION_ID = B.LOCATION_ID
+		   AND A.LS_NO = #{contractNo}
+		   AND A.ENERGY_METER = #{electricityMeterNbr}
+		   AND CONVERT(DATE,#{appDate}) BETWEEN A.ELEC_BEGIN_DATE AND A.ELEC_END_DATE
+	</select>
+	
+	<select id="getTbLsLocElec" resultType="com.foya.dao.mybatis.model.TbLsLocElec" parameterType="hashmap">
+		SELECT A.ELEC_ADDR, A.ELEC_CUST_NAME, A.LOCATION_ID
+		  FROM TB_LS_LOC_ELEC A
+		 WHERE A.LS_NO = #{contractNo}
+		   AND A.LOCATION_ID IN
+		       (SELECT B.LOCATION_ID
+		          FROM TB_LS_SITE B
+		         WHERE B.LS_NO = #{contractNo}
+		           AND B.SITE_ID = #{siteId}
+		           AND CONVERT(DATE, #{appDate}) BETWEEN B.PAY_BEGIN_DATE AND B.LS_E_DATE
+		           AND B.EXPN_TYPE = 'E')
+		   AND A.ENERGY_METER = #{electricityMeterNbr}
+		   AND CONVERT(DATE, #{appDate}) BETWEEN A.ELEC_BEGIN_DATE AND A.ELEC_END_DATE
+	</select>
+	
+	<select id="getChrgMode" resultType="com.foya.noms.dto.pay.TbLsLocElecDTO" parameterType="hashmap">
+		SELECT A.ELEC_MODE,
+       				A.CHRG_MODE,
+       (SELECT NORMAL_PRICE
+          FROM TB_LS_ELEC_RANGE
+         WHERE A.CHRG_MODE BETWEEN BEGIN_RANGE AND END_RANGE
+           AND GETDATE() BETWEEN EFF_DATE AND END_DATE) NORMAL_PRICE,
+       (SELECT SPECIAL_PRICE
+          FROM TB_LS_ELEC_RANGE
+         WHERE A.CHRG_MODE BETWEEN BEGIN_RANGE AND END_RANGE
+           AND GETDATE() BETWEEN EFF_DATE AND END_DATE) SPECIAL_PRICE
+		  FROM TB_LS_LOC_ELEC A
+		 WHERE A.LS_NO = #{contractNo}
+		   AND A.ENERGY_METER = #{electricityMeterNbr}
+		   AND GETDATE() BETWEEN A.ELEC_BEGIN_DATE AND A.ELEC_END_DATE
+	</select>
+	
+	<select id="getLocationId" resultType="com.foya.noms.dto.pay.TbLsLocElecDTO" parameterType="hashmap">
+		SELECT LOCATION_ID FROM TB_LS_LOC_ELEC
+		WHERE LS_NO = #{contractNo}
+		AND ENERGY_METER = #{electricityMeterNbr}
+		AND GETDATE() BETWEEN ELEC_BEGIN_DATE AND ELEC_END_DATE
+	</select>
+	
+		<select id="searchTbLsLocElec" resultType="com.foya.noms.dto.pay.TbLsLocElecDTO"
+		parameterType="String">
+		Select 
+		b.NAME as siteName,
+		a.LS_NO as LS_NO,
+		a.LS_VER as LS_VER,
+		a.LOCATION_ID as LOCATION_ID,
+		a.ENERGY_METER as ENERGY_METER,
+		a.ELEC_BEGIN_DATE as ELEC_BEGIN_DATE,
+		a.ELEC_END_DATE as ELEC_END_DATE,
+		a.ELEC_MODE as ELEC_MODE,
+		a.CHRG_MODE as CHRG_MODE,
+		a.BEGIN_DEGREE as BEGIN_DEGREE,
+		a.END_DEGREE as END_DEGREE,
+		a.ELEC_PLEDGE as ELEC_PLEDGE,
+		a.PLDG_PAY_DATE as PLDG_PAY_DATE,
+		a.ELEC_CUST_NAME as ELEC_CUST_NAME,
+		a.ELEC_ADDR as ELEC_ADDR,
+		a.ELEC_ADDR_STD as ELEC_ADDR_STD,
+		a.PENALTY_DAY as PENALTY_DAY,
+		a.PENALTY_DESC as PENALTY_DESC,
+		a.SIGN_AGREEMENT as SIGN_AGREEMENT,
+		a.FORM_ID as FORM_ID,
+		a.CR_USER as CR_USER,
+		a.CR_TIME as CR_TIME,
+		a.MD_USER as MD_USER,
+		a.MD_TIME as MD_TIME,
+		a.org_ENERGY_METER,a.pldg_IN 
+		from TB_LS_LOC_ELEC as a
+		left join TB_SYS_LOOKUP as b
+		on a.ELEC_MODE = b.CODE
+		where
+		a.LS_VER=(Select max(CONVERT(INT, LS_VER)) from TB_LS_LOC_ELEC where ls_no = #{lsNo} and LOCATION_ID = #{locId})
+		and b.TYPE = 'LS_ELEC_MODE'
+		and a.ls_no = #{lsNo}
+		and a.LOCATION_ID = #{locId}
+	</select>
+	
+	<select id="getTbLsLocElecDTOByLsNoVerLoc" resultType="com.foya.noms.dto.pay.TbLsLocElecDTO"
+		parameterType="String">
+		Select 
+		b.NAME as siteName,
+		a.LS_NO as LS_NO,
+		a.LS_VER as LS_VER,
+		a.LOCATION_ID as LOCATION_ID,
+		a.ENERGY_METER as ENERGY_METER,
+		a.ELEC_BEGIN_DATE as ELEC_BEGIN_DATE,
+		a.ELEC_END_DATE as ELEC_END_DATE,
+		a.ELEC_MODE as ELEC_MODE,
+		a.CHRG_MODE as CHRG_MODE,
+		a.BEGIN_DEGREE as BEGIN_DEGREE,
+		a.END_DEGREE as END_DEGREE,
+		a.ELEC_PLEDGE as ELEC_PLEDGE,
+		a.PLDG_PAY_DATE as PLDG_PAY_DATE,
+		a.ELEC_CUST_NAME as ELEC_CUST_NAME,
+		a.ELEC_ADDR as ELEC_ADDR,
+		a.ELEC_ADDR_STD as ELEC_ADDR_STD,
+		a.PENALTY_DAY as PENALTY_DAY,
+		a.PENALTY_DESC as PENALTY_DESC,
+		a.SIGN_AGREEMENT as SIGN_AGREEMENT,
+		a.FORM_ID as FORM_ID,
+		a.CR_USER as CR_USER,
+		a.CR_TIME as CR_TIME,
+		a.MD_USER as MD_USER,
+		a.MD_TIME as MD_TIME,
+		a.org_ENERGY_METER,a.pldg_IN 
+		from TB_LS_LOC_ELEC as a
+		left join TB_SYS_LOOKUP as b
+		on a.ELEC_MODE = b.CODE
+		where  a.ls_no = #{lsNo}
+		<choose>
+		    <when test="lsVer != null and lsVer != ''">
+		      and a.ls_ver =#{lsVer} 
+		    </when>
+		    <otherwise>
+		     and a.LS_VER=(Select max(CONVERT(INT, LS_VER)) from TB_LS_LOC_ELEC where ls_no = #{lsNo}
+			<if test="locId!=null and locId!='ELE01'"> and LOCATION_ID = #{locId}</if>
+			) 
+		    </otherwise>
+		</choose>
+		    and b.TYPE = 'LS_ELEC_MODE'
+		<if test="locId!=null and locId!=''">	
+			and a.LOCATION_ID = #{locId}
+		</if>
+	</select>
+	
+	
+	
+	<select id="getTbLsLocElecAddedDTOByLsNoVerLoc" resultType="com.foya.noms.dto.pay.TbLsLocElecDTO"
+		parameterType="String">
+		Select 
+		b.NAME as siteName,
+		a.LS_NO as LS_NO,
+		a.LS_VER as LS_VER,
+		a.LOCATION_ID as LOCATION_ID,
+		a.ENERGY_METER as ENERGY_METER,
+		a.ELEC_BEGIN_DATE as ELEC_BEGIN_DATE,
+		a.ELEC_END_DATE as ELEC_END_DATE,
+		a.ELEC_MODE as ELEC_MODE,
+		a.CHRG_MODE as CHRG_MODE,
+		a.BEGIN_DEGREE as BEGIN_DEGREE,
+		a.END_DEGREE as END_DEGREE,
+		a.ELEC_PLEDGE as ELEC_PLEDGE,
+		a.PLDG_PAY_DATE as PLDG_PAY_DATE,
+		a.ELEC_CUST_NAME as ELEC_CUST_NAME,
+		a.ELEC_ADDR as ELEC_ADDR,
+		a.ELEC_ADDR_STD as ELEC_ADDR_STD,
+		a.PENALTY_DAY as PENALTY_DAY,
+		a.PENALTY_DESC as PENALTY_DESC,
+		a.SIGN_AGREEMENT as SIGN_AGREEMENT,
+		a.FORM_ID as FORM_ID,
+		a.CR_USER as CR_USER,
+		a.CR_TIME as CR_TIME,
+		a.MD_USER as MD_USER,
+		a.MD_TIME as MD_TIME,
+		a.ORG_ENERGY_METER,a.pldg_IN 
+		from TB_LS_LOC_ELEC_ADDED as a
+		left join TB_SYS_LOOKUP as b
+		on a.ELEC_MODE = b.CODE
+		where  a.app_seq = #{appSeq} and b.TYPE = 'LS_ELEC_MODE'
+		<if test="locId!=null and locId!=''">	
+			and a.LOCATION_ID = #{locId}
+		</if>
+		
+	</select>
+	
+	
+	
+	<select id="selectDtl4PAY003ATb2" resultMap="DTOResultMap" parameterType="hashmap">
+	select A.energy_meter ELECTRICITY_METER_NBR,
+	(select lookup_code_desc from TB_PAY_LOOKUP_CODE where lookup_type='process_type' and lookup_code=#{processType}) electricityType,
+	A.chrg_mode,
+	A.elec_begin_date,
+	A.elec_end_date 
+	from TB_LS_LOC_ELEC A 
+	where A.ls_no=#{contractNo} 
+	and getDate() between elec_begin_date and elec_end_date
+	<if test="processType!=null and processType!='ELE01'">	
+	and A.elec_mode='E'
+	</if>
+	<if test="processType!=null and processType!='ELE05'">
+	and A.pldg_pay_date is null 
+	and A.elec_pledge is not null
+	</if>;
+	</select>
+	
+	
+	    <select id="sumElecPledgegroupbylocationId" parameterType="String" resultType="com.foya.dao.mybatis.model.TbLsLocElec">
+    SELECT
+	LS_NO,
+	LS_VER,
+	LOCATION_ID,
+	CASE
+WHEN SUM (ELEC_PLEDGE) IS NULL THEN
+	'0'
+ELSE
+	SUM (ELEC_PLEDGE)
+END AS ELEC_PLEDGE
+FROM
+	TB_LS_LOC_ELEC
+ WHERE　ls_No = #{lsNo} and ls_Ver= #{lsVer} and location_Id = #{locationId} 
+ <if test="elecMode!=null and elecMode!=''">	
+	and ELEC_MODE = #{elecMode}
+	</if>
+GROUP BY
+	LS_NO,
+	LS_VER,
+	LOCATION_ID
+    
+    
+      </select>
+	
+	<select id="getMaxVerbyLsNo" parameterType="String" resultMap="ResultMap">
+	SELECT
+		MAX (CONVERT(INT, LS_VER)) AS LS_VER
+	FROM
+		TB_LS_LOC_ELEC
+	WHERE
+		LS_NO = #{lsNo}
+	</select>
+	
+</mapper>

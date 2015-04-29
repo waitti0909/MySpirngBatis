@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbPayCheckDisregardMapper">
+	<resultMap id="ResultMap" type="com.foya.noms.dto.pay.TbPayCheckDisregardDTO">
+
+	</resultMap>
+	<select id="searchWithCnt" resultMap="ResultMap" parameterType="hashmap">
+		select distinct (select lookup_code_desc 
+		from tb_pay_lookup_code where lookup_type='CKD_STATUS' and lookup_code=a.status) statusDscr,
+		A.disregard_no ,A.status,A.app_user,(select distinct chn_nm from TB_AUTH_PERSONNEL where psn_no=A.app_user) appUserName,
+		A.app_date,(select chn_nm from TB_AUTH_PERSONNEL where psn_no=b.account_approval_user) approveUserName,
+		b.account_approval_date approveDate,a.domain
+		from TB_PAY_CHECK_DISREGARD A,TB_PAY_CASH_REQUIREMENT B
+		where A.cash_req_no=B.cash_req_no 
+		<if test="domain!=null and domain!=''">
+			and B.domain = #{domain}
+		</if>	
+		<if
+			test="appStartDate!=null and appStartDate!='' and appEndDate!=null and appEndDateDate!='' ">
+			and B.app_date between #{appStartDate} and DATEADD(day,1,#{appEndDate})
+		</if>
+		<if test="disregardNo!=null and disregardNo!=''">
+			AND a.disregard_no like '%'+#{disregardNo}+'%'
+		</if>
+		<if
+			test="crStartDate!=null and crStartDate!='' and crEndDate!=null and crEndDate!='' ">
+			and A.app_date between #{crStartDate} and DATEADD(day,1,#{crEndDate})
+		</if>
+		<if test="status!=null and status!=''">
+			and A.status in
+			<foreach collection="status" item="item" open="("
+				separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<!-- group by A.disregard_no ,A.status,A.app_user,A.app_date,A.cash_req_no,b.account_approval_user,b.account_approval_date,a.domain -->
+	</select>
+	<select id="selectDisregardCount"  resultMap="ResultMap" parameterType="java.lang.String">
+		select disregard_no ,count(1) disregardCount , SUM(check_amt) check_amt
+			from TB_PAY_CHECK_DISREGARD
+			where disregard_no=#{disregardNo} 
+			group by disregard_no
+	</select>	
+</mapper>

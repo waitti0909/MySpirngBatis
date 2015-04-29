@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbOrgDeptPosMapper">
+	<resultMap id="BaseResultMap" type="com.foya.noms.dto.org.DeptPosDTO">
+		<id column="DEPT_POS_ID" jdbcType="VARCHAR" property="deptPosId" />
+		<result column="DEPT_ID" jdbcType="VARCHAR" property="deptId" />
+		<result column="DEPT_NAME" jdbcType="VARCHAR" property="deptName" />
+		<result column="POS_ID" jdbcType="VARCHAR" property="posId" />
+		<result column="POS_NAME" jdbcType="VARCHAR" property="posName" />
+		<result column="DOMAIN" jdbcType="VARCHAR" property="domain" />
+		<result column="PARENT_DEPT_POS_ID" jdbcType="VARCHAR"
+			property="parentDeptPosId" />
+		<result column="POS_TYPE" jdbcType="CHAR" property="posType" />
+		<result column="HIERARCHY" jdbcType="CHAR" property="hierarchy" />
+		<result column="PSN_ID" jdbcType="VARCHAR" property="psnId" />
+		<result column="PSN_NO" jdbcType="VARCHAR" property="psnNo" />
+		<result column="CHN_NM" jdbcType="VARCHAR" property="chnName" />
+	</resultMap>
+	<sql id="Query_Dept_Pos">
+		select dp.DEPT_POS_ID, d.DEPT_ID, DEPT_NAME, p.POS_ID,
+		POS_NAME, DOMAIN, PARENT_DEPT_POS_ID, p.POS_TYPE
+		from TB_ORG_DEPT d
+		inner join TB_ORG_DEPT_POS dp on d.DEPT_ID = dp.DEPT_ID inner join
+		TB_ORG_POSITION p on dp.POS_ID = p.POS_ID
+	</sql>
+
+	<select id="getDeptPos" resultMap="BaseResultMap">
+		<include refid="Query_Dept_Pos" />
+	</select>
+
+	<select id="getDeptPosByDeptId" resultMap="BaseResultMap">
+		<include refid="Query_Dept_Pos" />
+		<where>
+			d.DEPT_ID = #{deptId}
+		</where>
+	</select>
+
+	<select id="getDeptPosByPosId" resultMap="BaseResultMap">
+		<include refid="Query_Dept_Pos" />
+		<where>
+			p.POS_ID = #{posId}
+		</where>
+	</select>
+
+	<select id="getDeptPosByDeptPosId" resultMap="BaseResultMap">
+		<include refid="Query_Dept_Pos" />
+		<where>
+			dp.DEPT_POS_ID = #{deptPosId}
+		</where>
+	</select>
+
+	<select id="getDeptPosByDeptIdAndPosId" resultMap="BaseResultMap">
+		<include refid="Query_Dept_Pos" />
+		<where>
+			d.DEPT_ID = #{deptId} and p.POS_ID = #{posId}
+		</where>
+	</select>
+
+	<select id="getDeptAllUnderDeptPosByDeptId" resultMap="BaseResultMap">
+		<include refid="Query_Dept_Pos" />
+		<where>
+			d.HIERARCHY LIKE '%'+#{deptId}+'%'
+		</where>
+	</select>
+	
+	<select id="selectMaintainUserByDeptId" resultMap="BaseResultMap">
+		select psn.PSN_ID PSN_ID,psn.PSN_NO PSN_NO,psn.CHN_NM CHN_NM
+		from TB_ORG_DEPT_POS dpetPos
+		left outer join TB_ORG_PSN_POS psnPos
+		on dpetPos.DEPT_POS_ID = psnPos.DEPT_POS_ID
+		inner join TB_AUTH_PERSONNEL psn
+		on psnPos.PSN_NO = psn.PSN_NO
+		where dpetPos.DEPT_ID=#{deptId}
+	</select>
+</mapper>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbAuthRoleMenuMapper" >
+	<resultMap id="RoleMenuDTO" type="com.foya.noms.dto.auth.RoleMenuFunDepDTO">
+ 
+		<id column="role_id" property="roleId" jdbcType="NUMERIC" />
+		<result column="menu_id" property="menuId" jdbcType="NUMERIC" />
+		<result column="md_user" property="md_user" jdbcType="VARCHAR" />
+		<result column="menu_name" property="menuName" jdbcType="VARCHAR" />
+		<result column="menu_desc" property="menuDesc" jdbcType="VARCHAR" />
+		<result column="role_name" property="roleName" jdbcType="VARCHAR" />
+		<result column="role_desc" property="roleDesc" jdbcType="VARCHAR" />
+		<result column="md_time" property="md_time" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<select id="selectRoleMenuByRoleId" resultMap="RoleMenuDTO">
+		SELECT rm.menu_id, rm.md_user, rm.md_time, rm.role_id, m.menu_name,
+		m.menu_desc, r.role_name, r.role_desc
+		FROM tb_auth_role_menu rm, tb_auth_menu m,
+		tb_auth_role_mast r
+		WHERE rm.menu_id = m.menu_id AND rm.role_id = r.role_id and
+		rm.role_id=#{roleId} and m.IS_FODR = 0
+	</select>
+
+	<select id="selectRoleMenuByMenuId" resultMap="RoleMenuDTO">
+		SELECT rm.menu_id, rm.md_user, rm.md_time, rm.role_id, m.menu_name,
+		m.menu_desc, r.role_name, r.role_desc
+		FROM tb_auth_role_menu rm, tb_auth_menu m,
+		tb_auth_role_mast r
+		WHERE rm.menu_id = m.menu_id AND rm.role_id = r.role_id and
+		rm.menu_id=#{menuId} and m.IS_FODR = 0
+	</select>
+	
+	<select id="searchNonOwnedMenuByRoleId" resultMap="RoleMenuDTO">
+		SELECT m.menu_Id, m.menu_name, m.menu_desc
+		FROM  tb_auth_menu m 
+		WHERE m.menu_Id not in (select rm.menu_Id from tb_auth_role_menu rm where rm.role_id=#{roleId}  )
+	</select>
+	
+	<select id="searchNonOwnedRoleByMenuId" resultMap="RoleMenuDTO">
+		SELECT r.role_Id, r.role_name, r.role_desc
+		FROM  tb_auth_role_mast r
+		WHERE r.role_Id not in (select rm.role_Id from tb_auth_role_menu rm where rm.menu_id=#{menuId}  )
+	</select>
+	
+	<select id="findSelectedMenuByRoleId" resultMap="RoleMenuDTO">
+		SELECT m.menu_Id, m.menu_name, m.menu_desc
+		FROM  tb_auth_menu m 
+		WHERE m.menu_Id in (select rm.menu_Id from tb_auth_role_menu rm where rm.role_id=#{roleId}  )
+	</select>
+
+</mapper>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbInvRtDMapper">
+  	
+  	<resultMap id="dscrResultMap" type="com.foya.noms.dto.inv.TbInvRtDDTO" >
+	    <result column="matName" property="matName" jdbcType="VARCHAR" />
+	    <result column="tagNo" property="tagNo" jdbcType="VARCHAR" />
+	    <result column="venSn" property="venSn" jdbcType="VARCHAR" />
+	    <result column="matStatusDscr" property="matStatusDscr" jdbcType="VARCHAR" />
+	    <result column="txnQty" property="txnQty" jdbcType="INTEGER" />
+	    <result column="rnResnDscr" property="rnResnDscr" jdbcType="VARCHAR" />
+	    <result column="faNo" property="faNo" jdbcType="VARCHAR" />
+	 </resultMap>
+	 <resultMap id="meterialRtnMap" type="com.foya.noms.dto.st.MeterialRtnDTO" >
+	    <result column="assetNo" property="assetNo" jdbcType="VARCHAR" />
+	    <result column="matNo" property="matNo" jdbcType="VARCHAR" />
+	    <result column="matName" property="matName" jdbcType="VARCHAR" />
+	    <result column="venSn" property="venSn" jdbcType="VARCHAR" />
+	    <result column="tagNo" property="tagNo" jdbcType="VARCHAR" />
+	    <result column="assetQty" property="assetQty" jdbcType="INTEGER" />
+	    <result column="qty" property="qty" jdbcType="INTEGER" />
+	    <result column="qtyMrq" property="qtyMrq" jdbcType="INTEGER" />
+	    <result column="qtyRem" property="qtyRem" jdbcType="INTEGER" />
+	    <result column="qtyIns" property="qtyIns" jdbcType="INTEGER" />
+	    <result column="qtyRtn" property="qtyRtn" jdbcType="INTEGER" />
+	   	<result column="matStatus" property="matStatus" jdbcType="VARCHAR" />
+	    <result column="trnReason" property="trnReason" jdbcType="VARCHAR" />
+	    <result column="srlNo" property="srlNo" jdbcType="VARCHAR" />
+	 </resultMap>
+<!--   	<select id="searchDtl" parameterType="hashmap" resultMap="dscrResultMap">
+		select a.opt_id,a.mat_no,(SELECT MAT_NAME FROM TB_INV_MATERIAL WHERE mat_no=a.mat_no) matName,
+		(select tag_no from tb_inv_srl where mat_no=(select mat_no from tb_inv_material where ctrl_type='S' and is_asset='1' 
+		and mat_no=a.mat_no) and wh_id = #{whId} and srl_no=a.srl_no) tagNo,
+		(select ven_sn from tb_inv_srl where mat_no=(select mat_no from tb_inv_material where ctrl_type='S' and is_asset='1' 
+		and mat_no=a.mat_no) and wh_id = #{whId} and srl_no=a.srl_no) venSn,a.mat_status,
+		(select name from TB_SYS_LOOKUP where type='MAT_STATUS' and code=a.mat_status) matStatusDscr,a.qty,
+		(select sum(qty) from tb_inv_txn where mat_no=a.mat_no and ref_act_no=#{optId} and txn_type='2' and dtl_seq=a.dtl_seq) txnQty
+		from TB_INV_RT_D a
+		where OPT_ID = #{optId}			
+	</select> -->
+	<select id="searchDtl" parameterType="hashmap" resultMap="dscrResultMap">
+		select a.opt_id,a.mat_no,(SELECT MAT_NAME FROM TB_INV_MATERIAL WHERE mat_no=a.mat_no) matName,
+		(select tag_no from tb_inv_srl where mat_no=(select mat_no from tb_inv_material where ctrl_type='S' <!-- and is_asset='1' -->
+		and mat_no=a.mat_no) and wh_id = #{whId} and srl_no=a.srl_no) tagNo,
+		(select ven_sn from tb_inv_srl where mat_no=(select mat_no from tb_inv_material where ctrl_type='S' <!-- and is_asset='1' -->
+		and mat_no=a.mat_no) and wh_id = #{whId} and srl_no=a.srl_no) venSn,a.mat_status,
+		(select name from TB_SYS_LOOKUP where type='MAT_STATUS' and code=a.mat_status) matStatusDscr,a.qty,a.dtl_seq
+		from TB_INV_RT_D a
+		where OPT_ID = #{optId}			
+	</select>
+	
+	<select id="searchFs" parameterType="hashmap" resultMap="dscrResultMap">
+		select a.opt_id,a.mat_no,(SELECT MAT_NAME FROM TB_INV_MATERIAL WHERE mat_no=a.mat_no) matName,
+		(select tag_no from tb_inv_srl where mat_no=(select mat_no from tb_inv_material where ctrl_type='S' <!-- and is_asset='1' -->
+		and mat_no=a.mat_no) <!-- and wh_id = #{whId} --> and srl_no=a.srl_no) tagNo,
+		(select ven_sn from tb_inv_srl where mat_no=(select mat_no from tb_inv_material where ctrl_type='S' <!-- and is_asset='1' -->
+		and mat_no=a.mat_no) <!-- and wh_id = #{whId} --> and srl_no=a.srl_no) venSn,
+		(select fa_no from tb_inv_srl where mat_no=(select mat_no from tb_inv_material where ctrl_type='S' <!-- and is_asset='1' -->
+		and mat_no=a.mat_no) <!-- and wh_id = #{whId} --> and srl_no=a.srl_no) faNo,
+		a.mat_status,a.dtl_seq,a.srl_no,
+		(select name from TB_SYS_LOOKUP where type='MAT_STATUS' and code=a.mat_status) matStatusDscr,a.qty,
+		(select name from TB_SYS_LOOKUP where type='INV_RN_RESN' and code=a.rtn_reason) rnResnDscr
+		from TB_INV_RT_D a
+		<if test="optId!=null and optId!=''">
+			where a.opt_id in
+			<foreach collection="optId" item="item" open="(" separator="," close=")"> 
+	            #{item} 
+	        </foreach> 
+        </if>		
+	</select>
+	<select id="searchRtDOptId" resultMap="dscrResultMap" parameterType="hashmap">
+		select opt_id,<!-- mat_no, -->sum(qty) qty
+		from TB_INV_RT_D 
+		<if test="optId!=null and optId!=''">
+			where opt_id in
+			<foreach collection="optId" item="item" open="(" separator="," close=")"> 
+	            #{item} 
+	        </foreach> 
+        </if>
+        group by opt_id<!-- ,mat_no -->
+		order by opt_id<!-- ,mat_no -->
+	</select>	
+	<select id="selectRtntrItemByOptId" resultMap="meterialRtnMap" parameterType="hashmap">
+	
+			select detail.MAT_NO as matNo,
+					mr.MAT_NAME as matName,
+					srl.VEN_SN  as venSn,
+					srl.TAG_NO as tagNo ,
+					detail.QTY_RTN as qty ,
+					detail.MAT_STATUS as matStatus,
+					detail.RTN_REASON as trnReason 
+			from
+					(
+					select  a.OPT_TYPE,a.OPT_ID,OS_ID,MAT_NO,b.MAT_STATUS,b.RTN_REASON,ISNULL(SRL_NO,0) as SRL_NO,sum(b.QTY) as QTY_RTN from
+					TB_INV_MATERIAL_OPT a
+					left join TB_INV_RT_D b on a.OPT_ID=b.OPT_ID 
+					group by a.OPT_TYPE,a.OPT_ID,OS_ID,MAT_NO,b.MAT_STATUS,b.RTN_REASON,SRL_NO
+					) detail
+					left join TB_INV_MATERIAL mr on detail.MAT_NO=mr.MAT_NO
+					left join TB_INV_SRL srl on detail.SRL_NO=srl.SRL_NO
+					
+					where OPT_ID =#{optId}
+	</select>
+	<select id="searchRtDSumQty" resultMap="dscrResultMap" parameterType="hashmap">
+		select sum(a.qty) rtQty,a.opt_id,a.dtl_seq
+		from TB_INV_RT_D a
+		where a.opt_id=#{optId}
+		and a.mat_no=#{matNo}
+		group by a.opt_id,a.dtl_seq
+	</select>
+</mapper>

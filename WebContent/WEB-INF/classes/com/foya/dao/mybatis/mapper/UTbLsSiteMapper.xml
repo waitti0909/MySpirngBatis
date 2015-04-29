@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbLsSiteMapper">
+
+	<select id="selectTbLsSitePay013" resultType="com.foya.noms.dto.pay.TbLsSiteDTO" parameterType="hashmap">
+		SELECT G.SITE_ID,
+		       (SELECT LOC_TYPE FROM TB_SITE_LOCATION WHERE LOCATION_ID = #{locationId}) LOC_TYPE,
+			   E.ALOC_ITEM,
+		       CASE E.ALOC_ITEM
+		          WHEN 'R' THEN
+		           '租金'
+		          WHEN 'E' THEN
+		           '電費'
+		          ELSE
+		           ''
+		       END ALOC_ITEM_DSCR,
+		       E.EXCH_SITE_ID,
+		       F.ALOC_RATIO
+		  FROM TB_LS_SITE G
+		  LEFT JOIN TB_LS_RES_EXCH_ALOC E
+		  ON E.LS_NO = G.LS_NO AND E.LOCATION_ID = G.LOCATION_ID AND E.SITE_ID = G.SITE_ID
+		  LEFT JOIN TB_LS_ALOC_DTL F
+		  ON E.ALOC_ID = F.ALOC_ID
+		 WHERE 
+		   
+		  <if test="contractNo!=null and contractNo!=''">
+				G.LS_NO = #{contractNo}
+		   </if>
+		   <if test="locationId!=null and locationId!=''">
+		       AND G.LOCATION_ID = #{locationId}
+		   </if>
+	</select>
+	<!-- <select id="selectTbLsSitePay013" resultType="com.foya.noms.dto.pay.TbLsSiteDTO" parameterType="hashmap">
+		SELECT G.SITE_ID,
+		       (SELECT LOC_TYPE FROM TB_SITE_LOCATION WHERE LOCATION_ID = #{locationId}) LOC_TYPE,
+			   E.ALOC_ITEM,
+		       CASE E.ALOC_ITEM
+		          WHEN 'R' THEN
+		           '租金'
+		          WHEN 'E' THEN
+		           '電費'
+		          ELSE
+		           ''
+		       END ALOC_ITEM_DSCR,
+		       E.EXCH_SITE_ID,
+		       F.ALOC_RATIO
+		  FROM TB_LS_RES_EXCH_ALOC E, TB_LS_ALOC_DTL F, TB_LS_SITE G
+		 WHERE E.LS_NO = G.LS_NO
+		   AND E.LOCATION_ID = G.LOCATION_ID
+		   AND E.SITE_ID = G.SITE_ID
+		   AND E.ALOC_ID = F.ALOC_ID
+		  <if test="contractNo!=null and contractNo!=''">
+				AND G.LS_NO = #{contractNo}
+		   </if>
+		   <if test="locationId!=null and locationId!=''">
+		       AND G.LOCATION_ID = #{locationId}
+		   </if>
+	</select>-->
+	
+	
+	<select id="getLsSiteByLsNoLocId" resultType="com.foya.noms.dto.pay.TbLsSiteDTO" parameterType="String">
+	select
+		b.LS_NO as LS_NO,
+		b.LS_VER as LS_VER,
+		b.LOCATION_ID as LOCATION_ID,
+		b.SITE_ID as SITE_ID,
+		b.BTS_SITE_ID as BTS_SITE_ID,
+		b.PAY_BEGIN_DATE as PAY_BEGIN_DATE,
+		b.LS_E_DATE as LS_E_DATE,
+		b.EXPN_TYPE as EXPN_TYPE,
+		b.EFF_DATE as EFF_DATE,
+		b.END_DATE as END_DATE,
+		b.ALOC_ID as ALOC_ID,
+		b.CR_USER as CR_USER,
+		b.CR_TIME as CR_TIME,
+		b.MD_USER as MD_USER,
+		b.MD_TIME as MD_TIME,
+		b.SIGN_DATE as SIGN_DATE,
+		c.ALOC_RATIO as ALOC_RATIO
+		from
+		TB_LS_SITE as b
+		left join
+		TB_LS_ALOC_DTL c 
+		on b.ALOC_ID = c.ALOC_ID
+		where
+		b.LS_NO = #{lsNo}
+		<choose>
+		    <when test="lsVer != null and lsVer != ''">
+		      and b.ls_ver =#{lsVer} 
+		    </when>
+		    <otherwise>
+		   	 and b.ls_ver = (Select max(CONVERT(INT, LS_VER)) from TB_LS_SITE where ls_no = #{lsNo} and LOCATION_ID = #{locId}) 
+		    </otherwise>
+		</choose>
+		<if test="locId!=null and locId!=''">
+			and b.LOCATION_ID = #{locId}
+		</if>
+		<if test="itemType!=null and itemType!=''">
+		    and b.EXPN_TYPE = #{itemType}
+		</if>
+		
+	</select>
+	<select id="getLsSiteAddedByLsNoLocId" resultType="com.foya.noms.dto.pay.TbLsSiteDTO" parameterType="String">
+	select
+		b.LS_NO as LS_NO,
+		b.LS_VER as LS_VER,
+		b.LOCATION_ID as LOCATION_ID,
+		b.SITE_ID as SITE_ID,
+		b.BTS_SITE_ID as BTS_SITE_ID,
+		b.PAY_BEGIN_DATE as PAY_BEGIN_DATE,
+		b.LS_E_DATE as LS_E_DATE,
+		b.EXPN_TYPE as EXPN_TYPE,
+		b.EFF_DATE as EFF_DATE,
+		b.END_DATE as END_DATE,
+		b.ALOC_ID as ALOC_ID,
+		b.CR_USER as CR_USER,
+		b.CR_TIME as CR_TIME,
+		b.MD_USER as MD_USER,
+		b.MD_TIME as MD_TIME,
+		b.SIGN_DATE as SIGN_DATE,
+		c.ALOC_RATIO as ALOC_RATIO
+		from
+		TB_LS_SITE_ADDED as b
+		left join
+		TB_LS_ALOC_DTL c 
+		on b.ALOC_ID = c.ALOC_ID
+		where
+		b.app_seq = #{appSeq}
+		
+		<if test="locId!=null and locId!=''">
+			and b.LOCATION_ID = #{locId}
+		</if>
+		<if test="itemType!=null and itemType!=''">
+		    and b.EXPN_TYPE = #{itemType}
+		</if>
+		
+	</select>
+	<select id="getLsSiteByLocId" resultType="com.foya.noms.dto.pay.TbLsSiteDTO" parameterType="hashmap">
+	SELECT lsSite.SITE_ID,lsSiteE.LS_NO,lsSiteE.ls_VER,lsSiteE.location_ID,alcDtlE.ALOC_RATIO as alcRatioE,alcDtlR.ALOC_RATIO as alcRatioR
+	FROM 
+	(SELECT DISTINCT TB_LS_SITE.SITE_ID FROM TB_LS_SITE WHERE TB_LS_SITE.LS_NO=#{lsNo} 
+	 AND TB_LS_SITE.LS_VER=(SELECT MAX(CONVERT(INT, LS_VER)) FROM TB_LS_SITE WHERE LS_NO=#{lsNo} and LOCATION_ID=#{locId})
+ 	AND TB_LS_SITE.LOCATION_ID=#{locId}
+	)  as lsSite
+	LEFT JOIN TB_LS_SITE lsSiteE
+	on lsSite.SITE_ID=lsSiteE.SITE_ID and lsSiteE.EXPN_TYPE='E' AND lsSiteE.LS_NO=#{lsNo} 
+	AND lsSiteE.LS_VER=(SELECT MAX(CONVERT(INT, LS_VER)) FROM TB_LS_SITE WHERE LS_NO=#{lsNo} and LOCATION_ID=#{locId})
+ 	AND lsSiteE.LOCATION_ID=#{locId}
+	LEFT JOIN TB_LS_SITE lsSiteR
+	on lsSite.SITE_ID=lsSiteR.SITE_ID and lsSiteR.EXPN_TYPE='R' AND lsSiteR.LS_NO=#{lsNo} 
+	AND lsSiteR.LS_VER=(SELECT MAX(CONVERT(INT, LS_VER)) FROM TB_LS_SITE WHERE LS_NO=#{lsNo} and LOCATION_ID=#{locId})
+	AND lsSiteR.LOCATION_ID=#{locId}
+	LEFT JOIN TB_LS_ALOC_DTL alcDtlE on lsSiteE.ALOC_ID=alcDtlE.ALOC_ID
+	LEFT JOIN TB_LS_ALOC_DTL alcDtlR on lsSiteR.ALOC_ID=alcDtlR.ALOC_ID
+			
+	</select>
+	<select id="searchLsSiteByLsNoLocIdVer" resultType="com.foya.dao.mybatis.model.TbLsSite" parameterType="String">
+	select * from TB_LS_SITE
+	where LS_NO = #{lsNo}
+	and LS_VER = (Select max(CONVERT(INT, LS_VER)) from TB_LS_SITE where LS_NO = #{lsNo} and LOCATION_ID = #{locId}) 
+	and LOCATION_ID = #{locId}
+	</select>
+	
+	<select id="getMaxLsVer" resultType="com.foya.dao.mybatis.model.TbLsSite" parameterType="String">
+	
+	SELECT
+		MAX (CONVERT(INT, LS_VER)) AS LS_VER
+	FROM
+		TB_LS_SITE
+	WHERE
+		LS_NO = #{ lsNo }
+	</select>
+
+</mapper>

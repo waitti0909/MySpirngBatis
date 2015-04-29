@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbInvMrDMapper">
+	<resultMap id="sumQtyMap" type="com.foya.noms.dto.inv.TbInvMrDDTO">
+		<result column="txnQty" jdbcType="DECIMAL" property="txnQty" />
+		<result column="matName" jdbcType="VARCHAR" property="matName" />
+		<result column="txnMatNo" jdbcType="VARCHAR" property="txnMatNo" />
+		<result column="txnMatName" jdbcType="VARCHAR" property="txnMatName" />
+		<result column="bookingQty" jdbcType="DECIMAL" property="bookingQty" />
+		<result column="msQty" jdbcType="DECIMAL" property="msQty" />
+	</resultMap>
+	
+  <resultMap id="MtDetailResultMap" type="com.foya.noms.dto.st.SiteMtDetailImportDTO" >
+    <id column="itemNo" 		property="itemNo" jdbcType="VARCHAR" />
+    <result column="itemCatMain" 	property="itemCatMain" jdbcType="VARCHAR" />
+    <result column="itemCatSub" property="itemCatSub" jdbcType="VARCHAR" />
+    <result column="itemDetail" property="itemDetail" jdbcType="VARCHAR" />
+    <result column="unit" property="unit" jdbcType="VARCHAR" />
+    <result column="ctrlType" property="ctrlType" jdbcType="VARCHAR" />
+    <result column="qty" property="qty" jdbcType="INTEGER" />
+    <result column="actQty" property="actQty" jdbcType="INTEGER" />
+    <result column="vsn" property="vsn" jdbcType="VARCHAR" />
+    <result column="tag" property="tag" jdbcType="VARCHAR" />
+    <result column="totalQty"  property="totalQty" jdbcType="INTEGER"/>
+  </resultMap>
+
+	<!-- <select id="searchMrDWithSumQty" resultMap="sumQtyMap" parameterType="hashmap">
+		select a.mat_no,a.qty,sum(c.qty) txnQty,(select mat_name from tb_inv_material where mat_no=a.mat_no) matName
+		from TB_INV_MR_D a
+		left join TB_INV_TXN c
+		on a.opt_id=#{optId}
+		and a.mat_no=c.mat_no and a.opt_id=c.ref_act_no and c.txn_type='1' and c.dtl_seq=a.dtl_seq
+		GROUP BY a.mat_no,a.QTY
+	</select> -->
+	
+	<select id="searchMrDWithSumQty" resultMap="sumQtyMap" parameterType="hashmap">
+		select a.dtl_seq,a.mat_no,a.qty,(select mat_name from tb_inv_material where mat_no=a.mat_no) matName
+		from TB_INV_MR_D a
+		where a.opt_id=#{optId}
+	</select> 
+	
+	<select id="searchMrDSumQty" resultMap="sumQtyMap" parameterType="hashmap">
+		select sum(a.qty) qty,a.opt_id,a.dtl_seq
+		from TB_INV_MR_D a
+		where a.opt_id=#{optId}
+		and a.mat_no=#{matNo}
+		group by a.opt_id,a.dtl_seq
+	</select>
+	
+	<select id="searchMrD" resultMap="sumQtyMap" parameterType="hashmap">
+		select distinct a.opt_id,a.mat_no,a.qty,
+		(select mat_name from tb_inv_material where mat_no=a.mat_no) matName,(select sum(std_qty) from tb_inv_inv where mat_no=a.mat_no and wh_id = #{whId} group by mat_no,wh_id) stdQty,
+		(select booking_qty from tb_inv_inv where mat_no=a.mat_no and wh_id = #{whId}) bookingQty,a.dtl_seq,
+		(select ctrl_type from tb_inv_material where mat_no=a.mat_no) ctrlType,(select is_asset from tb_inv_material where mat_no=a.mat_no) isAsset
+		from TB_INV_MR_D a
+		<if test="optId!=null and optId!=''">
+			where a.opt_id in
+			<foreach collection="optId" item="item" open="(" separator="," close=")"> 
+	            #{item} 
+	        </foreach> 
+        </if>
+	</select>
+	<select id="searchMrDOptId" resultMap="sumQtyMap" parameterType="hashmap">
+		select opt_id<!-- ,mat_no -->,sum(qty) qty
+		from TB_INV_MR_D 
+		<if test="optId!=null and optId!=''">
+			where opt_id in
+			<foreach collection="optId" item="item" open="(" separator="," close=")"> 
+	            #{item} 
+	        </foreach> 
+        </if>
+        group by opt_id<!-- ,mat_no -->
+		order by opt_id<!-- ,mat_no -->
+	</select>
+	
+	<select id="selectItemMainQuery" resultMap="sumQtyMap">
+	SELECT mrD.MAT_NO as txnMatNo,material.MAT_NAME as matName,mrD.QTY as txnQty,mrAct.QTY as msQty
+	FROM TB_INV_MR_D mrD,
+	TB_INV_MR_ACT mrAct,
+	TB_INV_MATERIAL material
+	where 
+	mrD.DTL_SEQ=mrAct.DTL_SEQ
+	and mrD.MAT_NO=material.MAT_NO
+	and mrD.OPT_ID=#{optId}
+    </select>
+    <select id="selectItemQuery" resultMap="MtDetailResultMap">
+	
+    SELECT mrD.MAT_NO as itemNo,
+ 	category.CATG1_NAME as itemCatMain,
+ 	material.MAT_NAME as itemDetail,
+	material.UNIT as unit,
+	material.CTRL_TYPE as ctrlType,
+  	mrD.QTY as qty,
+  	sum(mrD.QTY) as qtySum,
+  	mrAct.MAT_NO as actNo,
+  	matAct.MAT_NAME as actName,
+  	sum(mrAct.QTY) as actQty,
+  	srl.VEN_SN as vsn,
+  	srl.TAG_NO as tag
+	FROM TB_INV_MR_D mrD
+  	left outer join TB_INV_MR_ACT mrAct
+  	on 	mrD.DTL_SEQ=mrAct.DTL_SEQ
+  	left outer join TB_INV_MATERIAL material
+  	on 	mrD.MAT_NO=material.MAT_NO	
+  	left outer join TB_INV_MATERIAL matAct
+  	on 	mrAct.MAT_NO=matAct.MAT_NO	
+  	left outer join TB_INV_CATEGORY category
+ 	on material.CATG1_CODE=category.CATG1_CODE and material.CATG2_CODE=category.CATG2_CODE and material.CATG3_CODE=category.CATG3_CODE
+ 	left outer join TB_INV_SRL srl
+ 	on mrAct.SRL_NO=srl.SRL_NO
+ 	where mrD.OPT_ID=#{optId}
+ 	group by mrD.MAT_NO,category.CATG1_NAME,material.MAT_NAME,material.UNIT,material.CTRL_TYPE,mrD.QTY,mrAct.MAT_NO,matAct.MAT_NAME,srl.VEN_SN,srl.TAG_NO
+ 	
+    </select>
+    <select id="searchMeterialApplyExcel" resultMap="MtDetailResultMap" parameterType="map">
+	select inv.MAT_NO as itemNo, material.MAT_NAME as matName,
+	category.CATG1_NAME as itemCatMain,
+	category.CATG2_NAME as itemCatSub,
+	category.CATG3_NAME as itemDetail,
+	material.UNIT as unit,
+	material.CTRL_TYPE as ctrlType,
+	ISNULL(inv.std_qty,0) as totalQty,
+	ISNULL(bom.QTY,0) as qty	
+	FROM TB_INV_INV inv
+	left outer join TB_INV_MATERIAL material
+	on inv.MAT_NO = material.MAT_NO
+	left outer join TB_INV_CATEGORY category
+	on material.CATG1_CODE=category.CATG1_CODE and material.CATG2_CODE=category.CATG2_CODE and material.CATG3_CODE=category.CATG3_CODE
+	left outer join TB_INV_BOM bom
+	on inv.MAT_NO = bom.MAT_NO and bom.EQP_MODEL_ID=#{eqyModel}
+	where inv.WH_ID = #{whId}
+	ORDER BY inv.MAT_NO,material.CTRL_TYPE
+  </select>
+</mapper>

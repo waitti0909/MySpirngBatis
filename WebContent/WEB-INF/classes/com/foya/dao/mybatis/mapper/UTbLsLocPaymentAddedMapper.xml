@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbLsLocPaymentAddedMapper">
+
+	<select id="searchTbLsLocPaymentAdded" resultType="com.foya.noms.dto.ls.TbLsLocPaymentDTO"
+		parameterType="String">
+		Select
+		a.LS_NO as LS_NO,
+		a.LS_VER as LS_VER,
+		a.LOCATION_ID as LOCATION_ID,
+		a.PAYMENT_ITEM as PAYMENT_ITEM,
+		a.LESSOR_ID as LESSOR_ID,
+		a.RECIPIENT_ID as RECIPIENT_ID,
+		a.LESSOR_NAME as LESSOR_NAME,
+		a.RECIPIENT_NAME as RECIPIENT_NAME,
+		a.LESSOR_RELATION as LESSOR_RELATION,
+		a.PAYMENT_MODE as PAYMENT_MODE,
+		a.ACCOUNT_NO as ACCOUNT_NO,
+		a.BUSINESS_TAX as BUSINESS_TAX,
+		a.PAY_ALOC as PAY_ALOC,
+		a.PAY_AMT as PAY_AMT,
+		a.EFF_DATE as EFF_DATE,
+		a.END_DATE as END_DATE,
+		a.FIRST_INCR as FIRST_INCR,
+		a.BEFOR_INCR as BEFOR_INCR,
+		a.INCR_AMOUNT as INCR_AMOUNT,
+		a.NEXT_INCR as NEXT_INCR,
+		a.RECIPIENT_ADDR as RECIPIENT_ADDR,
+		a.RECP_ADDR_STD as RECP_ADDR_STD,
+		a.CR_USER as CR_USER,
+		a.CR_TIME as CR_TIME,
+		a.MD_USER as MD_USER,
+		a.MD_TIME as MD_TIME,
+		a.UNIT_CODE as UNIT_CODE,
+		a.SUB_UNIT_CODE as SUB_UNIT_CODE, 
+		b.NAME as  paymentModeName,
+		c.UNIT_NAME as UNIT_NAME,
+		d.SUB_NAME as NICK_NAME
+		from TB_LS_LOC_PAYMENT_ADDED as a
+		left join
+		TB_SYS_LOOKUP as b
+		on
+		a.PAYMENT_MODE = b.CODE and b.TYPE = 'LS_PAYMENT_MODE'
+		left join
+		TB_LS_COLLECT_UNIT as c
+		on
+		a.UNIT_CODE = c.UNIT_CODE 
+		left join
+		TB_LS_COLLECT_UNIT_SUB as d
+		on
+		a.SUB_UNIT_CODE = d.SUB_UNIT_CODE and a.UNIT_CODE = d.UNIT_CODE
+		where 
+		a.LS_NO = #{lsNo}
+		and a.LOCATION_ID = #{locId}
+		and a.APP_SEQ = #{appSql}
+		and a.ADDED_STATE = #{addedState}
+	</select>
+
+	<select id="getLsLocPaymentAddedByLsNoVerLocIdLessorId" resultType="com.foya.noms.dto.ls.TbLsLocPaymentDTO" parameterType="hashmap">
+		select
+		a.LS_NO as LS_NO,
+		a.LS_VER as LS_VER,
+		a.LOCATION_ID as LOCATION_ID,
+		a.PAYMENT_ITEM as PAYMENT_ITEM,
+		a.LESSOR_ID as LESSOR_ID,
+		a.RECIPIENT_ID as RECIPIENT_ID,
+		a.LESSOR_NAME as LESSOR_NAME,
+		a.RECIPIENT_NAME as RECIPIENT_NAME,
+		a.LESSOR_RELATION as LESSOR_RELATION,
+		a.PAYMENT_MODE as PAYMENT_MODE,
+		a.UNIT_CODE as UNIT_CODE,
+		a.SUB_UNIT_CODE as SUB_UNIT_CODE,
+		a.ACCOUNT_NO as ACCOUNT_NO,
+		a.BUSINESS_TAX as BUSINESS_TAX,
+		a.PAY_ALOC as PAY_ALOC,
+		a.PAY_AMT as PAY_AMT,
+		a.EFF_DATE as EFF_DATE,
+		a.END_DATE as END_DATE,
+		a.FIRST_INCR as FIRST_INCR,
+		a.BEFOR_INCR as BEFOR_INCR,
+		a.INCR_AMOUNT as INCR_AMOUNT,
+		a.NEXT_INCR as NEXT_INCR,
+		a.RECIPIENT_ADDR as RECIPIENT_ADDR,
+		a.RECP_ADDR_STD as RECP_ADDR_STD,
+		a.CR_USER as CR_USER,
+		a.CR_TIME as CR_TIME,
+		a.MD_USER as MD_USER,
+		a.MD_TIME as MD_TIME,
+		b.PAYMENT_MODE as PAYMENT_MODE
+		from TB_LS_LOC_PAYMENT_ADDED as a
+		left join
+		TB_LS_LESSOR as b
+		on
+		a.LS_NO = b.LS_NO and a.LS_VER = b.LS_VER and  a.lessor_id=b.lessor_id
+		where
+		a.LS_NO =#{lsNo}
+						
+		<if test="orglessorId!=null and  orglessorId!=''">
+		    and a.org_lessor_id= #{orglessorId}
+		</if>
+		
+		<if test="addedState!=null and  addedState!=''">
+		    and a.ADDED_STATE= #{addedState}
+		</if>
+		
+	    <if test="appSeq!=null and appSeq!=''">
+			and a.APP_SEQ = #{appSeq}
+		</if>
+		
+		<if test="itemType!=null and itemType!=''">
+		
+		    and a.PAYMENT_ITEM in 
+		 <foreach close=")" collection="itemType" item="item" open="(" separator=",">
+                    #{item}
+          </foreach>
+		</if>
+	</select>
+
+</mapper>

@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbInvTrDtlMapper" >
+	
+<!-- 	<select id="getInvTrApplyDetailDto" resultMap="trDetaileDtoMap2"> -->
+<!-- 		Select  -->
+<!-- 			<include refid="invTrDetailColumns"/>, -->
+<!-- 			material.MAT_NAME, -->
+<!-- 			material.CTRL_TYPE, -->
+<!-- 			(Select SUM(trAct.tr_qty) From TB_INV_TR_ACT trAct Where trAct.TR_NO = trDtl.TR_NO And trAct.MAT_NO = trDtl.MAT_NO And trAct.TR_DTL_NO = trDtl.TR_DTL_NO) as qty, -->
+<!-- 			invInv.BOOKING_QTY -->
+<!-- 		From TB_INV_TR_DTL trDtl -->
+<!-- 		Join  -->
+<!-- 			TB_INV_MATERIAL material -->
+<!-- 		On	trDtl.MAT_NO = material.MAT_NO -->
+<!-- 		LEFT Join TB_INV_INV invInv -->
+<!-- 		On	invInv.MAT_NO = trDtl.MAT_NO -->
+<!-- 		And	invInv.WH_ID = #{whId} -->
+<!-- 		Where  -->
+<!-- 			trDtl.TR_NO=#{trNo} -->
+<!-- 	</select> -->
+	
+	<select id="getInvTrExportDetailDto" resultMap="trDetaileDtoMap2">
+		Select 
+			<include refid="invTrDetailColumns"/>,
+			(Select MAT_NAME From TB_INV_MATERIAL material Where material.MAT_NO = trDtl.MAT_NO ) as matName,
+			(Select SUM(trAct.tr_qty) From TB_INV_TR_ACT trAct Where trAct.TR_NO = trDtl.TR_NO And trAct.MAT_NO = trDtl.MAT_NO And trAct.TR_DTL_NO = trDtl.TR_DTL_NO And trAct.IF_TR_IN='0') as trQty,
+			invInv.BOOKING_QTY as bookingQty,
+			material.CTRL_TYPE
+		From TB_INV_TR_DTL trDtl
+		Left Join TB_INV_INV invInv
+		On
+			trDtl.MAT_NO = invInv.MAT_NO
+		And
+			invInv.WH_ID = #{whId}
+		Join TB_INV_MATERIAL material
+		On
+			trDtl.MAT_NO = material.MAT_NO
+		where 
+			trDtl.TR_NO = #{trNo}
+	</select>
+	
+	<select id="getInvTrDetailDto" resultMap="trDetaileDtoMap">
+		SELECT
+			<include refid="invTrDetailColumns"/>
+<!-- 			, -->
+<!-- 			<include refid="invTrColumns" /> -->
+<!-- 			, -->
+<!-- 			<include refid="materialColumns" /> -->
+		FROM TB_INV_TR_DTL
+<!-- 		LEFT JOIN TB_INV_TR -->
+<!-- 		ON -->
+<!-- 		TB_INV_TR_DTL.tr_no = TB_INV_TR.tr_no -->
+<!-- 		LEFT JOIN TB_INV_MATERIAL -->
+<!-- 		ON -->
+<!-- 		TB_INV_TR_DTL.mat_no = TB_INV_MATERIAL.mat_no -->
+		WHERE
+			TB_INV_TR_DTL.tr_no = #{trNo}
+		<if test="matNo!=null and matNo!=''">
+			AND TB_INV_TR_DTL.mat_no = #{matNo}
+		</if>
+		<if test="matStatus!=null and matStatus!=''">
+			AND TB_INV_TR_DTL.mat_status = #{matStatus}
+		</if>
+			
+	</select>
+	
+	<resultMap id="trDetaileDtoMap" type="com.foya.noms.dto.inv.TbInvTrDtlCompleteDTO">
+		<id column="tr_no" property="tr_no" />
+	    <result column="mat_no" property="mat_no" />
+	    <result column="mat_status" property="mat_status" />
+	    <result column="app_qty" property="app_qty" />
+	    <result column="cr_user" property="cr_user" />
+	    <result column="cr_time" property="cr_time" />
+	    <result column="md_user" property="md_user" />
+	    <result column="md_time" property="md_time" />
+	    <result column="qty" property="actExportNumber" />
+	    <result column="MAT_NAME" property="matName" />
+	    <result column="BOOKING_QTY" property="bookingNumber" />
+	    <result column="CTRL_TYPE" property="ctrlType" />
+<!-- 		<association property="invTr" column="tr_no" -->
+<!-- 			javaType="com.foya.dao.mybatis.model.TbInvTr" resultMap="invTrMap" /> -->
+<!-- 	    <association property="material" column="mat_no" -->
+<!-- 			javaType="com.foya.dao.mybatis.model.TbInvMaterial" resultMap="materialMap" /> -->
+	</resultMap>
+	
+	<resultMap id="trDetaileDtoMap2" type="com.foya.noms.dto.inv.TbInvTrDtlCompleteDTO">
+		<id column="tr_dtl_no" property="tr_dtl_no" />
+		<result column="tr_no" property="tr_no" />
+		<result column="mat_no" property="mat_no" />
+		<result column="mat_status" property="mat_status" />
+		<result column="app_qty" property="app_qty" />
+		<result column="cr_user" property="cr_user" />
+		<result column="cr_time" property="cr_time" />
+		<result column="md_user" property="md_user" />
+		<result column="md_time" property="md_time" />
+		
+		<result column="matName" property="matName" />
+		<result column="trQty" property="trQty" />
+		<result column="bookingQty" property="bookingQty" />
+		<result column="CTRL_TYPE" property="ctrlType" />
+	</resultMap>
+	
+	<sql id="invTrDetailColumns">
+		trDtl.tr_dtl_no,
+		trDtl.tr_no,
+		trDtl.mat_no,
+		trDtl.mat_status,
+		trDtl.app_qty,
+		trDtl.cr_user,
+		trDtl.cr_time,
+		trDtl.md_user,
+		trDtl.md_time
+	</sql>
+	
+<!-- 	<sql id="invTrColumns"> -->
+<!-- 		TB_INV_TR.tr_no AS tr_no2, -->
+<!-- 		TB_INV_TR.tr_out_wh_id, -->
+<!-- 		TB_INV_TR.tr_in_wh_id, -->
+<!-- 		TB_INV_TR.need_dept_id, -->
+<!-- 		TB_INV_TR.need_date, -->
+<!-- 		TB_INV_TR.app_dept_id, -->
+<!-- 		TB_INV_TR.app_user, -->
+<!-- 		TB_INV_TR.app_date, -->
+<!-- 		TB_INV_TR.status, -->
+<!-- 		TB_INV_TR.if_manual_close, -->
+<!-- 		TB_INV_TR.memo, -->
+<!-- 		TB_INV_TR.cr_user AS cr_user2, -->
+<!-- 		TB_INV_TR.cr_time AS cr_time2, -->
+<!-- 		TB_INV_TR.md_user AS md_user2, -->
+<!-- 		TB_INV_TR.md_time AS md_time2 -->
+<!-- 	</sql> -->
+	
+<!-- 	<sql id="materialColumns"> -->
+<!-- 		TB_INV_MATERIAL.mat_no AS mat_no2, -->
+<!-- 		TB_INV_MATERIAL.mat_name, -->
+<!-- 		TB_INV_MATERIAL.catg1_code, -->
+<!-- 		TB_INV_MATERIAL.catg2_code, -->
+<!-- 		TB_INV_MATERIAL.catg3_code, -->
+<!-- 		TB_INV_MATERIAL.unit, -->
+<!-- 		TB_INV_MATERIAL.ctrl_type, -->
+<!-- 		TB_INV_MATERIAL.is_asset, -->
+<!-- 		TB_INV_MATERIAL.asset_type, -->
+<!-- 		TB_INV_MATERIAL.inventory_item_id, -->
+<!-- 		TB_INV_MATERIAL.item_type, -->
+<!-- 		TB_INV_MATERIAL.cr_user AS cr_user3, -->
+<!-- 		TB_INV_MATERIAL.cr_time AS cr_time3, -->
+<!-- 		TB_INV_MATERIAL.md_user AS md_user3, -->
+<!-- 		TB_INV_MATERIAL.md_time AS md_time3 -->
+<!-- 	</sql> -->
+	
+	<!--調撥申請單主檔 -->
+<!-- 	<resultMap id="invTrMap" type="com.foya.dao.mybatis.model.TbInvTr"> -->
+<!-- 	    <id column="tr_no2" property="tr_no" /> -->
+<!-- 	    <result column="tr_out_wh_id" property="tr_out_wh_id" /> -->
+<!-- 	    <result column="tr_in_wh_id" property="tr_in_wh_id" /> -->
+<!-- 	    <result column="need_dept_id" property="need_dept_id" /> -->
+<!-- 	    <result column="need_date" property="need_date" /> -->
+<!-- 	    <result column="app_dept_id" property="app_dept_id" /> -->
+<!-- 	    <result column="app_user" property="app_user" /> -->
+<!-- 	    <result column="app_date" property="app_date" /> -->
+<!-- 	    <result column="status" property="status" /> -->
+<!-- 	    <result column="if_manual_close" property="if_manual_close" /> -->
+<!-- 	    <result column="memo" property="memo" /> -->
+<!-- 	    <result column="cr_user2" property="cr_user" /> -->
+<!-- 	    <result column="cr_time2" property="cr_time" /> -->
+<!-- 	    <result column="md_user2" property="md_user" /> -->
+<!-- 	    <result column="md_time2" property="md_time" /> -->
+<!--   	</resultMap> -->
+   
+	<!--料號主檔 -->
+<!-- 	<resultMap id="materialMap" type="com.foya.dao.mybatis.model.TbInvMaterial"> -->
+<!-- 	    <id column="mat_no2" property="mat_no" /> -->
+<!-- 	    <result column="mat_name" property="mat_name" /> -->
+<!-- 	    <result column="catg1_code" property="catg1_code" /> -->
+<!-- 	    <result column="catg2_code" property="catg2_code" /> -->
+<!-- 	    <result column="catg3_code" property="catg3_code" /> -->
+<!-- 	    <result column="unit" property="unit" /> -->
+<!-- 	    <result column="ctrl_type" property="ctrl_type" /> -->
+<!-- 	    <result column="is_asset" property="is_asset" /> -->
+<!-- 	    <result column="asset_type" property="asset_type" /> -->
+<!-- 	    <result column="inventory_item_id" property="inventory_item_id" /> -->
+<!-- 	    <result column="item_type" property="item_type" /> -->
+<!-- 	    <result column="cr_user3" property="cr_user" /> -->
+<!-- 	    <result column="cr_time3" property="cr_time" /> -->
+<!-- 	    <result column="md_user3" property="md_user" /> -->
+<!-- 	    <result column="md_time3" property="md_time" /> -->
+<!-- 	</resultMap> -->
+	
+	<resultMap id="dtlResultMap" type="com.foya.noms.dto.inv.TbInvTrDtlDTO">
+	    <result column="matName" property="matName" jdbcType="VARCHAR" />
+	    <result column="trInCnt" jdbcType="INTEGER" property="trInCnt" />
+	    <result column="trOutCnt" jdbcType="INTEGER" property="trOutCnt" />
+	    <result column="stockQty" jdbcType="INTEGER" property="stockQty" />
+	    <result column="bookingQty" jdbcType="INTEGER" property="bookingQty" />
+	    <result column="checkStatus" jdbcType="VARCHAR" property="checkStatus" />
+	    <result column="checkResult" jdbcType="VARCHAR" property="checkResult" />
+	    <result column="matStatusName" jdbcType="VARCHAR" property="matStatusName" />
+ 	</resultMap>
+  
+  	<!-- 含有刪除dtl seq 
+  		<select id="searchDtl" resultMap="dtlResultMap" parameterType="hashmap" >
+		select tr_no,mat_no,(select mat_name from TB_INV_MATERIAL where mat_no=a.mat_no) matName,
+		A.mat_status,sum(a.app_qty) app_qty,tr_dtl_no,(select name from TB_SYS_LOOKUP where type='MAT_STATUS' and code=a.mat_status) matStatusName,
+		(select sum(tr_qty) from TB_INV_TR_ACT where mat_no=a.mat_no and tr_no=a.tr_no and if_tr_in='0' group by tr_no ) trOutCnt,
+		(select sum(tr_qty) from TB_INV_TR_ACT where mat_no=a.mat_no and tr_no=a.tr_no and if_tr_in='1' and if_return_tr_out='0' group by tr_no ) trInCnt
+		from TB_INV_TR_DTL A
+		where tr_no = #{trNo,jdbcType=VARCHAR}
+		group by tr_dtl_no,tr_no,mat_no,A.mat_status
+	</select> -->
+	
+	<select id="searchDtl" resultMap="dtlResultMap" parameterType="hashmap" >
+		select tr_no,mat_no,(select mat_name from TB_INV_MATERIAL where mat_no=a.mat_no) matName,
+		A.mat_status,(select name from TB_SYS_LOOKUP where type='MAT_STATUS' and code=a.mat_status) matStatusName,
+		(select ctrl_type from tb_inv_material where mat_no=A.mat_no <!--and is_asset='1'-->) ctrlType
+		from TB_INV_TR_DTL A
+		where tr_no = #{trNo,jdbcType=VARCHAR}
+		group by tr_no,mat_no,mat_status
+	</select>
+	<select id="searchDtlAmt"  resultType="java.lang.Integer" parameterType="hashmap" >
+		select sum(a.app_qty) app_qty
+		from TB_INV_TR_DTL A
+		where tr_no = #{trNo,jdbcType=VARCHAR}
+		and mat_no = #{matNo,jdbcType=VARCHAR} 
+		and mat_status =  #{matStatus,jdbcType=VARCHAR}
+		group by tr_no,mat_no,mat_status
+	</select>
+	<select id="searchDtlSeq" resultMap="dtlResultMap" parameterType="hashmap" >
+		select tr_dtl_no
+		from TB_INV_TR_DTL A
+		where tr_no = #{trNo,jdbcType=VARCHAR}
+		and mat_no = #{matNo,jdbcType=VARCHAR} 
+		and mat_status =  #{matStatus,jdbcType=VARCHAR}
+	</select>
+	
+</mapper>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbComFileDtlMapper">
+  
+  <resultMap id="BaseResultMap" type="com.foya.noms.dto.common.FileDtlDTO">
+    <id column="FILE_DTL_SEQ_ID" jdbcType="DECIMAL" property="FILE_DTL_SEQ_ID" />
+    <result column="TYPE_PATH" jdbcType="VARCHAR" property="TYPE_PATH" />
+    <result column="DOC_NO" jdbcType="VARCHAR" property="DOC_NO" />
+    <result column="FILE_NAME" jdbcType="VARCHAR" property="FILE_NAME" />
+    <result column="CR_USER" jdbcType="VARCHAR" property="CR_USER" />
+    <result column="CR_TIME" jdbcType="TIMESTAMP" property="CR_TIME" />
+    <result column="FILE_TYPE" jdbcType="VARCHAR" property="FILE_TYPE" />
+    <result column="FILE_TYPE_NAME" jdbcType="VARCHAR" property="FILE_TYPE_NAME" />
+    <result column="CR_TIME_STR" jdbcType="VARCHAR" property="CR_TIME_STR" />
+    <result column="CR_USER_NAME" jdbcType="VARCHAR" property="CR_USER_NAME" />
+  </resultMap>
+  
+  <select id="findByMapCondition" parameterType="hashmap" resultMap="BaseResultMap">
+  	select cfd.*, lu.NAME as FILE_TYPE_NAME, CONVERT(char(19), cfd.CR_TIME, 120) as CR_TIME_STR, psn.CHN_NM as CR_USER_NAME
+  	from TB_COM_FILE_DTL cfd, TB_SYS_LOOKUP lu, TB_AUTH_PERSONNEL psn
+	where cfd.FILE_TYPE = lu.CODE
+	and cfd.CR_USER = psn.PSN_NO
+	and lu.type = 'FILETYPE'
+	and cfd.DOC_NO = #{fileDoc}
+	<if test="typePath != null">
+		and cfd.TYPE_PATH = #{typePath}
+	</if>
+	<if test="fileType != null">
+		and cfd.FILE_TYPE = #{fileType}
+	</if>
+  </select>
+  
+  <select id="findByDocNo" parameterType="list" resultMap="BaseResultMap">
+  	select cfd.*, lu.NAME as FILE_TYPE_NAME, CONVERT(char(19), cfd.CR_TIME, 120) as CR_TIME_STR, psn.CHN_NM as CR_USER_NAME
+  	from TB_COM_FILE_DTL cfd, TB_SYS_LOOKUP lu, TB_AUTH_PERSONNEL psn
+	where cfd.FILE_TYPE = lu.CODE
+	and cfd.CR_USER = psn.PSN_NO
+	and lu.type = 'FILETYPE'
+	<if test="list != null and list.size() > 0">
+  		and cfd.DOC_NO in 
+	  	<foreach collection="list" item="listItem" open="(" close=")" separator="," >
+	      #{listItem}
+	    </foreach>
+    </if>	
+  </select>
+  
+  <select id="findFullPathByFileId" resultType="string">
+  	<![CDATA[
+	  	select lu.VALUE1 + '/' + dtl.DOC_NO + '/' + lu2.VALUE1 + '/' + dtl.FILE_NAME 
+	  	from TB_COM_FILE_DTL dtl, TB_SYS_LOOKUP lu, TB_SYS_LOOKUP lu2
+		where dtl.TYPE_PATH = lu.code and lu.type = 'UPLOADFILE'
+		and dtl.FILE_TYPE = lu2.code and lu2.type = 'FILETYPE'
+    ]]>
+        <if test="_parameter!=null and _parameter!=''">  
+            and dtl.FILE_DTL_SEQ_ID = #{fileId}
+        </if>
+  </select>
+  
+</mapper>

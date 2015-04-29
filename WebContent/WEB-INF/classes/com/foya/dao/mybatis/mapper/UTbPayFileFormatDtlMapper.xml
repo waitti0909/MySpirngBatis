@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbPayFileFormatDtlMapper">
+	
+	<!--************************************************************************************************************-->
+	<!--************************************************************************************************************-->
+	<!--************************************************************************************************************-->
+	
+	<!--取得檔案格式 -->
+	<select id="getFileFormatDtlData" resultMap="payFileFormatDtlMap">
+		Select
+			<include refid="payFileFormatDtlColumns" />
+			,
+			<include refid="payFileFormatColumns" />
+		From
+			TB_PAY_FILE_FORMAT fileFormat
+		Join TB_PAY_FILE_FORMAT_DTL formatDtl 
+		On 
+			fileFormat.SEQ_NBR = formatDtl.MST_SEQ_NBR
+		Where
+			fileFormat.PROCESS_TYPE = 'LIN'
+		And 
+			fileFormat.RECORD_TYPE = 'B'
+		<if test="mstSeqNbr != null and mstSeqNbr != ''">
+		And 
+			fileFormat.VENDOR_TYPE = #{mstSeqNbr}
+		</if>
+		Order by formatDtl.col_order ASC
+	</select>
+	
+	<!--************************************************************************************************************-->
+	<!--************************************************************************************************************-->
+	
+	<sql id="payFileFormatDtlColumns">
+		formatDtl.MST_SEQ_NBR,
+		formatDtl.COL_NAME,
+		formatDtl.COL_DESC,
+		formatDtl.COL_ORDER,
+		formatDtl.COL_LENGTH,
+		formatDtl.FILL_UP_CHAR,
+		formatDtl.FIXED_VALUE,
+		formatDtl.CR_USER,
+		formatDtl.CR_TIME,
+		formatDtl.MD_USER,
+		formatDtl.MD_TIME,
+		formatDtl.IF_LEFT_PADDING,
+		formatDtl.ALLOW_NULL
+	</sql>
+	
+	<sql id="payFileFormatColumns">
+		fileFormat.SEQ_NBR as SEQ_NBR2,
+		fileFormat.PROCESS_TYPE as PROCESS_TYPE2,
+		fileFormat.VENDOR_TYPE as VENDOR_TYPE2,
+		fileFormat.RECORD_TYPE as RECORD_TYPE2,
+		fileFormat.DATA_LENGTH as DATA_LENGTH2,
+		fileFormat.SEPARATION_SIGN as SEPARATION_SIGN2,
+		fileFormat.START_LINE_NBR as START_LINE_NBR2,
+		fileFormat.CR_USER as CR_USER2,
+		fileFormat.CR_TIME as CR_TIME2,
+		fileFormat.MD_USER as MD_USER2,
+		fileFormat.MD_TIME as MD_TIME2,
+		fileFormat.VENDOR_NAME as VENDOR_NAME2
+	</sql>
+	
+	<resultMap id="payFileFormatDtlMap" type="com.foya.noms.dto.pay.TbPayFileFormatDtlDTO">
+		<association property="fileFormat" column="MST_SEQ_NBR" javaType="com.foya.dao.mybatis.model.TbPayFileFormat" resultMap="payFileFormatMap" />
+  	</resultMap>
+	
+	<resultMap id="payFileFormatMap" type="com.foya.dao.mybatis.model.TbPayFileFormat">
+		<result column="SEQ_NBR2" property="SEQ_NBR" />
+		<result column="PROCESS_TYPE2" property="PROCESS_TYPE" />
+		<result column="VENDOR_TYPE2" property="VENDOR_TYPE" />
+		<result column="RECORD_TYPE2" property="RECORD_TYPE" />
+		<result column="DATA_LENGTH2" property="DATA_LENGTH" />
+		<result column="SEPARATION_SIGN2" property="SEPARATION_SIGN" />
+		<result column="START_LINE_NBR2" property="START_LINE_NBR" />
+		<result column="CR_USER2" property="CR_USER" />
+		<result column="CR_TIME2" property="CR_TIME" />
+		<result column="MD_USER2" property="MD_USER" />
+		<result column="MD_TIME2" property="MD_TIME" />
+		<result column="VENDOR_NAME2" property="VENDOR_NAME" />
+  	</resultMap>
+  	
+	<!--************************************************************************************************************-->
+	<!--************************************************************************************************************-->
+	
+	<select id="getParsingRuleList" resultType="com.foya.dao.mybatis.model.TbPayFileFormatDtl" parameterType="hashmap">
+		SELECT B.COL_NAME,B.COL_ORDER, B.FILL_UP_CHAR, B.COL_LENGTH
+			FROM TB_PAY_FILE_FORMAT A, TB_PAY_FILE_FORMAT_DTL B
+		WHERE A.SEQ_NBR = B.MST_SEQ_NBR
+			AND A.PROCESS_TYPE = 'ELE'
+			AND A.RECORD_TYPE = 'B'
+  </select>
+</mapper>
