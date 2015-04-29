@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.2.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd">
+<!-- 
+雖然SpringSecurity框架提供的接口很多，真正要親自實現的不多三個而已 
+org.springframework.security.core.GrantedAuthority
+org.springframework.security.core.userdetails.UserDetails
+org.springframework.security.core.userdetails.UserDetailsService
+
+ -->
+	<!--==========================================================================
+	加密用KEY 此處為隨機值
+	============================================================================-->
+	<util:properties id="securityKeys">
+		<prop key="remember-me">182301IEKO1L73C181891TLTKABCNKA1956A7G9UPQXN</prop>
+		<prop key="anonymous">BF93JFJ091N00Q7HF</prop>
+	</util:properties>
+
+	<!--==========================================================================
+	使用標注攔截業務層方法
+	============================================================================-->
+	<security:global-method-security pre-post-annotations="enabled" />
+
+	<!--==========================================================================
+	SpringSecurity核心過濾器組
+	============================================================================-->
+	<bean id="springSecurityFilterChain" class="org.springframework.security.web.FilterChainProxy">
+		<security:filter-chain-map request-matcher="ant" >
+			<security:filter-chain pattern="/**" filters="
+			   channelProcessingFilter,
+	           concurrencyFilter,
+	           securityContextPersistenceFilter,
+	           logoutFilter,
+	           usernamePasswordProcessingFilter,
+	           anonymousProcessingFilter,
+	           exceptionTranslationFilter,
+	           filterSecurityInterceptor,
+	           menuFilter" />
+		</security:filter-chain-map>
+	</bean>	
+	
+	<bean id="menuFilter" class="com.foya.noms.web.filter.MenuFilter" />
+	
+<!-- 	<bean id="roleService" class="com.foya.noms.service.auth.RoleMastService"/> -->
+
+	<bean id="menuTreeService" class="com.foya.noms.security.service.MenuTreeService"></bean>
+	
+	<bean id="menuDao" class="com.foya.noms.dao.auth.MenuDao"></bean>
+	
+<!-- 	<bean id="roleDao" class="com.foya.noms.dao.auth.RoleMastDao"></bean> -->
+	
+	<!--==========================================================================
+	核心過濾器成員之一
+	常用來將某些HTTP協議的URL重定向到HTTPS協議
+	============================================================================-->	
+	<bean id="channelProcessingFilter" class="org.springframework.security.web.access.channel.ChannelProcessingFilter">
+		<property name="channelDecisionManager" ref="channelDecisionManager" />
+		<property name="securityMetadataSource">
+			<security:filter-security-metadata-source request-matcher="ant">
+				<security:intercept-url pattern="/**" access="ANY_CHANNEL" />
+			</security:filter-security-metadata-source>
+		</property>
+	</bean>
+
+	<bean id="channelDecisionManager"
+		class="org.springframework.security.web.access.channel.ChannelDecisionManagerImpl">
+		<property name="channelProcessors">
+			<list>
+				<ref local="secureChannelProcessor" />
+				<ref local="insecureChannelProcessor" />
+			</list>
+		</property>
+	</bean>
+
+	<bean id="secureChannelProcessor" class="org.springframework.security.web.access.channel.SecureChannelProcessor" />
+	<bean id="insecureChannelProcessor" class="org.springframework.security.web.access.channel.InsecureChannelProcessor" />
+	
+	<!--==========================================================================
+	核心過濾器成員之一
+	HttpSession並發過濾器
+	============================================================================-->	
+	<bean id="concurrencyFilter" class="org.springframework.security.web.session.ConcurrentSessionFilter">
+		<property name="sessionRegistry" ref="sessionRegistry" />
+		<property name="expiredUrl" value="/login/" />
+	</bean>
+
+	<bean id="sessionRegistry" class="org.springframework.security.core.session.SessionRegistryImpl" />
+	
+	<bean id="sas" class="org.springframework.security.web.authentication.session.ConcurrentSessionControlStrategy">
+		<constructor-arg index="0" ref="sessionRegistry" />
+		<!-- arda update -->
+		<property name="maximumSessions" value="-1" />
+	</bean>
+
+	<!--==========================================================================
+	核心過濾器成員之一
+	獲取或存儲一個SecurityContext
+	============================================================================-->
+	<bean id="securityContextPersistenceFilter" class="org.springframework.security.web.context.SecurityContextPersistenceFilter" />
+
+	<!--==========================================================================
+	核心過濾器成員之一
+	監控一個實現退出功能的URL
+	============================================================================-->
+	<bean id="logoutFilter" class="org.springframework.security.web.authentication.logout.LogoutFilter">
+		<constructor-arg index="0" value="/login/" />
+		<constructor-arg index="1">
+			<array>
+				<ref local="logoutHandler" />
+		<!-- 		<ref local="rememberMeServices" /> -->
+			</array>
+		</constructor-arg>
+		<property name="filterProcessesUrl" value="/logout/"/>
+	</bean>
+
+	<!-- 這個Bean注入到logoutFilter中去，它實際負責最後的掃尾工作，如把HttpSession實例刪除 -->
+	<bean id="logoutHandler" class="org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler">
+		<property name="invalidateHttpSession" value="true" />
+	</bean>
+
+	<!--==========================================================================
+	核心過濾器成員之一
+	監控一個URL，驗證用戶提交的用戶名和密碼
+	============================================================================-->
+	<bean id="usernamePasswordProcessingFilter" class="com.foya.noms.security.web.filter.CustomUsernamePasswordAuthenticationFilter">
+		<property name="filterProcessesUrl" value="/loginProcess/"/>
+		<property name="usernameParameter" value="j_username"/>
+		<property name="passwordParameter" value="j_password"/>
+		<property name="useADParameter" value="useAD"/>
+		<property name="authenticationManager" ref="customAuthenticationManager"/>
+		<property name="vendorAuthenticationManager" ref="vendorAuthenticationManager"/>
+		<property name="userDetailsService" ref="userDetailsService" />
+	<!-- 	<property name="rememberMeServices" ref="rememberMeServices"/> -->
+		<property name="sessionAuthenticationStrategy" ref="sas" />
+		<property name="authenticationFailureHandler" ref="authenticationFailureHandler"/>
+	    <property name="authenticationSuccessHandler" ref="successHandler"/>
+	    
+	    <property name="ldapUser" ref="ldapUser"/><!-- for AD Login 20141125 -->
+	</bean>
+	<!-- 登錄成功業務處理 -->
+	<bean id="successHandler"
+		class="com.foya.noms.security.handler.LoginAuthenticationSuccessHandler">
+		<property name="url" value="/loginSuccess/"/><!-- 可變換登錄成功後的路徑，驗證用戶是否擁有該權限 -->
+	</bean>
+	
+	<!--
+		這個Bean注入到usernamePasswordProcessingFilter中去，他決定用戶名和密碼驗證失敗之後的動作
+		注意: 應設置行為為轉發方式，否則保存在HttpServletRequest實例中的錯誤信息會因為重定向而丟失。
+	 -->
+	<bean id="authenticationFailureHandler" class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler">
+		<property name="defaultFailureUrl" value="/login/?error=1"/>
+		<property name="useForward" value="true" />
+	</bean>
+
+	<!--==========================================================================
+	核心過濾器成員之一
+	恢複被SpringSecurity框架打斷的URL (如果用戶可以重新被認證的話)
+	============================================================================-->
+	<!-- 在SpringSecurity.3.1.0中這個過濾器的功能 已經移植到exceptionTranslationFilter 所以不再需要-->
+	<!--  
+	<bean id="requestCacheAwareFilter" class="org.springframework.security.web.savedrequest.RequestCacheAwareFilter">
+		<constructor-arg index="0">
+			<bean class="org.springframework.security.web.savedrequest.HttpSessionRequestCache" />
+		</constructor-arg>
+	</bean>
+	-->
+
+	<!--==========================================================================
+	核心過濾器成員之一
+	通過分析瀏覽器傳來的cookies查找用戶名和密碼用以決定是否可以登錄
+	============================================================================-->
+	<!-- 
+	<bean id="rememberMeProcessingFilter" class="org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter">
+		<property name="rememberMeServices" ref="rememberMeServices"/>
+		<property name="authenticationManager" ref="customAuthenticationManager" />
+	</bean>
+
+	<bean id="rememberMeServices" class="org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices">
+		<property name="key" value="#{securityKeys['remember-me']}" />
+		<property name="parameter" value="_remember_me" />
+		<property name="tokenValiditySeconds" value="7200" />
+		<property name="tokenRepository" ref="inMemoryTokenRepository" />
+		<property name="userDetailsService" ref="userDetailsService" />
+	</bean>
+
+	<bean id="rememberMeAuthenticationProvider"
+		class="org.springframework.security.authentication.RememberMeAuthenticationProvider">
+		<property name="key" value="#{securityKeys['remember-me']}" />
+	</bean>
+ -->
+	<bean id="inMemoryTokenRepository" class="org.springframework.security.web.authentication.rememberme.InMemoryTokenRepositoryImpl" />
+
+	<!--  
+	<bean id="jdbcRememberMeTokenRepository"
+		class="org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	-->
+	
+	<!--==========================================================================
+	核心過濾器成員之一
+	如果用戶不能通過驗證則給添加一個匿名用戶的角色
+	============================================================================-->
+	<bean id="anonymousProcessingFilter" class="org.springframework.security.web.authentication.AnonymousAuthenticationFilter">
+		<property name="userAttribute" value="anonymousUser,ROLE_ANONYMOUS"/>
+		<property name="key" value="#{securityKeys['anonymous']}"/>
+	</bean>
+
+	<!--==========================================================================
+	核心過濾器成員之一
+	解決因為權限和驗證問題而引發的異常
+	============================================================================-->
+	<bean id="exceptionTranslationFilter" class="org.springframework.security.web.access.ExceptionTranslationFilter">
+		<property name="authenticationEntryPoint" ref="authenticationEntryPoint" />
+		<property name="accessDeniedHandler" ref="accessDeniedHandler" />
+	</bean>
+
+<!-- 
+	<bean id="authenticationEntryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+		<property name="useForward" value="false" />
+		<property name="loginFormUrl" value="" />
+	</bean>
+ -->
+	<bean id="authenticationEntryPoint" class="com.foya.noms.security.handler.MyLoginUrlAuthenticationEntryPoint">
+		<constructor-arg name="loginFormUrl" value="/login/" />
+	</bean>
+
+	<bean id="accessDeniedHandler" class="org.springframework.security.web.access.AccessDeniedHandlerImpl">
+		<property name="errorPage" value="/login/"/>
+	</bean>
+
+	<!--==========================================================================
+	核心過濾器成員之一
+	完成最終的授權判斷(委托給AccessDecisionManager接口)
+	============================================================================-->
+	<bean id="filterSecurityInterceptor" class="org.springframework.security.web.access.intercept.FilterSecurityInterceptor">
+		<property name="authenticationManager" ref="customAuthenticationManager" />
+		<property name="accessDecisionManager" ref="affirmativeBased" />
+		<property name="securityMetadataSource">
+			<security:filter-security-metadata-source use-expressions="true">
+				<security:intercept-url pattern="/" access="permitAll" />
+				<security:intercept-url pattern="/exception/**" access="permitAll" />
+				<security:intercept-url pattern="/resources/**" access="permitAll" />
+				<security:intercept-url pattern="/login/" access="permitAll" />
+				<security:intercept-url pattern="/flowActionRest/**" access="permitAll" />				
+				<security:intercept-url pattern="/**" access="hasRole('LOGIN_SUCCESS')" />
+			</security:filter-security-metadata-source>
+		</property>
+	</bean>
+
+	<bean id="customAuthenticationManager" class="org.springframework.security.authentication.ProviderManager">
+		<property name="authenticationEventPublisher" ref="defaultAuthEventPublisher"/>
+		<property name="providers">
+			<list>
+				<ref local="daoAuthenticationProvider"/>
+				
+				<ref local="anonymousAuthenticationProvider"/>
+				
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="vendorAuthenticationManager" class="org.springframework.security.authentication.ProviderManager">
+		<property name="authenticationEventPublisher" ref="defaultAuthEventPublisher"/>
+		<property name="providers">
+			<list>
+			
+				<ref local="daoVendorAuthenticationProvider"/>
+				<ref local="anonymousAuthenticationProvider"/>
+				
+			</list>
+		</property>
+	</bean>
+	
+	
+	<bean class="org.springframework.security.access.vote.AffirmativeBased" id="affirmativeBased">
+		<property name="decisionVoters">
+			<list>
+				<ref bean="roleVoter"/>
+				<ref bean="expressionVoter"/>
+				<ref bean="authenticatedVoter"/>
+			</list>
+		</property>
+	</bean>
+
+	<bean class="org.springframework.security.access.vote.RoleVoter" id="roleVoter" />
+	<bean class="org.springframework.security.access.vote.AuthenticatedVoter" id="authenticatedVoter" />
+
+	<bean id="defaultAuthEventPublisher" class="org.springframework.security.authentication.DefaultAuthenticationEventPublisher"/>
+
+	<bean id="daoAuthenticationProvider" class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
+		<!-- 
+		<property name="passwordEncoder" ref="md5PasswordEncoder"/>
+		 -->
+		<property name="userDetailsService" ref="userDetailsService" />
+		<!-- 
+		<property name="saltSource" ref="saltSource"/>
+		-->
+	</bean>
+	<bean id="daoVendorAuthenticationProvider" class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
+		
+		<property name="userDetailsService" ref="vendorDetailsService" />
+		
+	</bean>
+
+	<bean id="anonymousAuthenticationProvider" class="org.springframework.security.authentication.AnonymousAuthenticationProvider">
+		<property name="key" value="#{securityKeys['anonymous']}" />
+	</bean>
+
+	<bean class="org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler" id="expressionHandler"/>
+
+	<bean class="org.springframework.security.web.access.expression.WebExpressionVoter" id="expressionVoter">
+		<property name="expressionHandler" ref="expressionHandler"/>
+	</bean>
+
+	<!--
+		UserDetailsService自己提供了一個Mybatis實現 
+		對應的 UserDetails實現為實體域的User對象
+	-->
+	<bean id="userDetailsService" class="com.foya.noms.security.service.UserDetailsServiceImpl" ></bean>
+	
+	<bean id="vendorDetailsService" class="com.foya.noms.security.service.VendorDetailsServiceImpl" ></bean>
+	
+	<bean id="changePasswordService" class="com.foya.noms.security.service.ChangePasswordService"  />	
+
+	<bean class="org.springframework.security.authentication.encoding.Md5PasswordEncoder" id="md5PasswordEncoder" />
+
+	<!--
+	<bean class="org.springframework.security.authentication.dao.ReflectionSaltSource" id="saltSource">
+		<property name="userPropertyToUse" value="id"/>
+	</bean>
+	-->
+
+</beans>

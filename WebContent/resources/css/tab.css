@@ -1,0 +1,107 @@
+/* Tab css start */
+/* line 5, ../sass/_tab.scss */
+#tab_navigation {
+  height: 30px;
+  background-color: #e9e9e9;
+  border-top: 1px solid white;
+  -moz-border-radius: 0px 0px 10px 10px;
+  -webkit-border-bottom-left-radius: 10px;
+  -webkit-border-bottom-right-radius: 10px;
+  -webkit-border-top-left-radius: 10px;
+  -webkit-border-top-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+/* line 18, ../sass/_tab.scss */
+#tab_navigation ul {
+  list-style: none;
+  float: left;
+/*   margin-left: 22px; */
+}
+/* line 22, ../sass/_tab.scss */
+#tab_navigation ul li {
+  float: left;
+  border-right: 1px solid #cccccc;
+  border-left: 1px solid #cccccc;
+  position: relative;
+  margin: 0px 2px;
+}
+/* line 28, ../sass/_tab.scss */
+#tab_navigation ul li a {
+  display: block;
+  height: 30px;
+  background-color: #444;
+  color: #777;
+  outline: none;
+  font-weight: bold;
+  text-decoration: none;
+  line-height: 30px;
+  padding: 0px 10px;
+  border-right: 1px solid white;
+  border-left: 1px solid white;
+  background: #f0f0f0;
+  background: -webkit-gradient(linear, left bottom, left top, color-stop(0.09, #f0f0f0), color-stop(0.55, #e3e3e3), color-stop(0.78, #f0f0f0));
+  background: -moz-linear-gradient(center bottom, #f0f0f0 9%, #e3e3e3 55%, #f0f0f0 78%);
+}
+/* line 43, ../sass/_tab.scss */
+#tab_navigation ul li a:hover {
+  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #c0e4ef), color-stop(100%, #2f96b4));
+  background: -webkit-linear-gradient(#c0e4ef, #2f96b4);
+  background: -moz-linear-gradient(#c0e4ef, #2f96b4);
+  background: -o-linear-gradient(#c0e4ef, #2f96b4);
+  background: linear-gradient(#c0e4ef, #2f96b4);
+  background: #2f96b4;
+  color: #ffffff;
+  text-shadow: 1px 1px 1px #303030;
+}
+/* line 50, ../sass/_tab.scss */
+#tab_navigation ul li.selected a {
+  background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #99bbff), color-stop(100%, #0044cc));
+  background: -webkit-linear-gradient(#99bbff, #0044cc);
+  background: -moz-linear-gradient(#99bbff, #0044cc);
+  background: -o-linear-gradient(#99bbff, #0044cc);
+  background: linear-gradient(#99bbff, #0044cc);
+  background: #0044cc;
+  color: #ffffff;
+  text-shadow: 1px 1px 1px #303030;
+}
+
+/* line 60, ../sass/_tab.scss */
+#tab_container {
+  /*width: 1980px;*/
+  /*height:320px;*/
+  overflow: hidden;
+}
+
+/* line 66, ../sass/_tab.scss */
+.tab_content {
+  float: left;
+  /*width: 1980px;*/
+  /*height:320px;*/
+}
+
+/* line 72, ../sass/_tab.scss */
+.customize_tab {
+  clear: left;
+/*   width: 860px; */
+  margin: 10px 0;
+  position: relative;
+}
+
+/* line 79, ../sass/_tab.scss */
+#tab_wrapper {
+  -moz-box-shadow: 0px 0px 3px #aaaaaa;
+  -webkit-box-shadow: 0px 0px 3px #aaaaaa;
+  box-shadow: 0px 0px 3px #aaaaaa;
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+  border: 2px solid white;
+  background-color: #f9f9f9;
+/*   width:600px; */
+  overflow: hidden;
+}
+
+/* Tab css end */

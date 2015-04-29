@@ -1,0 +1,46 @@
+### TSTAR SETTING ###
+### Global Variables ###
+environment=TSTAR_DEV
+indexPage=/index
+workflow.restHost=http://172.22.131.161:9090
+#workflow.failHandler is position Id
+workflow.failHandler=admin
+workflow.failHandler.taskName = Rest fail handler
+nomsHost=http://172.22.131.161:8080
+
+### Security ###
+pwdMinLength=6
+pwdMaxLength=10
+pwdPeriod=90
+pwdKeepTimes=1
+pwdErrTimes=3
+pwdMixEngNum=true
+
+### MailConfig -- FOYA ###
+#host=foyatech.com
+#protocol=smtp
+#isAuth=true
+#user=twm
+#password=twm123
+#mailFrom=NOMS-SYSTEM@foyatech.com
+#mailToIT=ardaliao@foyatech.com
+#ccToIT=
+
+### MailConfig -- TSTAR ###
+host=172.22.1.22
+protocol=smtp
+isAuth=false
+user=
+password=
+mailFrom=NOMS_RPT@tstartel.com
+mailToIT=yichuantsai@tstartel.com
+ccToIT=
+
+
+
+
+
+
+
+
+

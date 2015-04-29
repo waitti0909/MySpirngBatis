@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<decorators defaultDir="/WEB-INF/layout">
+    <excludes>
+        <pattern>/resources/*</pattern>
+        <pattern>/login/</pattern>
+        <pattern>/loginProcess/</pattern>
+        <pattern>/accessDenied/</pattern>
+<!--         <pattern>/ajaxPage/*</pattern> -->
+    </excludes>
+    <decorator name="main" page="main.jsp">
+        <pattern>/index/*</pattern>
+    </decorator>
+    
+    
+    
+</decorators>
