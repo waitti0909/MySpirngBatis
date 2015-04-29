@@ -1,0 +1,43 @@
+package com.foya.noms.service.st;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.foya.dao.mybatis.model.TbSiteLocation;
+import com.foya.dao.mybatis.model.TbSiteOsItem;
+import com.foya.noms.GenericTest;
+import com.foya.noms.dto.st.SiteLocationDTO;
+import com.foya.noms.service.st.ST004Service;
+import com.foya.noms.util.RestClient;
+
+public class ST004ServiceTest extends GenericTest {
+
+	@Autowired
+	private ST004Service service;
+
+	@Test
+	public void testFeedbackFromPayment() {
+		log.debug("start");
+		String baseUrl = "http://127.0.0.1:8080/noms/st/st004/doFinalApply";
+		String serverUrl = "http://127.0.0.1:8080";
+		String loginurl = "loginProcess/";
+		RestClient client = new RestClient(false);
+		client.setServerUrl(serverUrl);
+		client.setApplicationPath("/noms");
+		client.setLoginPath(loginurl);
+		String loginresult = client.login("P14075225", "1");
+		
+		log.debug("loginresult="+loginresult);
+		service.finishSiteBuildApply("201501160006", "APPROVAL");
+		log.debug("end");
+		
+	}
+	
+}

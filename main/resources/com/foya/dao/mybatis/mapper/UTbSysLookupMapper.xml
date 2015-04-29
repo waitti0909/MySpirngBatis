@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbSysLookupMapper" >
+  <resultMap id="SysLookupDTO" type="com.foya.dao.mybatis.model.TbSysLookup" >
+    <result column="TYPE" property="TYPE" jdbcType="VARCHAR" />
+    <result column="CODE" property="CODE" jdbcType="VARCHAR" />
+    <result column="NAME" property="NAME" jdbcType="VARCHAR" />
+    <result column="DISPLAY_FLAG" property="DISPLAY_FLAG" jdbcType="VARCHAR" />
+    <result column="DISPLAY_ORDER" property="DISPLAY_ORDER" jdbcType="VARCHAR" />
+    <result column="NOTE" property="NOTE" jdbcType="VARCHAR" />
+    <result column="MD_TIME" property="MD_TIME" jdbcType="TIMESTAMP" />
+    <result column="MD_USER" property="MD_USER" jdbcType="VARCHAR" />
+    <result column="VALUE1" property="VALUE1" jdbcType="VARCHAR" />
+    <result column="VALUE2" property="VALUE2" jdbcType="VARCHAR" />
+    <result column="VALUE3" property="VALUE3" jdbcType="VARCHAR" />
+    <result column="VALUE4" property="VALUE4" jdbcType="VARCHAR" />
+    <result column="VALUE5" property="VALUE5" jdbcType="VARCHAR" />
+    <result column="VALUE6" property="VALUE6" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  	<!-- 取得所有公告欄類型 -->
+	<select id="selectBulletinType" resultMap="SysLookupDTO">
+		SELECT
+		*
+		from TB_SYS_LOOKUP
+		where TYPE='BULLETINTYPE'
+		order by DISPLAY_ORDER
+	</select>
+  
+  </mapper>
+  

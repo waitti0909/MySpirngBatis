@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbInvInsRemDMapper">
+	 <resultMap id="meterialRtnMap" type="com.foya.noms.dto.st.MeterialRtnDTO" >
+		<result column="dtlSeq" property="dtlSeq" jdbcType="VARCHAR" />
+	    <result column="assetNo" property="assetNo" jdbcType="VARCHAR" />
+	    <result column="matNo" property="matNo" jdbcType="VARCHAR" />
+	    <result column="matName" property="matName" jdbcType="VARCHAR" />
+	    <result column="venSn" property="venSn" jdbcType="VARCHAR" />
+	    <result column="tagNo" property="tagNo" jdbcType="VARCHAR" />
+	    <result column="assetQty" property="assetQty" jdbcType="INTEGER" />
+	    <result column="qty" property="qty" jdbcType="INTEGER" />
+	    <result column="qtyMrq" property="qtyMrq" jdbcType="INTEGER" />
+	    <result column="qtyRem" property="qtyRem" jdbcType="INTEGER" />
+	    <result column="qtyIns" property="qtyIns" jdbcType="INTEGER" />
+	    <result column="qtyRtn" property="qtyRtn" jdbcType="INTEGER" />
+	   	<result column="matStatus" property="matStatus" jdbcType="VARCHAR" />
+	    <result column="trnReason" property="trnReason" jdbcType="VARCHAR" />
+	    <result column="srlNo" property="srlNo" jdbcType="VARCHAR" />
+	    <result column="faNo" property="faNo" jdbcType="VARCHAR" />
+	    <result column="ctrlType" property="ctrlType" jdbcType="VARCHAR" />
+	    <result column="osId" property="osId" jdbcType="VARCHAR" />
+	 </resultMap>
+
+	<select id="selectRemInsItemQuery" resultMap="meterialRtnMap" parameterType="hashmap">
+		select * from
+		(
+		select 
+		ON_HAND.MAT_NO as matNo, --料號
+		ON_HAND.SRL_NO as srlNo, --序號件KEY
+		material.MAT_NAME as matName, --品名
+		material.CTRL_TYPE as ctrlType, --控管類別
+		invSrl.VEN_SN as venSn, --廠商序號
+		invSrl.TAG_NO as tagNo, --貼標號碼		
+		sum(ON_HAND.QTY) as assetQty --在途數量
+		from 
+		(
+		--領料(在途加)
+		select b.MAT_NO,ISNULL(b.SRL_NO,0) as SRL_NO,ISNULL(sum(b.QTY),0) as QTY from
+		TB_INV_MATERIAL_OPT a
+		inner join TB_INV_MR_ACT b on a.OPT_ID=b.OPT_ID and (a.STATUS='MR04' or a.STATUS='MR05')
+		where a.OPT_TYPE='MRQ'
+			<if test="siteId != null and siteId != '' ">
+				AND SITE_ID = #{siteId}
+			</if>
+			<if test="orderId != null and orderId !='' ">
+				AND ORDER_ID=#{orderId}
+			</if>
+			<if test="osId != null and osId !='' ">
+				AND OS_ID=#{osId}
+			</if>
+		group by b.MAT_NO,b.SRL_NO
+		union all
+		--安裝(在途減)
+		select   b.MAT_NO,ISNULL(b.SRL_NO,0) as SRL_NO,sum(b.QTY)*-1 as QTY  from
+		TB_INV_MATERIAL_OPT a
+		inner join TB_INV_INS_REM_D b on a.OPT_ID=b.OPT_ID 
+		where a.OPT_TYPE='INS'
+			<if test="siteId != null and siteId != '' ">
+				AND SITE_ID = #{siteId}
+			</if>
+			<if test="orderId != null and orderId !='' ">
+				AND ORDER_ID=#{orderId}
+			</if>
+			<if test="osId != null and osId !='' ">
+				AND OS_ID=#{osId}
+			</if>
+		group by b.MAT_NO,b.SRL_NO
+		union all
+		--拆下(在途加)
+		select  b.MAT_NO,ISNULL(b.SRL_NO,0) as SRL_NO,sum(b.QTY) as QTY  from
+		TB_INV_MATERIAL_OPT a
+		inner join TB_INV_INS_REM_D b on a.OPT_ID=b.OPT_ID 
+		where a.OPT_TYPE='REM'
+			<if test="siteId != null and siteId != '' ">
+				AND SITE_ID = #{siteId}
+			</if>
+			<if test="orderId != null and orderId !='' ">
+				AND ORDER_ID=#{orderId}
+			</if>
+			<if test="osId != null and osId !='' ">
+				AND OS_ID=#{osId}
+			</if>
+		group by b.MAT_NO,b.SRL_NO
+		union all
+		--退料(在途減)
+		select   b.MAT_NO,ISNULL(b.SRL_NO,0) as SRL_NO,sum(b.QTY)*-1 as QTY  from
+		TB_INV_MATERIAL_OPT a
+		inner join TB_INV_RT_D b on a.OPT_ID=b.OPT_ID 
+		where a.OPT_TYPE='RTN'
+			<if test="siteId != null and siteId != '' ">
+				AND SITE_ID = #{siteId}
+			</if>
+			<if test="orderId != null and orderId !='' ">
+				AND ORDER_ID=#{orderId}
+			</if>
+			<if test="osId != null and osId !='' ">
+				AND OS_ID=#{osId}
+			</if>
+		group by  b.MAT_NO,b.SRL_NO
+		) ON_HAND 
+		left outer join TB_INV_MATERIAL material
+		on ON_HAND.MAT_NO=material.MAT_NO
+		left outer join TB_INV_SRL invSrl
+		on ON_HAND.SRL_NO=invSrl.SRL_NO		
+		where 1=1
+			<if test="ctrlType != null and ctrlType != '' ">
+				AND material.CTRL_TYPE = #{ctrlType}
+			</if>
+		group by 
+		ON_HAND.MAT_NO,ON_HAND.SRL_NO,material.MAT_NAME,
+		material.CTRL_TYPE,invSrl.VEN_SN,invSrl.TAG_NO
+		) a where assetQty > 0
+	</select>
+
+
+	<select id="selectRemInsItemByOptId" resultMap="meterialRtnMap" parameterType="hashmap">
+		--安裝物料查詢
+		 select detail.MAT_NO as matNo,
+					mr.MAT_NAME as matName,
+					srl.VEN_SN  as venSn,
+					srl.TAG_NO as tagNo ,
+					detail.QTY_INS as qty 
+			from
+					(
+						select  a.OPT_TYPE,a.OPT_ID,OS_ID,MAT_NO,ISNULL(SRL_NO,0) as SRL_NO,sum(b.QTY) as QTY_INS from
+						TB_INV_MATERIAL_OPT a
+						left join TB_INV_INS_REM_D b on a.OPT_ID=b.OPT_ID
+						group by a.OPT_TYPE,a.OPT_ID,OS_ID,MAT_NO,SRL_NO
+					) detail
+					left join TB_INV_MATERIAL mr on detail.MAT_NO=mr.MAT_NO
+					left join TB_INV_SRL srl on detail.SRL_NO=srl.SRL_NO
+					
+					where --QTY_INS != 0 AND
+					 OPT_ID =#{optId} 
+	</select>
+	
+	<select id="selectRemItemQuery" resultMap="meterialRtnMap" parameterType="hashmap">
+		select * from
+		(
+		select 
+		ON_SITE.MAT_NO as matNo, --料號
+		ON_SITE.SRL_NO as srlNo, --序號件KEY
+		material.MAT_NAME as matName, --品名
+		material.CTRL_TYPE as ctrlType, --控管類別
+		invSrl.VEN_SN as venSn, --廠商序號
+		invSrl.TAG_NO as tagNo, --貼標號碼		
+		sum(ON_SITE.QTY) as assetQty --站上數量(可拆下數量)
+		from 
+		(
+		--站上資產
+		select b.SITE_ID,b.ITEM_NO as MAT_NO,ISNULL(b.SRL_NO,0) as SRL_NO,sum(b.QTY) as QTY  from
+		TB_INV_ASSET b
+		where (b.AP_DATE is not null OR SETUP_ORDER_NO=#{osId}) AND SITE_ID = #{siteId}
+		group by b.SITE_ID,b.ITEM_NO,b.SRL_NO		
+		) ON_SITE
+		left outer join TB_INV_MATERIAL material
+		on ON_SITE.MAT_NO=material.MAT_NO
+		left outer join TB_INV_SRL invSrl
+		on ON_SITE.SRL_NO=invSrl.SRL_NO	
+		where 1=1
+			<if test="ctrlType != null and ctrlType != '' ">
+				AND material.CTRL_TYPE = #{ctrlType}
+			</if>	
+		group by
+		ON_SITE.MAT_NO,ON_SITE.SRL_NO,material.MAT_NAME,
+		material.CTRL_TYPE,invSrl.VEN_SN,invSrl.TAG_NO
+		) a where assetQty > 0
+	</select>
+	
+	<select id="selectRemItemByOptId" resultMap="meterialRtnMap" parameterType="hashmap">
+	  --拆下
+	        select detail.MAT_NO as matNo,
+					mr.MAT_NAME as matName,
+					srl.VEN_SN  as venSn,
+					srl.TAG_NO as tagNo ,
+					detail.QTY_REM as qty 
+			from
+					(
+					select  a.OPT_TYPE,a.OPT_ID,OS_ID,MAT_NO,ISNULL(SRL_NO,0) as SRL_NO,sum(b.QTY) as QTY_REM from
+					TB_INV_MATERIAL_OPT a
+					left join TB_INV_INS_REM_D b on a.OPT_ID=b.OPT_ID 
+					group by a.OPT_TYPE,a.OPT_ID,OS_ID,MAT_NO,SRL_NO
+					) detail
+					left join TB_INV_MATERIAL mr on detail.MAT_NO=mr.MAT_NO
+					left join TB_INV_SRL srl on detail.SRL_NO=srl.SRL_NO
+					
+					where --QTY_REM != 0 AND
+					 OPT_ID =#{optId}
+	</select>
+</mapper>

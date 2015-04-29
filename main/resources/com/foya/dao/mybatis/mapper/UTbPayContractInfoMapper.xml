@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbPayContractInfoMapper">
+	<!-- [押金] Pay001.detail1 resultType 同 TbPayPaymentRequestDTO-->
+	<select id="selectPayContractInfo4REN01" resultType="com.foya.noms.dto.pay.TbPayPaymentRequestDTO" parameterType="hashmap">
+	Select 
+		a.contract_no, 
+		(select ls_name from TB_LS_MAIN where ls_no=A.contract_no and ls_status=1) lsName, 
+		(select SUM(pldg_amt) from TB_LS_LOCATION 
+			where convert(date,getdate()) between eff_date and end_date and ls_no=A.contract_no) pldgAmt,
+		(select SUM(rent_amt) from TB_LS_LOCATION 
+			where convert(date,getdate()) between eff_date and end_date and ls_no=A.contract_no) rentAmt,
+		(select pay_month from TB_LS_MAIN 
+			where ls_no=A.contract_no and ls_status=1
+		) payment_months,
+		(select ls_s_date from TB_LS_MAIN where ls_no=A.contract_no and ls_status=1) lsSdate,
+		#{processTypeDesc} statusDesc
+	from TB_PAY_CONTRACT_INFO A
+	where 
+		A.domain=#{domain} and A.payment_period=#{paymentPeriod} 
+		and convert(date,getdate()) between A.lease_valid_begin_date and A.lease_valid_end_date
+		and A.lease_status='1'
+		and (
+			(A.suspend_begin_date is null and A.suspend_end_date is null) 
+			or
+			((A.suspend_begin_date is not null and A.suspend_end_date is not null) 
+				and (convert(date,getdate()) not between A.suspend_begin_date and A.suspend_end_date))
+		)
+		and exists (select 1 from TB_LS_LOCATION C where C.ls_no = A.contract_no and C.pldg_pay_date is null)
+	</select>
+	
+	<!-- [首期] 與下述 例行不同者:no next_year_month 條件,取出欄位與[押金]相同-->
+	<select id="selectPayContractInfo4REN02" resultType="com.foya.noms.dto.pay.TbPayPaymentRequestDTO" parameterType="hashmap">
+	Select 
+		a.contract_no, 
+		(select ls_name from TB_LS_MAIN where ls_no=A.contract_no and ls_status=1) lsName, 
+		(select SUM(pldg_amt) from TB_LS_LOCATION 
+			where convert(date,getdate()) between eff_date and end_date 
+				and ls_no=A.contract_no) pldgAmt,
+		(select SUM(rent_amt) from TB_LS_LOCATION 
+			where convert(date,getdate()) between eff_date and end_date 
+				and ls_no=A.contract_no) rentAmt,
+		(select pay_month from TB_LS_MAIN 
+			where ls_no=A.contract_no and ls_status=1
+		) payment_months,
+		(select ls_s_date from TB_LS_MAIN where ls_no=A.contract_no and ls_status=1) lsSdate,
+		#{processTypeDesc} statusDesc
+	from TB_PAY_CONTRACT_INFO A, TB_PAY_LOCATION_INFO B 
+	where 
+		A.domain=B.domain and A.contract_no=B.contract_no 
+		and A.domain=#{domain}
+		and A.payment_period=#{paymentPeriod}
+		And A.lease_pay_begin_date is null		
+		and (B.pre_pr_begin_date is null and B.pre_pr_end_date is null)
+		and convert(date,getdate()) between A.lease_valid_begin_date and A.lease_valid_end_date
+		and A.lease_status='1'	
+	</select>	
+			
+	<!-- [例行] -->
+	<select id="selectPayContractInfo4REN03" resultType="com.foya.noms.dto.pay.TbPayPaymentRequestDTO" parameterType="hashmap">
+	Select 
+		a.contract_no, 
+		(select ls_name from TB_LS_MAIN where ls_no=A.contract_no and ls_status=1) lsName, 
+		(select SUM(pldg_amt) from TB_LS_LOCATION 
+			where convert(date,getdate()) between eff_date and end_date 
+				and convert(date,getdate()) between pay_begin_date and ls_e_date
+				and ls_no=A.contract_no) pldgAmt,
+		(select SUM(rent_amt) from TB_LS_LOCATION 
+			where convert(date,getdate()) between eff_date and end_date 
+				and convert(date,getdate()) between pay_begin_date and ls_e_date
+				and ls_no=A.contract_no) rentAmt,
+		(select pay_month from TB_LS_MAIN 
+			where ls_no=A.contract_no and ls_status=1
+		) payment_months,
+		(select ls_s_date from TB_LS_MAIN where ls_no=A.contract_no and ls_status=1) lsSdate,
+		#{processTypeDesc} statusDesc
+	from TB_PAY_CONTRACT_INFO A, TB_PAY_LOCATION_INFO B 
+	where 
+		A.domain=B.domain and A.contract_no=B.contract_no 
+		and A.domain=#{domain}
+		and A.payment_period=#{paymentPeriod}
+		And A.lease_pay_begin_date is not null		
+		and A.next_year_month <![CDATA[	<= ]]>#{yearMonth}
+		and convert(date,getdate()) between A.lease_valid_begin_date and A.lease_valid_end_date	
+	</select>	
+	
+	<!-- [補請] 與例行不同者, 僅 next_year_month 大於,小於之分-->
+	<select id="selectPayContractInfo4REN04" resultType="com.foya.noms.dto.pay.TbPayPaymentRequestDTO" parameterType="hashmap">
+	Select 
+		a.contract_no, 
+		(select ls_name from TB_LS_MAIN where ls_no=A.contract_no and ls_status=1) lsName, 
+		(select SUM(pldg_amt) from TB_LS_LOCATION 
+			where convert(date,getdate()) between eff_date and end_date 
+				and convert(date,getdate()) between pay_begin_date and ls_e_date
+				and ls_no=A.contract_no) pldgAmt,
+		(select SUM(rent_amt) from TB_LS_LOCATION 
+			where convert(date,getdate()) between eff_date and end_date 
+				and convert(date,getdate()) between pay_begin_date and ls_e_date
+				and ls_no=A.contract_no) rentAmt,
+		(select pay_month from TB_LS_MAIN 
+			where ls_no=A.contract_no and ls_status=1
+		) payment_months,
+		(select ls_s_date from TB_LS_MAIN where ls_no=A.contract_no and ls_status=1) lsSdate,
+		#{processTypeDesc} statusDesc
+	from TB_PAY_CONTRACT_INFO A, TB_PAY_LOCATION_INFO B 
+	where 
+		A.domain=B.domain and A.contract_no=B.contract_no 
+		and A.domain=#{domain}
+		and A.payment_period=#{paymentPeriod}
+		And A.lease_pay_begin_date is not null		
+		and A.next_year_month <![CDATA[	< ]]>#{yearMonth}
+		and convert(date,getdate()) between A.lease_valid_begin_date and A.lease_valid_end_date	
+	</select>	
+	
+	<select id="selectPayContractInfo4ELE01" resultType="com.foya.noms.dto.pay.TbPayPaymentRequestDTO" parameterType="hashmap">
+	Select 
+		A.CONTRACT_NO,
+		(select ls_name from TB_LS_MAIN where ls_no=A.CONTRACT_NO and ls_status=1) lsName,
+		(select lookup_code_desc from TB_PAY_LOOKUP_CODE where lookup_type='process_type' and lookup_code=#{processType}) processType,
+		C.s_pldg_amt pldgAmt,
+		C.s_rent_amt rentAmt,
+		B.pay_month payment_MONTHS,
+		B.ls_s_date pay_begin_date,
+		B.ls_s_date payment_REQ_BEGIN_DATE,
+		dateadd(dd,-1,dateadd(mm,B.pay_month,B.ls_s_date)) payment_REQ_END_DATE,
+		C.s_rent_amt*B.PAY_MONTH s_amt,
+		C.s_rent_amt s_tax_exclusive_amt,
+		'否' voucherType
+	from TB_PAY_CONTRACT_INFO A , 
+		(select ls_no,pay_month,ls_s_date from TB_LS_MAIN where LS_STATUS = 1) B ,
+		(select ls_no,SUM(pldg_amt) s_pldg_amt,SUM(rent_amt) s_rent_amt from TB_LS_LOCATION where CONVERT(VARCHAR,getDate(),101) between CONVERT(VARCHAR,eff_date,101) and CONVERT(VARCHAR,end_date,101) and CONVERT(VARCHAR,getDate(),101) between CONVERT(VARCHAR,pay_begin_date,101) and CONVERT(VARCHAR,ls_e_date,101) group by ls_no)C
+	where A.lease_pay_begin_date is not null
+		and B.LS_NO = A.CONTRACT_NO
+		and C.LS_NO = A.CONTRACT_NO
+		and A.domain=#{domain}
+		and A.payment_period=#{paymentPeriod}
+		and A.next_year_month <![CDATA[>=]]> #{yearMonth}
+		and CONVERT(VARCHAR,getDate(),101) between CONVERT(VARCHAR,A.lease_valid_begin_date,101) and CONVERT(VARCHAR,A.lease_valid_end_date,101);
+	</select>
+	
+	<select id="selectPayContractInfo4ELE05" resultType="com.foya.noms.dto.pay.TbPayPaymentRequestDTO" parameterType="hashmap">
+	Select 
+		A.CONTRACT_NO,
+		(select ls_name from TB_LS_MAIN where ls_no=A.CONTRACT_NO and ls_status=1) lsName,
+		(select lookup_code_desc from TB_PAY_LOOKUP_CODE where lookup_type='process_type' and lookup_code=#{processType}) processType,
+		C.s_pldg_amt pldgAmt,
+		C.s_rent_amt rentAmt,
+		D.pay_month payment_MONTHS,
+		D.ls_s_date pay_begin_date,
+		D.ls_s_date payment_REQ_BEGIN_DATE,
+		dateadd(dd,-1,dateadd(mm,D.pay_month,D.ls_s_date)) payment_REQ_END_DATE,
+		C.s_rent_amt*D.PAY_MONTH s_amt,
+		C.s_rent_amt s_tax_exclusive_amt,
+		'否' voucherType
+	from TB_PAY_CONTRACT_INFO A,TB_PAY_LOCATION_INFO B ,
+		(select ls_no,pay_month,ls_s_date from TB_LS_MAIN where LS_STATUS = 1) D ,
+		(select ls_no,SUM(pldg_amt) s_pldg_amt,SUM(rent_amt) s_rent_amt from TB_LS_LOCATION where CONVERT(VARCHAR,getDate(),101) between CONVERT(VARCHAR,eff_date,101) and CONVERT(VARCHAR,end_date,101) and CONVERT(VARCHAR,getDate(),101) between CONVERT(VARCHAR,pay_begin_date,101) and CONVERT(VARCHAR,ls_e_date,101) group by ls_no)C
+	where A.domain=B.domain 
+		and A.CONTRACT_NO = B.CONTRACT_NO
+		and D.LS_NO = A.CONTRACT_NO
+		and C.LS_NO = A.CONTRACT_NO
+		and A.domain=#{domain}
+		and A.payment_period=#{paymentPeriod}
+		and CONVERT(VARCHAR,getDate(),101) between CONVERT(VARCHAR, A.lease_valid_begin_date,101) and CONVERT(VARCHAR,A.lease_valid_end_date,101)
+		and ((A.suspend_begin_date is null and A.suspend_end_date is null) or
+		((A.suspend_begin_date is not null and A.suspend_end_date is not null) and (CONVERT(VARCHAR,getDate(),101) not between CONVERT(VARCHAR, A.suspend_begin_date,101) and CONVERT(VARCHAR,A.suspend_end_date,101)))
+		)
+		and exists (select 'Y' from TB_LS_LOC_ELEC C where C.ls_no = A.contract_no and C.location_id=B.location_id and C.pldg_pay_date is null)
+		;
+	</select>
+	
+	<select id="selectPayContractInfo4ELEOther" resultType="com.foya.noms.dto.pay.TbPayPaymentRequestDTO" parameterType="hashmap">
+	Select A.contract_no,
+		(select ls_name from TB_LS_MAIN where ls_no=A.CONTRACT_NO and ls_status=1) lsName,
+		(select lookup_code_desc from TB_PAY_LOOKUP_CODE where lookup_type='process_type' and lookup_code=#{processType}) processType,
+		C.s_pldg_amt pldgAmt,
+		C.s_rent_amt rentAmt,
+		D.pay_month payment_MONTHS,
+		D.ls_s_date pay_begin_date,
+		A.PAYMENT_REQ_BEGIN_DATE,
+		A.PAYMENT_REQ_END_DATE,
+		B.s_payment_req_amt s_amt,
+		'否' voucherType
+	from TB_PAY_ELECTRICITY A ,
+		(select SUM(payment_req_amt) s_payment_req_amt,contract_no,use_type,PAYMENT_REQ_BEGIN_DATE,PAYMENT_REQ_END_DATE from TB_PAY_ELECTRICITY group by contract_no,use_type,PAYMENT_REQ_BEGIN_DATE,PAYMENT_REQ_END_DATE) B ,
+		(select ls_no,pay_month,ls_s_date from TB_LS_MAIN where LS_STATUS = 1) D ,
+		(select ls_no,SUM(pldg_amt) s_pldg_amt,SUM(rent_amt) s_rent_amt from TB_LS_LOCATION where CONVERT(VARCHAR,getDate(),101) <![CDATA[<]]> CONVERT(VARCHAR,ls_e_date,101) group by ls_no)C
+	where A.use_type='E'
+		and A.payment_req_no is null 
+		and A.payment_req_item_no is null
+		and D.LS_NO = A.CONTRACT_NO
+		and B.CONTRACT_NO = A.CONTRACT_NO
+		and B.USE_TYPE = A.USE_TYPE
+		and B.PAYMENT_REQ_BEGIN_DATE = A.PAYMENT_REQ_BEGIN_DATE
+		and B.PAYMENT_REQ_END_DATE = A.PAYMENT_REQ_END_DATE
+		and C.LS_NO = A.CONTRACT_NO;
+	</select>
+	
+	<select id="selectSiteEqpName" resultType="com.foya.noms.dto.pay.EstimateExcelDTO" parameterType="hashmap">
+		select b.EQP_NAME as eqpName from TB_SITE_MAIN a 
+	   left join TB_COM_EQP_TYPE b on a.EQP_TYPE_ID=b.EQP_TYPE_ID
+	   where a.site_id=#{siteId}
+	</select>
+	
+	<select id="selectSiteEqpModel" resultType="com.foya.noms.dto.pay.EstimateExcelDTO" parameterType="hashmap">
+	 select c.EQP_MODEL as eqpModel from TB_SITE_MAIN a 
+	   left join TB_COM_EQP_MODEL c on a.EQP_MODEL_ID=c.EQP_MODEL_ID
+	   where a.site_id=#{siteId}
+	</select>
+</mapper>

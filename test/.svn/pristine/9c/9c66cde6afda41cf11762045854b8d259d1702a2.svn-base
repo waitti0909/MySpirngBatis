@@ -1,0 +1,68 @@
+package com.foya.noms.service.system;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.foya.noms.GenericTest;
+import com.foya.noms.resources.AppConstants;
+import com.foya.noms.util.Mail;
+import com.foya.noms.util.MailResponse;
+
+public class MailServiceTest extends GenericTest {
+
+	@Autowired
+	private MailService service;
+	@Test 
+	public void ardaliao() {
+		List<String> mailTo = new ArrayList<String>();
+		try {
+			Properties systemConfig = new Properties();
+			systemConfig.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("system.properties"));
+			AppConstants.MAIL_SMTP_HOST = String.valueOf(systemConfig.getProperty("host"));
+			AppConstants.MAIL_SMTP_PROTOCAL = String.valueOf(systemConfig.getProperty("protocol"));
+			AppConstants.MAIL_SMTP_AUTHENTICATION = String.valueOf(systemConfig.getProperty("isAuth"));
+			AppConstants.MAIL_SMTP_AUTH_USER = String.valueOf(systemConfig.getProperty("user"));
+			AppConstants.MAIL_SMTP_AUTH_PASSWORD = String.valueOf(systemConfig.getProperty("password"));
+			AppConstants.MAIL_FROM = String.valueOf(systemConfig.getProperty("mailFrom"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		mailTo.add("ardaliao@foyatech.com");
+		String subject ="test subject";
+		String content ="test content";
+		List<String> ccTo = new ArrayList<String>();
+		ccTo.add("ardaliao@foyatech.com");
+		Mail mail = Mail.by(mailTo,ccTo,subject,content,null);
+		MailResponse response = service.sendMail(mail);
+		Assert.assertNotNull(response);
+		Assert.assertEquals(response.getMail().getSubject(), "test subject");
+		Assert.assertEquals(response.getMail().getContent(), "test content");
+	}
+	
+	@Test
+	public void testCombineMailContents() {
+		String user="user";
+		String action="action";
+		String requestUrl="requestUrl";
+		String stack="stack";
+		String result = service.combineMailContents(user, action, requestUrl, stack);
+		Assert.assertNotNull(result);
+		Assert.assertTrue(result.length()>0);
+	} 
+	@Test
+	public void testCombineMailContents2() {
+		String user="user";
+		String action="action";
+		String requestUrl="requestUrl";
+		String result = service.combineMailContents(user, action, requestUrl, new RuntimeException());
+		Assert.assertNotNull(result);
+		Assert.assertTrue(result.length()>0);
+	}
+	
+}

@@ -1,0 +1,49 @@
+package com.foya.noms.workflow;
+
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import com.foya.workflow.exception.WorkflowException;
+import com.foya.workflow.model.TodoInfo;
+import com.foya.workflow.rest.RestEngineFactory;
+import com.foya.workflow.rest.WorkflowRestFacade;
+
+public class QueryTest {
+	private String user = Constant.TEST_ACCOUNT;
+	private String password = Constant.TEST_PASSWORD;
+
+	@Test
+	public void testFindTodoList() {
+		try {
+			WorkflowRestFacade engine = RestEngineFactory.createRemoteEngine(
+					Constant.WORKFLOW_REST_HOST, Constant.DEPLOYMENT_ID, user, password);
+			Assert.assertNotNull(engine);
+			List<TodoInfo> todos = engine.findTodoList();
+			Assert.assertNotNull(todos);
+		} catch (WorkflowException e) {
+			Assert.fail(e.getLocalizedMessage());
+		}
+
+	}
+
+	@Test
+	public void testGetTaskVariables() {
+		try {
+			WorkflowRestFacade engine = RestEngineFactory.createRemoteEngine(
+					Constant.WORKFLOW_REST_HOST, Constant.DEPLOYMENT_ID, user, password);
+			Assert.assertNotNull(engine);
+			List<TodoInfo> todos = engine.findTodoList();
+			Assert.assertNotNull(todos);
+			for (TodoInfo todo : todos) {
+				Map<String, Object> taskVars = engine.getTaskVariables(todo.getTaskId());
+				Assert.assertNotNull(taskVars);
+			}
+		} catch (WorkflowException e) {
+			Assert.fail(e.getLocalizedMessage());
+		}
+
+	}
+}

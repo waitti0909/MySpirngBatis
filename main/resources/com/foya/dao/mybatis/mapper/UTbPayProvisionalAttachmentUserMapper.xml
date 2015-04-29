@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbPayProvisionalAttachmentUserMapper">
+
+	<resultMap id="dscrResultMap" type="com.foya.noms.dto.pay.TbPayProvisionalAttachmentUserDTO" >
+	   <result column="payMethodName" property="payMethodName" jdbcType="VARCHAR" />
+		<result column="bankCodeDesc" property="bankCodeDesc" jdbcType="VARCHAR" />
+		<result column="bankBranchDesc" property="bankBranchDesc"  jdbcType="VARCHAR" />
+	 </resultMap>
+	 <select id="selectDesc" resultMap="dscrResultMap" parameterType="hashmap">
+		select a.DOCUMENT_NO,a.payment_user_id,a.payment_user_name,a.account_nbr,a.attach_tax_inclusive_amt,a.payment_proportion,
+		payment_begin_date,payment_end_date,a.bank_code,a.bank_branch_code,a.payment_method,
+		(select unit_name from TB_LS_COLLECT_UNIT where unit_code=a.bank_code) bankCodeDesc,a.check_addr,
+		(select sub_name from TB_LS_COLLECT_UNIT_SUB where sub_unit_code=a.bank_branch_code and unit_code=a.bank_code) bankBranchDesc,
+		(select lookup_code_desc from TB_PAY_LOOKUP_CODE where lookup_type='PAYMENT_METHOD' and lookup_code=a.payment_method) payMethodName 
+		from TB_PAY_PROVISIONAL_ATTACHMENT_USER a
+		where document_no=#{docNo}
+	</select>
+ 
+</mapper>

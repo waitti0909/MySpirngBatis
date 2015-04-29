@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration>
+
+	<appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
+		<layout class="org.apache.log4j.PatternLayout">
+			<!-- <param name="ConversionPattern" value="%d{mm:ss,SSS\} %-5p %t [%c{1\}] 
+				=> %m%n" /> -->
+			<param name="ConversionPattern" value="%d{mm:ss,SSS\} %-5p %t [%c] => %m%n" />
+		</layout>
+
+		<!--限制輸出級別 -->
+		<filter class="org.apache.log4j.varia.LevelRangeFilter">
+			<param name="LevelMax" value="ERROR" />
+			<param name="LevelMin" value="TRACE" />
+		</filter>
+	</appender>
+
+	<appender name="FILE" class="org.apache.log4j.FileAppender">
+		<param name="File" value="/AP/jboss-as-7.1.1.Final/noms_logs/noms.log" /><!-- 設置日誌輸出文件名 -->
+		<param name="MaxFileSize" value="4MB" /><!-- 設置文件大小 -->
+		<param name="MaxBackupIndex" value="100" /><!-- 設置文件備份 -->
+		<param name="Append" value="true" /><!-- 設置是否在重新啟動服務時，在原有日誌的基礎添加新日誌 -->
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d - %c -%-4r [%t] %-5p %x - %m%n" />
+		</layout>
+	</appender>
+
+	<!-- 記錄SQL的FILE -->
+	<appender name="FILE_SQL" class="org.apache.log4j.FileAppender">
+		<param name="File" value="/AP/jboss-as-7.1.1.Final/noms_logs/noms_sql.log" /><!-- 設置日誌輸出文件名 -->
+		<param name="MaxFileSize" value="5MB" /><!-- 設置文件大小 -->
+		<param name="MaxBackupIndex" value="100" /><!-- 設置文件備份 -->
+		<param name="Append" value="true" /><!-- 設置是否在重新啟動服務時，在原有日誌的基礎添加新日誌 -->
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d - %c -%-4r [%t] %-5p %x - %m%n" />
+		</layout>
+	</appender>
+
+	<!-- 輸出到日誌文件 每天一個日誌 -->
+	<appender name="filelog_daily" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="/AP/jboss-as-7.1.1.Final/noms_logs/noms.log" />
+		<param name="DatePattern" value="'noms.'yyyy-MM-dd'.log'" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern"
+				value="[%d{yyyy-MM-dd HH:mm:ss\} %-5p] [%t] (%c:%L) - %m%n" />
+		</layout>
+	</appender>
+
+
+	<!-- 發郵件（只有ERROR時才會發送！） -->
+	<appender name="MAIL" class="org.apache.log4j.net.SMTPAppender">
+		<param name="threshold" value="error" />
+		<!-- 日誌的錯誤級別 <param name="threshold" value="fatal"/> -->
+		<!-- 緩存文件大小，日誌達到512K時發送Email -->
+		<param name="BufferSize" value="512" /><!-- 單位K -->
+		<param name="From" value="NOMS-SYSTEM@foyatech.com" />
+		<param name="SMTPHost" value="foyatech.com" />
+		<param name="Subject" value="NOMS Exception Report" />
+		<param name="To" value="charliewoo@foyatech.com" />
+		<param name="SMTPUsername" value="twm" />
+		<param name="SMTPPassword" value="twm123" />
+		<layout class="com.foya.noms.service.system.MailLayout"></layout>
+		<!-- <layout class="org.apache.log4j.PatternLayout"> -->
+		<!-- <param name="ConversionPattern" value="%-d{yyyy-MM-dd HH:mm:ss.SSS} 
+			[%p]-[%c] %m%n" /> -->
+		<!-- </layout> -->
+	</appender>
+
+	<category name="org.springframework.beans">
+		<level value="INFO" />
+	</category>
+	<category name="org.springframework.web">
+		<level value="INFO" />
+	</category>
+	<category name="org.springframework.web.servlet.mvc.method">
+		<level value="WARN" />
+	</category>
+	<category name="org.springframework.core">
+		<level value="INFO" />
+	</category>
+	<category name="org.springframework.context">
+		<level value="INFO" />
+	</category>
+	<category name="org.springframework.aop">
+		<level value="INFO" />
+	</category>
+	<category name="org.springframework.security">
+		<level value="INFO" />
+	</category>
+	<category name="org.springframework.jdbc.core.BeanPropertyRowMapper">
+		<level value="INFO" />
+	</category>
+	<category name="org.springframework.jndi">
+		<level value="INFO" />
+	</category>
+
+
+	<category name="org.hibernate.validator">
+		<level value="INFO" />
+	</category>
+	<category name="org.apache.commons">
+		<level value="INFO" />
+	</category>
+	<category name="net.sf.jasperreports">
+		<level value="INFO" />
+	</category>
+
+
+	<!-- job start -->
+	<category name="org.quartz.core">
+		<level value="INFO" />
+	</category>
+	<category name="com.foya.noms.job">
+		<level value="INFO" />
+	</category>
+	<!-- job end -->
+
+	<!-- SQL log -->
+	<category name="com.foya.noms.security.persistence"
+		additivity="false">
+		<level value="DEBUG" />
+		<appender-ref ref="CONSOLE" />
+		<appender-ref ref="FILE_SQL" />
+	</category>
+	<category name="com.github.miemiedev.mybatis" additivity="false">
+		<level value="DEBUG" />
+		<appender-ref ref="CONSOLE" />
+		<appender-ref ref="FILE_SQL" />
+	</category>
+	
+	<category name="org.apache.http" additivity="false">
+		<level value="WARN" />
+		<appender-ref ref="CONSOLE" />
+		<appender-ref ref="FILE_SQL" />
+	</category>
+
+	<category name="com.foya.noms.security.web.GlobalExceptionController">
+		<!-- <appender-ref ref="MAIL" /> -->
+	</category>
+
+	<root>
+		<priority value="DEBUG" />
+		<appender-ref ref="CONSOLE" />
+	</root>
+
+</log4j:configuration>

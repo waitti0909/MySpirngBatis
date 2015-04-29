@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN" "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd" >
+<generatorConfiguration >
+<classPathEntry location="D:\eclipse\workspace\noms\WebContent\WEB-INF\lib/jtds-1.3.1.jar" />
+  <context id="context1" >
+  <!-- 
+    <jdbcConnection driverClass="net.sourceforge.jtds.jdbc.Driver" connectionURL="jdbc:jtds:sqlserver://10.1.1.231:1433/tstar" userId="tstar" password="900tstar" />
+    -->
+    <jdbcConnection driverClass="net.sourceforge.jtds.jdbc.Driver" connectionURL="jdbc:jtds:sqlserver://172.16.17.5:1433/NOMSDEVSQL" userId="nomsdevadm" password="dev-noms@0986" />
+    <javaTypeResolver>
+			<property name="forceBigDecimals" value="true" />			
+		</javaTypeResolver>
+    <javaModelGenerator targetPackage="com.foya.dao.mybatis.model" targetProject="noms" >
+    <property name="enableSubPackages" value="false" />
+			<property name="trimStrings" value="true" />
+    </javaModelGenerator>
+    <sqlMapGenerator targetPackage="com.foya.dao.mybatis.mapper" targetProject="noms" />
+    <javaClientGenerator targetPackage="com.foya.dao.mybatis.mapper" targetProject="noms" type="XMLMAPPER" />
+    <table  tableName="TB_LS_RES_EXCH_ALOC" >
+ 	 <property name="useActualColumnNames" value="true"/>		
+    </table>
+ 
+    
+  </context>
+</generatorConfiguration>

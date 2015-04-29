@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbAuthPsnRoleMapper">
+
+	<resultMap id="PsnRole" type="com.foya.dao.mybatis.model.TbAuthPsnRole">
+    <id column="PSN_ID" jdbcType="DECIMAL" property="PSN_ID" />
+    <id column="ROLE_ID" jdbcType="DECIMAL" property="ROLE_ID" />
+	</resultMap>
+	
+	<select id="selectAllPsnRole" resultMap="PsnRole">
+		SELECT DISTINCT ROLE_ID
+		FROM TB_AUTH_PSN_ROLE
+	</select>
+	
+	<select id="selectPsnByRole" resultMap="PsnRole">
+		SELECT PSN_ID
+		FROM TB_AUTH_PSN_ROLE
+		<where>
+            <if test="_parameter!=null and _parameter!=''">  
+                AND ROLE_ID=#{roleId}
+            </if>
+        </where>
+	</select>
+</mapper>

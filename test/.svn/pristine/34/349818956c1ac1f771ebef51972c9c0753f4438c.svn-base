@@ -1,0 +1,207 @@
+package com.foya.noms.service.inv;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.inject.Inject;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import com.foya.dao.mybatis.model.TbInvMaterialOpt;
+import com.foya.dao.mybatis.model.TbInvMrD;
+import com.foya.dao.mybatis.model.TbInvTxn;
+import com.foya.noms.GenericTest;
+import com.foya.noms.dto.inv.TbInvMaterialOptDTO;
+import com.foya.noms.dto.inv.TbInvRtDDTO;
+import com.foya.noms.dto.inv.TbInvTxnDTO;
+
+public class INV015ServiceTest extends GenericTest {
+	@Inject
+	private INV015Service inv015Service;
+
+	@Test
+	public void testSearch() {
+		HashMap<String, Object> dataObj = new HashMap<String, Object>();
+		dataObj.put("wareHouse", "333");
+		dataObj.put("status", "333");
+		dataObj.put("optId", "333");
+		dataObj.put("siteId", "333");
+		dataObj.put("deptApply", "333");
+		dataObj.put("personnel", "333");
+		List<TbInvMaterialOptDTO> list = inv015Service.search(dataObj);
+		Assert.assertEquals(0, list.size());
+	}
+
+	@Test
+	public void testSearchUTbInvRtD() {
+		HashMap<String, Object> dataObj = new HashMap<String, Object>();
+		dataObj.put("optId", "33333");
+		dataObj.put("whId", "3333");
+		List<TbInvRtDDTO> list = inv015Service.searchUTbInvRtD(dataObj);
+		Assert.assertEquals(0, list.size());
+	}
+
+	@Test
+	public void testSearchFs() {
+		HashMap<String, Object> dataObj = new HashMap<String, Object>();
+		List<TbInvRtDDTO> list = inv015Service.searchFs(dataObj);
+		Assert.assertNotNull(list);
+	}
+
+	@Test
+	public void testSearchTbInvTxnExample() {
+		List<TbInvTxnDTO> list = inv015Service.searchTbInvTxnExample("34234",
+				"4352", "234532");
+		Assert.assertEquals(0, list.size());
+	}
+
+	@Test
+	public void testSearchTbInvMrDMatNo() {
+		List<TbInvMrD> list = inv015Service.searchTbInvMrDMatNo("4352345");
+		Assert.assertEquals(0, list.size());
+	}
+
+	@Test
+	public void testUpdateTbInvBooking() throws Exception {
+		List<TbInvMrD> matNoList = new ArrayList<TbInvMrD>();
+		TbInvMrD dto = new TbInvMrD();
+		dto.setDTL_SEQ(new Long(2));
+		dto.setMAT_NO("33");
+		dto.setQTY(3);
+		matNoList.add(dto);
+		int test = inv015Service.updateTbInvBooking("rweqrw", matNoList,
+				"32414");
+		Assert.assertEquals(0, test);
+	}
+
+	@Test
+	public void testUpdateTbInvInv() {
+		List<TbInvMrD> matNoList = new ArrayList<TbInvMrD>();
+		TbInvMrD dto = new TbInvMrD();
+		dto.setDTL_SEQ(new Long(2));
+		dto.setMAT_NO("22");
+		dto.setOPT_ID("333");
+		dto.setQTY(2);
+		matNoList.add(dto);
+		int test = inv015Service.updateTbInvInv(matNoList, "32414");
+		Assert.assertEquals(0,test);
+	}
+
+	@Test
+	public void testSearchTbInvTxn() {
+		List<TbInvTxn> list = inv015Service.searchTbInvTxn("", "", "", new Date(), new Date(), "1", "");
+		Assert.assertEquals(0, list.size());
+	}
+
+	@Test
+	public void testSearchInvTxnPrintPageDetail() {
+		List<TbInvTxnDTO> list = inv015Service
+				.searchInvTxnPrintPageDetail("32f4f34");
+		Assert.assertEquals(0, list.size());
+	}
+
+	@Test
+	public void testSelectTxnNoToday() {
+		String text = inv015Service.selectTxnNoToday("20120102", "P09083552");
+		Assert.assertNotNull(text);
+	}
+
+	@Test
+	public void testUpdateInvInv() {
+		HashMap<String, Object> dataObj = new HashMap<String, Object>();
+		dataObj.put("matNo", "3241234");
+		dataObj.put("whId", "42134");
+		dataObj.put("wrdQty", 1);
+		int test = inv015Service.updateInvInv(dataObj);
+		Assert.assertEquals(0, test);
+	}
+
+	@Test
+	public void testInsertInvTxn() {
+		TbInvTxn record = new TbInvTxn();
+		record.setTxn_no("542532534");
+		record.setTxn_type(new Byte("2"));
+		record.setRef_act_no("542534");
+		record.setWh_id("5345235");
+		record.setMat_no("345235");
+		record.setMat_status(new Byte("2"));
+		record.setRn_resn("423134");
+		record.setMro_rt_user("324234");
+		record.setSend_rcv_user("43545");
+		record.setDtl_seq(Long.valueOf("2"));
+		record.setQty(0);
+		record.setSite_id("32414");
+		record.setOrder_no("4234");
+		record.setCr_user("35325");// 由於要靈活一點 所以寫入頁面上的收料人員
+									// 原始為getLoginUser().getUsername()
+		record.setCr_time(new Date());
+		int test = inv015Service.insertInvTxn(record);
+		Assert.assertEquals(1, test);
+	}
+
+	@Test
+	public void testSelectInvOpt() {
+		List<TbInvMaterialOpt> list = inv015Service.selectInvOpt("5423535");
+		Assert.assertEquals(0, list.size());
+	}
+
+	@Test
+	public void testUpdateOnhandRTNQty() {
+		int test = inv015Service.updateOnhandRTNQty("3242134", "42534", 43,
+				"4325", "4325", new Date());
+		Assert.assertEquals(0, test);
+	}
+
+	@Test
+	public void testSelectInvTxn() {
+		List<TbInvTxn> list = inv015Service.searchTbInvTxn("423143",
+				"32412432", "34255", new Date(), new Date(), "3", "341");
+		Assert.assertEquals(0, list.size());
+	}
+
+	@Test
+	public void testGetGroupInvTxnDataByGrid() {
+		List<TbInvTxnDTO> list = inv015Service.getInvTxnDataByGrid("32232",
+				"21341", "432435", new Date(), new Date());
+		Assert.assertEquals(0, list.size());
+	}
+
+	@Test
+	public void testGetInvTxnData() {
+		List<TbInvTxnDTO> list = inv015Service.getInvTxnData("523455", "43253",
+				"234534", new Date(), new Date());
+		Assert.assertEquals(0, list.size());
+	}
+
+	@Test
+	public void testGetInvTxnDataByGrid() {
+		List<TbInvTxnDTO> list = inv015Service.getInvTxnDataByGrid("213412",
+				"3214", "214", new Date(), new Date());
+		Assert.assertEquals(0, list.size());
+	}
+
+	@Test
+	public void testSearchRtDOptId() {
+		Set<String> optId = new HashSet<String>();
+		optId.add("43253245");
+		List<TbInvRtDDTO> list = inv015Service.searchRtDOptId(optId);
+		Assert.assertEquals(0, list.size());
+	}
+
+	@Test
+	public void testSearchLessQty() {
+		HashMap<String, Object> dataObj = new HashMap<String, Object>();
+		dataObj.put("txnType", "2");
+		dataObj.put("optId", "324324");
+		dataObj.put("matNo", "4323");
+		dataObj.put("qty", 3);
+		List<TbInvTxnDTO> list = inv015Service.searchLessQty(dataObj);
+		Assert.assertEquals(0, list.size());
+	}
+
+}

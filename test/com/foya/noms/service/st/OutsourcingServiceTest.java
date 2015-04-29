@@ -1,0 +1,57 @@
+package com.foya.noms.service.st;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.foya.dao.mybatis.model.TbSiteOsItem;
+import com.foya.exception.NomsException;
+import com.foya.noms.GenericTest;
+
+public class OutsourcingServiceTest extends GenericTest {
+
+	@Autowired
+	private OutsourcingService service;
+	
+//	@Test
+	public void testFeedbackFromPayment() {
+		List<TbSiteOsItem> itemList = new ArrayList<TbSiteOsItem>();
+		TbSiteOsItem item = new TbSiteOsItem();
+		item.setITEM_ID("42");
+		item.setPAY_NUMBER(BigDecimal.valueOf(2));
+		item.setPAY_AMOUNT(new BigDecimal(401));
+		itemList.add(item);
+		
+//		item = new TbSiteOsItem();
+//		item.setITEM_ID("2");
+//		item.setPAY_NUMBER(BigDecimal.ONE);
+//		item.setPAY_AMOUNT(new BigDecimal(5000));
+//		itemList.add(item);
+		
+		log.debug(service.feedbackFromPayment("201502020000001", "OSA2015021201", itemList));
+	}
+	
+//	@Test
+	public void testOutsourceApply() {
+		String osId = "201503130003204", aplDept = "440600", processType = "SearchSiteOutsourcingApply";
+		System.out.println(service.outsourceApply(osId, aplDept, processType));
+	}
+	
+	@Test
+	public void testOutsourceVerify() {
+		String osId = "201503270009202";
+		try {
+			service.finishOsVerify(osId, "SYSTEM", "OS07");
+		} catch (NomsException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+}

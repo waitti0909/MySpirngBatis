@@ -1,0 +1,43 @@
+package com.foya.noms.service.org;
+
+import java.util.List;
+
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.foya.noms.GenericTest;
+import com.foya.noms.dto.org.DeptDTO;
+import com.foya.noms.dto.org.DeptPosDTO;
+
+public class OrgWorkflowServiceTest extends GenericTest {
+	@Autowired
+	private OrgWorkflowService orgWorkflowService;
+
+	@Test
+	public void testDeptTree() {
+		List<DeptDTO> deptDTOs = orgWorkflowService.searchParentByChild("240000");
+		for (DeptDTO deptDto : deptDTOs) {
+			System.out.println("deptId = " + deptDto.getDEPT_ID());
+			System.out.println("deptName = " + deptDto.getDEPT_NAME());
+			System.out.println("deptLevel = " + deptDto.getDEPT_LEVEL());
+		}
+	}
+
+	@Test
+	public void testDeptPos() {
+		List<DeptPosDTO> deptPosDTOs = orgWorkflowService.getDeptPosDtoByDeptId("240000");
+		for (DeptPosDTO deptPosDTO : deptPosDTOs) {
+			System.out.println("deptPosId = " + deptPosDTO.getDeptPosId());
+			System.out.println("deptPosName = " + deptPosDTO.getPosName());
+		}
+	}
+
+	@Test
+	public void testDeptAndPos() {
+		DeptPosDTO deptPosDTO = orgWorkflowService.getDeptPosDtoByDeptIdAndPosId("480100",
+				"MANAGER_A2");
+		System.out.println("deptPosId = " + deptPosDTO.getDeptPosId());
+		System.out.println("deptPosName = " + deptPosDTO.getPosName());
+	}
+
+}

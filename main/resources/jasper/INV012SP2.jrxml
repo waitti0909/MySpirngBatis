@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report1" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="6c612ac6-f8be-4e85-b766-449e89650181">
+	<property name="ireport.zoom" value="1.6105100000000476"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="27"/>
+	<parameter name="parameter1" class="java.lang.String"/>
+	<parameter name="exportNumberP" class="java.lang.String"/>
+	<parameter name="exportDepot" class="java.lang.String"/>
+	<parameter name="printUser" class="java.lang.String"/>
+	<parameter name="printTime" class="java.lang.String"/>
+	<parameter name="applicant" class="java.lang.String"/>
+	<parameter name="sendDate" class="java.lang.String"/>
+	<parameter name="sendUser" class="java.lang.String"/>
+	<parameter name="applyDept" class="java.lang.String"/>
+	<field name="matNo" class="java.lang.String"/>
+	<field name="materialsNumber" class="java.lang.String"/>
+	<field name="platformNo" class="java.lang.String"/>
+	<field name="receiptNumber" class="java.lang.String"/>
+	<field name="matName" class="java.lang.String"/>
+	<field name="companyNumber" class="java.lang.String"/>
+	<field name="labelNumber" class="java.lang.String"/>
+	<field name="status" class="java.lang.String"/>
+	<field name="callInNumber" class="java.lang.Integer"/>
+	<field name="index" class="java.lang.Integer"/>
+	<variable name="COUNT" class="java.lang.Integer" resetType="Group" resetGroup="matGroup">
+		<variableExpression><![CDATA[$F{callInNumber} > 0.0 ? ($V{COUNT}+($F{callInNumber})) :$V{COUNT}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<group name="matGroup">
+		<groupExpression><![CDATA[$F{matNo}]]></groupExpression>
+		<groupHeader>
+			<band height="40">
+				<textField>
+					<reportElement x="741" y="0" width="30" height="22" uuid="3976263c-4c51-4fa2-89b2-0d3ac31cf1c9"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="標楷體" size="10" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["第"+$V{PAGE_NUMBER}+"頁，"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Report">
+					<reportElement x="771" y="0" width="31" height="22" uuid="ee559dba-21d1-48fb-bafe-4a3ddbc930fc"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="標楷體" size="10" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["共" + $V{PAGE_NUMBER} + "頁"]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="22" width="100" height="15" uuid="3f11d597-599c-4147-a4d9-ea47d7093807"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+					</textElement>
+					<text><![CDATA[領料單號]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="100" y="22" width="100" height="15" uuid="3f11d597-599c-4147-a4d9-ea47d7093807"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+					</textElement>
+					<text><![CDATA[站台編號]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="200" y="22" width="80" height="15" uuid="3f11d597-599c-4147-a4d9-ea47d7093807"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+					</textElement>
+					<text><![CDATA[工單編號]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="280" y="22" width="158" height="15" uuid="3f11d597-599c-4147-a4d9-ea47d7093807"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+					</textElement>
+					<text><![CDATA[品名]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="438" y="22" width="144" height="15" uuid="3f11d597-599c-4147-a4d9-ea47d7093807"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+					</textElement>
+					<text><![CDATA[廠商序號]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="582" y="22" width="173" height="15" uuid="3f11d597-599c-4147-a4d9-ea47d7093807"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+					</textElement>
+					<text><![CDATA[貼標號碼]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="755" y="22" width="47" height="15" uuid="3f11d597-599c-4147-a4d9-ea47d7093807"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+					</textElement>
+					<text><![CDATA[發料數]]></text>
+				</staticText>
+				<line>
+					<reportElement x="0" y="39" width="802" height="1" uuid="efc01a2b-d0ae-4eaa-bebd-c2418b30377c"/>
+				</line>
+				<staticText>
+					<reportElement x="0" y="0" width="32" height="21" uuid="cd523e85-01f4-4260-bbe3-d4b97905b0a5"/>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+					</textElement>
+					<text><![CDATA[料號：]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="32" y="0" width="369" height="22" uuid="70d16756-fffb-46f8-a9d9-f9730db8d5de"/>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{matNo}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="40">
+				<staticText>
+					<reportElement x="691" y="0" width="64" height="20" uuid="8dae3f88-1fc2-405e-a30f-2feea37c978d"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+					</textElement>
+					<text><![CDATA[小計:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="755" y="0" width="47" height="20" uuid="9d60684e-a455-4eea-b28c-d605697a80c4"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+						<paragraph lineSpacing="Fixed"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{COUNT}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="0" y="21" width="802" height="1" uuid="efc01a2b-d0ae-4eaa-bebd-c2418b30377c"/>
+					<graphicElement>
+						<pen lineStyle="Dashed" lineColor="#999999"/>
+					</graphicElement>
+				</line>
+			</band>
+		</groupFooter>
+	</group>
+	<title>
+		<band height="85" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="802" height="25" uuid="76b9b106-45f8-4ec9-bc14-0e950d5be5e3"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="標楷體" size="14" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[領料簽收單]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="25" width="61" height="20" uuid="b2adf820-8207-4a3d-86ba-e793cc4de828"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="標楷體" size="10" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[發料單號：]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="45" width="61" height="20" uuid="1620a78e-676c-429e-978f-c3b48b99d33c"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="標楷體" size="10" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[發料倉庫：]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="630" y="45" width="61" height="20" uuid="27295b3e-08ef-4f87-b228-a0feee6bb765"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="標楷體" size="10" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[列印人員：]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="631" y="65" width="60" height="20" uuid="97a57e1c-21e8-4fdc-b204-165c116e8a4a"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="標楷體" size="10" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[列印時間：]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="691" y="45" width="111" height="20" uuid="019d05ea-75f7-4bad-84ad-36028f022b7e"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="標楷體" size="10" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+					<paragraph lineSpacing="Fixed"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{printUser}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="691" y="65" width="111" height="20" uuid="429d80da-554d-4634-bb33-926ea3e92535"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="標楷體" size="10" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+					<paragraph lineSpacing="Fixed"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{printTime}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="61" y="25" width="271" height="20" uuid="cef81f3b-14d7-4085-af1a-8fd71300a455"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="標楷體"/>
+					<paragraph lineSpacing="Fixed"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{exportNumberP}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="61" y="45" width="271" height="20" uuid="2d570cf6-cb49-40ee-809d-65e511c55158"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="標楷體"/>
+					<paragraph lineSpacing="Fixed"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{exportDepot}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="402" y="45" width="228" height="20" uuid="e490338b-cfd4-455e-99f9-9cdfcc2fc5c3"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="標楷體"/>
+					<paragraph lineSpacing="Fixed"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{applicant}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="332" y="45" width="69" height="20" uuid="27295b3e-08ef-4f87-b228-a0feee6bb765"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="標楷體" size="10" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[領料人員：]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="631" y="25" width="60" height="20" uuid="27295b3e-08ef-4f87-b228-a0feee6bb765"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="標楷體" size="10" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[發料日期：]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="691" y="25" width="111" height="20" uuid="b152547c-28de-4776-a969-8475604ff26b"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="標楷體"/>
+					<paragraph lineSpacing="Fixed"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{sendDate}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="65" width="61" height="20" uuid="3f11d597-599c-4147-a4d9-ea47d7093807"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[發料人員:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="61" y="65" width="271" height="20" uuid="913fa2bc-3c30-4e6d-a3c2-dfa6ce6a5cb8"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="標楷體"/>
+					<paragraph lineSpacing="Fixed"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{sendUser}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="332" y="25" width="69" height="20" uuid="3f11d597-599c-4147-a4d9-ea47d7093807"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[領料部門：]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="402" y="25" width="228" height="20" uuid="653ba82e-3a8a-4974-a313-0ccbf16df0b5"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="標楷體"/>
+					<paragraph lineSpacing="Fixed"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{applyDept}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="438" y="0" width="144" height="20" uuid="899dbfa7-f753-4e99-bfb1-ba9fc3078fcd"/>
+				<box bottomPadding="5"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+					<paragraph lineSpacing="Fixed"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{companyNumber}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="582" y="0" width="173" height="20" uuid="0945bd64-6b4a-42e9-942d-5dccf7a2d900"/>
+				<box bottomPadding="5"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+					<paragraph lineSpacing="Fixed"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{labelNumber}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="755" y="0" width="47" height="20" uuid="217b30e5-e6f0-451e-a3a3-63fb7da23bcb"/>
+				<box bottomPadding="5"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+					<paragraph lineSpacing="Fixed"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{callInNumber}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="100" height="20" uuid="46278ef6-572b-4261-920f-f2646539531f"/>
+				<box bottomPadding="5"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="標楷體" isPdfEmbedded="true"/>
+					<paragraph lineSpacing="Fixed"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{materialsNumber}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="100" y="0" width="100" height="20" uuid="8c372538-246b-4c38-9219-30706155ff5f"/>
+				<box bottomPadding="5"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+					<paragraph lineSpacing="Fixed"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{platformNo}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="200" y="0" width="80" height="20" uuid="ef3c7074-7177-4c5f-83f9-d50e16296ab5"/>
+				<box bottomPadding="5"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+					<paragraph lineSpacing="Fixed"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{receiptNumber}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="280" y="0" width="158" height="20" uuid="e2f3a0ab-454d-4331-a1cb-a9b44cf030e7"/>
+				<box bottomPadding="5"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+					<paragraph lineSpacing="Fixed"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{matName}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="62">
+			<line>
+				<reportElement x="251" y="1" width="300" height="1" uuid="4141cc33-b9e9-4e8c-a19c-8c71bf625684"/>
+			</line>
+			<line>
+				<reportElement x="251" y="2" width="1" height="56" uuid="6a167c91-cdea-4333-83b6-d6f0a200e860"/>
+			</line>
+			<line>
+				<reportElement x="251" y="58" width="300" height="1" uuid="4141cc33-b9e9-4e8c-a19c-8c71bf625684"/>
+			</line>
+			<line>
+				<reportElement x="401" y="2" width="1" height="56" uuid="6a167c91-cdea-4333-83b6-d6f0a200e860"/>
+			</line>
+			<line>
+				<reportElement x="550" y="2" width="1" height="56" uuid="6a167c91-cdea-4333-83b6-d6f0a200e860"/>
+			</line>
+			<line>
+				<reportElement x="251" y="18" width="300" height="1" uuid="4141cc33-b9e9-4e8c-a19c-8c71bf625684"/>
+			</line>
+			<staticText>
+				<reportElement x="252" y="2" width="149" height="16" uuid="f82900a9-0814-428b-8a5d-95d0c13f98e6"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[發料倉管簽章]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="402" y="2" width="148" height="16" uuid="f82900a9-0814-428b-8a5d-95d0c13f98e6"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="標楷體" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[領料人簽章]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

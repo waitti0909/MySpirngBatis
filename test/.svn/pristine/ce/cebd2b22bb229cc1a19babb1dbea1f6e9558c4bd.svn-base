@@ -1,0 +1,29 @@
+package com.foya.noms.util;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+public class ParserUtilTest {
+	Map<String, String> varMap = new HashMap<>();
+
+	@Before
+	public void makeData() {
+		varMap.put("processName", "尋點申請");
+		varMap.put("applyNo", "201501010001");
+	}
+
+	@Test
+	public void testGetParseString() {
+		String orginalStr = "${processName}待簽核通知 - ${applyNo}";
+		String str = "${processName}待簽核通知 - ${applyNo}";
+		for (Map.Entry<String, String> entry : varMap.entrySet()) {
+			str = str.replaceAll("\\$\\{" + entry.getKey() + "\\}", entry.getValue());
+		}
+		System.out.println("orginal str = " + orginalStr + ", after str = " + str);
+		Assert.assertFalse(orginalStr.equals(str));
+	}
+}

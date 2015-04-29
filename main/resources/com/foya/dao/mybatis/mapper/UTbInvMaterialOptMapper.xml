@@ -1,0 +1,462 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbInvMaterialOptMapper">
+  	
+  	<resultMap id="dscrResultMap" type="com.foya.noms.dto.inv.TbInvMaterialOptDTO" >
+	    <result column="deptIdDscr" property="deptIdDscr" jdbcType="VARCHAR" />
+	    <result column="whIdDscr" property="whIdDscr" jdbcType="VARCHAR" />
+	    <result column="siteIdDscr" property="siteIdDscr" jdbcType="VARCHAR" /><!-- 站台中文 -->
+	    <result column="statusDscr" property="statusDscr" jdbcType="VARCHAR" />
+	 </resultMap>
+	 
+	 <resultMap id="ResultJoinMRDMap" type="com.foya.noms.dto.inv.TbInvMaterialOptDTO" >
+	    <result column="whIdDscr" property="whIdDscr" jdbcType="VARCHAR" />
+	    <result column="siteIdDscr" property="siteIdDscr" jdbcType="VARCHAR" /><!-- 站台中文 -->
+	    <result column="OPT_ID" property="OPT_ID" jdbcType="VARCHAR" />
+	    <result column="mat_no" property="mat_no" jdbcType="VARCHAR" />
+	    <result column="mat_name" property="mat_name" jdbcType="VARCHAR" />
+	    <result column="app_userName" property="app_userName" jdbcType="VARCHAR" />
+	     <result column="qty" property="qty" jdbcType="INTEGER" />
+	     <result column="lack_qty" property="lack_qty" jdbcType="INTEGER" />
+	     <result column="ORDER_ID" property="ORDER_ID" jdbcType="VARCHAR" />
+	     <result column="storage_qty" property="storage_qty" jdbcType="INTEGER" />
+	 </resultMap>
+	 
+	 <resultMap id="ResultSiteWorkTroMap" type="com.foya.noms.dto.inv.TbInvMaterialOptDTO" >
+	    <result column="OPT_ID" property="OPT_ID" jdbcType="VARCHAR" />
+	    <result column="OS_ID" property="OS_ID" jdbcType="VARCHAR" />
+	    <result column="ORDER_ID" property="ORDER_ID" jdbcType="VARCHAR" />
+	    <result column="ORDER_ID_IN" property="ORDER_ID_IN" jdbcType="VARCHAR" />
+	    <result column="SITE_ID" property="SITE_ID" jdbcType="VARCHAR" />
+	    <result column="SITE_NAME" property="SITE_NAME" jdbcType="VARCHAR" />
+	    <result column="REP_DEPT" property="REP_DEPT" jdbcType="VARCHAR" />
+	    <result column="DEPT_NAME" property="DEPT_NAME" jdbcType="VARCHAR" />
+	    <result column="CR_TIME" property="CR_TIME" jdbcType="TIMESTAMP" />
+	    <result column="STATUS" property="STATUS" jdbcType="VARCHAR" />
+	    <result column="STATUS_NAME" property="STATUS_NAME" jdbcType="VARCHAR" />
+	    <result column="WH_NAME" property="WH_NAME" jdbcType="VARCHAR" />
+	    <result column="WH_ID" property="WH_ID" jdbcType="VARCHAR" />
+	    <result column="OP_TYPE" property="OP_TYPE" jdbcType="VARCHAR" />
+	    <result column="EQP_NAME" property="EQP_NAME" jdbcType="VARCHAR" />
+	    <result column="WORK_TYPE" property="WORK_TYPE" jdbcType="VARCHAR" />
+	    <result column="CO_NAME" property="CO_NAME" jdbcType="VARCHAR" />
+	    <result column="BTS_SITE_ID" property="BTS_SITE_ID" jdbcType="VARCHAR" />
+	    <result column="EQP_MODEL" property="EQP_MODEL" jdbcType="VARCHAR" />
+	    <result column="ADDR" property="ADDR" jdbcType="VARCHAR" />
+    	<result column="MAT_NO" property="MAT_NO" jdbcType="VARCHAR" />
+    	<result column="SRL_NO" property="SRL_NO" jdbcType="BIGINT" />
+    	<result column="TRO_QTY" property="TRO_QTY" jdbcType="INTEGER" />
+	    <result column="MAT_NO" property="MAT_NO" jdbcType="VARCHAR" />
+	    <result column="MAT_NAME" property="MAT_NAME" jdbcType="VARCHAR" />
+	    <result column="VEN_SN" property="VEN_SN" jdbcType="VARCHAR" />
+	    <result column="TAG_NO" property="TAG_NO" jdbcType="VARCHAR" />
+	    <result column="CHN_NM" property="CHN_NM" jdbcType="VARCHAR" />
+	 </resultMap>
+	 
+  	<select id="search" parameterType="hashmap" resultMap="dscrResultMap">
+		select a.*,
+			(select dept_name from tb_org_dept where dept_id=(select dept_id from tb_auth_personnel where psn_no=a.APP_USER)) deptIdDscr ,
+			(SELECT WH_NAME FROM TB_INV_WAREHOUSE WHERE WH_ID=a.wh_id) whIdDscr,
+			(SELECT SITE_NAME FROM TB_SITE_MAIN WHERE SITE_ID=a.site_ID) siteIdDscr,
+			(SELECT BTS_SITE_ID FROM TB_SITE_MAIN WHERE SITE_ID=a.site_ID) BTS_SITE_ID,
+			(select chn_nm from tb_auth_personnel where psn_no=a.APP_USER) app_userName,
+			(select name from tb_sys_lookup where type='INV_MR_STATUS' and code=a.status) statusDscr 
+		from TB_INV_MATERIAL_OPT a
+		where a.opt_type='MRQ'
+			<if test="optId!=null and optId!=''">
+				AND OPT_ID like '%'+#{optId}+'%'
+			</if>
+			<if test="siteId!=null and siteId!=''">
+				AND SITE_ID like '%'+#{siteId}+'%'
+			</if>
+			<if test="status!=null and status!=''">
+				AND status = #{status}
+			</if>
+			<if test="wareHouse!=null and wareHouse!=''">
+				AND WH_ID = #{wareHouse}
+			</if>
+			<if test="personnel!=null and personnel!=''">
+				AND APP_USER = #{personnel}
+			</if>
+			<if test="deptApply!=null and deptApply!=''">
+				AND APP_USER in (select psn_no from TB_AUTH_PERSONNEL where dept_id=#{deptApply})
+			</if>
+	</select>
+	
+  	<select id="searchJoinMrD" parameterType="hashmap" resultMap="ResultJoinMRDMap">
+		select SUM(ABS(d.qty)) as qty,SUM(d.lack_qty) as lack_qty,ISNULL(SUM(CASE e.std_qty WHEN NULL THEN 0 ELSE e.std_qty END ),0) as storage_qty ,
+		a.OPT_ID ,d.mat_no,f.MAT_NAME as mat_name,
+		g.chn_nm as app_userName,a.ORDER_ID,
+		h.WH_NAME as whIdDscr,
+		<!-- i.SITE_NAME as siteIdDscr-->
+		i.BTS_SITE_ID as siteIdDscr
+		
+		from TB_INV_MATERIAL_OPT a
+        left join TB_INV_MR_D d
+        on a.opt_id=d.opt_id
+        left join TB_INV_INV e
+        on e.wh_id=a.wh_id and e.mat_no=d.mat_no
+        left join TB_INV_MATERIAL f
+        on f.mat_no=d.mat_no
+        left join TB_AUTH_PERSONNEL g
+        on g.PSN_NO=a.app_user
+        left join TB_INV_WAREHOUSE h
+        on h.WH_ID=a.wh_id
+        left join TB_SITE_MAIN i
+        on i.SITE_ID=a.site_ID
+		where 
+        a.opt_type='MRQ'	 
+		and  d.lack_qty>0
+			<if test="mat_no!=null and mat_no!=''">
+				AND d.mat_no like #{mat_no}
+			</if>
+			<if test="wh_id!=null and wh_id!=''">
+				AND a.wh_id = #{wh_id}
+			</if>
+			<if test="dept_id!=null and dept_id!=''">
+				AND a.app_user in (select psn_no from TB_AUTH_PERSONNEL where dept_id=#{dept_id}
+				<if test="psn_no!=null and psn_no!=''">
+				and psn_no=#{psn_no}
+				</if>
+				)   
+			</if>
+			<if test="reqStartDateStr!=null and reqStartDateStr!='' and reqEndDateStr!=null and reqEndDateStr!=''">
+				and a.req_date between convert(datetime,#{reqStartDateStr},121) and convert(datetime,#{reqEndDateStr},121) 
+			</if>
+			<if test="appStartDateStr!=null and rappStartDateStr!='' and appEndDateStr!=null and appEndDateStr!=''">
+				and a.app_time between convert(datetime,#{appStartDateStr},121) and convert(datetime,#{appEndDateStr},121) 
+			</if>
+			group by 
+a.OPT_ID ,d.mat_no,f.MAT_NAME ,
+		g.chn_nm ,a.ORDER_ID,
+		h.WH_NAME ,
+		i.bts_site_id
+			<if test="orderOptId">
+				order by a.OPT_ID DESC
+			</if>
+	</select>
+	
+	<!--<select id="searchJoinMrD" parameterType="hashmap" resultMap="ResultJoinMRDMap">
+		select a.OPT_ID ,d.mat_no,(SELECT MAT_NAME FROM TB_INV_MATERIAL WHERE mat_no=d.mat_no) mat_name,ABS(d.qty) as qty,d.lack_qty,
+		(select chn_nm  from TB_AUTH_PERSONNEL where PSN_NO=a.app_user)  app_userName,a.ORDER_ID,
+		(SELECT WH_NAME FROM TB_INV_WAREHOUSE WHERE WH_ID=a.wh_id) whIdDscr,
+		(SELECT SITE_NAME FROM TB_SITE_MAIN WHERE SITE_ID=a.site_ID) siteIdDscr
+		from TB_INV_MATERIAL_OPT a,TB_INV_MR_D d
+		where a.opt_type='MRQ'
+		and  a.opt_id=d.opt_id
+		and  d.lack_qty>0
+			<if test="mat_no!=null and mat_no!=''">
+				AND d.mat_no like #{mat_no}
+			</if>
+			<if test="wh_id!=null and wh_id!=''">
+				AND a.wh_id = #{wh_id}
+			</if>
+			<if test="dept_id!=null and dept_id!=''">
+				AND a.app_user in (select psn_no from TB_AUTH_PERSONNEL where dept_id=#{dept_id}
+				<if test="psn_no!=null and psn_no!=''">
+				and psn_no=#{psn_no}
+				</if>
+				)   
+			</if>
+			<if test="reqStartDateStr!=null and reqStartDateStr!='' and reqEndDateStr!=null and reqEndDateStr!=''">
+				and a.req_date between convert(datetime,#{reqStartDateStr},121) and convert(datetime,#{reqEndDateStr},121) 
+			</if>
+			<if test="appStartDateStr!=null and rappStartDateStr!='' and appEndDateStr!=null and appEndDateStr!=''">
+				and a.app_time between convert(datetime,#{appStartDateStr},121) and convert(datetime,#{appEndDateStr},121) 
+			</if>
+			<if test="orderOptId">
+				order by a.OPT_ID DESC
+			</if>
+	</select>-->
+	
+  	<select id="searchRTN" parameterType="hashmap" resultMap="dscrResultMap">
+		select a.*,(select dept_name from tb_org_dept where dept_id=(select dept_id from tb_auth_personnel where psn_no=a.APP_USER)) deptIdDscr  ,
+		(SELECT WH_NAME FROM TB_INV_WAREHOUSE WHERE WH_ID=a.wh_id) whIdDscr,
+		(SELECT SITE_NAME FROM TB_SITE_MAIN WHERE SITE_ID=a.site_ID) siteIdDscr,
+		(SELECT BTS_SITE_ID FROM TB_SITE_MAIN WHERE SITE_ID=a.site_ID) BTS_SITE_ID,
+		(select chn_nm from tb_auth_personnel where psn_no=a.APP_USER) app_userName,
+		(select name from tb_sys_lookup where type='INV_RT_STATUS' and code=a.status) statusDscr 
+		from TB_INV_MATERIAL_OPT a
+		where a.opt_type='RTN'
+			<if test="optId!=null and optId!=''">
+				AND OPT_ID like '%'+#{optId}+'%'
+			</if>
+			<if test="siteId!=null and siteId!=''">
+				AND SITE_ID like '%'+#{siteId}+'%'
+			</if>
+			<if test="status!=null and status!=''">
+				AND status = #{status}
+			</if>
+			<if test="wareHouse!=null and wareHouse!=''">
+				AND WH_ID = #{wareHouse}
+			</if>
+			<if test="personnel!=null and personnel!=''">
+				AND APP_USER = #{personnel}
+			</if>
+			<if test="deptApply!=null and deptApply!=''">
+				AND APP_USER in (select psn_no from TB_AUTH_PERSONNEL where dept_id=#{deptApply})
+			</if>
+			
+	</select>
+	
+  	<select id="searchTodo" parameterType="hashmap" resultMap="dscrResultMap">
+		select a.*,
+			(select dept_name from tb_org_dept where dept_id=(select dept_id from tb_auth_personnel where psn_no=a.APP_USER)) deptIdDscr ,
+			(SELECT WH_NAME FROM TB_INV_WAREHOUSE WHERE WH_ID=a.wh_id) whIdDscr,
+			(SELECT SITE_NAME FROM TB_SITE_MAIN WHERE SITE_ID=a.site_ID) siteIdDscr,
+			(select chn_nm from tb_auth_personnel where psn_no=a.APP_USER) app_userName,
+			(select name from tb_sys_lookup where type=#{type} and code=a.status) statusDscr,
+			(SELECT BTS_SITE_ID FROM TB_SITE_MAIN WHERE SITE_ID=a.site_ID) BTS_SITE_ID
+		from TB_INV_MATERIAL_OPT a
+		where a.opt_type=#{optType}
+		and a.wh_id in (select wh_id from tb_inv_warehouse where domain = (select domain from tb_org_dept where dept_id=(
+			select dept_id from tb_auth_personnel where psn_no=#{loginUser}
+		)))
+			<!-- <if test="status!=null and status!=''">
+				AND status = #{status}
+			</if> -->
+			<if test="status!=null and status!=''">
+			and status in
+			<foreach collection="status" item="item" open="("
+				separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+	
+	<select id="selectMaterialTransferBySiteWork" resultMap="ResultSiteWorkTroMap" >
+		  select materialOpt.OPT_ID,materialOpt.ORDER_ID,materialOpt.ORDER_ID_IN,
+	         materialOpt.SITE_ID,siteWork.SITE_NAME,siteWorkOrder.REP_DEPT,
+			 dept.DEPT_NAME,materialOpt.CR_TIME
+		  from TB_INV_MATERIAL_OPT materialOpt
+		  left outer join TB_SITE_WORK_ORDER siteWorkOrder ON
+				siteWorkOrder.ORDER_ID = materialOpt.ORDER_ID
+		  left outer join TB_SITE_WORK siteWork ON
+				 siteWork.WORK_ID = siteWorkOrder.WORK_ID
+			AND siteWork.SITE_ID = materialOpt.SITE_ID
+		join TB_ORG_DEPT dept on 
+				dept.DEPT_ID = siteWorkOrder.REP_DEPT
+	
+	left outer join TB_SITE_WORK_ORDER siteWorkOrderIn ON
+				siteWorkOrderIn.ORDER_ID = materialOpt.ORDER_ID_IN
+		  left outer join TB_SITE_WORK siteWorkIn ON
+				 siteWorkIn.WORK_ID = siteWorkOrderIn.WORK_ID
+				 
+		WHERE materialOpt.OPT_TYPE = 'TRO'
+		<if test="deptId != null and deptId != '' ">
+			AND siteWorkOrder.REP_DEPT = #{deptId}
+		</if>		
+		<if test="orderId != null and orderId != '' ">
+			AND materialOpt.ORDER_ID = #{orderId}
+		</if>
+		<if test="orderIdIn != null and orderIdIn != '' ">
+			AND materialOpt.ORDER_ID_IN = #{orderIdIn}
+		</if>
+		<if test="btsSiteIdOut != null and btsSiteOut != '' ">
+			AND siteWork.BTS_SITE_ID = #{btsSiteIdOut}
+		</if>
+		<if test="btsSiteIdIn != null and btsSiteIdIn != '' ">
+			AND siteWorkIn.BTS_SITE_ID = #{btsSiteIdIn}
+		</if>
+		<if test="siteNameIn != null and siteNameIn != '' ">
+			AND siteWorkIn.SITE_NAME LIKE <![CDATA['%'+ #{siteNameIn} + '%']]>
+		</if>
+		<if test="siteNameOut != null and siteNameOut != '' ">
+			AND siteWork.SITE_NAME LIKE <![CDATA['%'+ #{siteNameOut} + '%']]>
+		</if>
+		<if test="crTimeStart != null and crTimeStart != '' ">
+			AND materialOpt.CR_TIME >= #{crTimeStart}
+		</if>
+		<if test="crTimeEnd != null and crTimeEnd != '' ">
+			AND materialOpt.CR_TIME <![CDATA[<]]> DATEADD(day,1,#{crTimeEnd})
+		</if>
+	</select>
+	
+	<select id="selectMaterialOptByCondistions" parameterType="com.foya.noms.dto.inv.TbInvMaterialOptDTO" resultMap="ResultSiteWorkTroMap" >
+				SELECT   materialOpt.OPT_ID,materialOpt.ORDER_ID,materialOpt.ORDER_ID_IN,materialOpt.APP_TIME,
+				         materialOpt.SITE_ID,siteWork.SITE_NAME,siteWorkOrder.REP_DEPT,materialOpt.OS_ID,
+						 dept.DEPT_NAME,materialOpt.CR_TIME,
+						 materialOpt.STATUS,syslookup.NAME STATUS_NAME,materialOpt.OPT_TYPE,
+						 materialOpt.WH_ID,
+						 warehouse.WH_NAME,
+						 siteWork.EQP_MODEL_ID,siteWork.EQP_TYPE_ID,eqpModel.EQP_MODEL,
+						 eqpType.EQP_NAME,
+						 materialOpt.WORK_TYPE,
+						 company.CO_NAME,
+						 sitework.BTS_SITE_ID
+			   FROM TB_INV_MATERIAL_OPT materialOpt
+			   left outer join TB_SITE_WORK_ORDER siteWorkOrder ON
+							siteWorkOrder.ORDER_ID = materialOpt.ORDER_ID
+		       left outer join TB_SITE_WORK siteWork ON
+							 siteWork.WORK_ID = siteWorkOrder.WORK_ID
+						AND siteWork.SITE_ID = materialOpt.SITE_ID
+				left join TB_SITE_OUTSOURCING outsourcing ON
+				 outsourcing.OS_ID = materialOpt.OS_ID	
+			   left join TB_COM_EQP_TYPE eqpType ON
+						 eqpType.EQP_TYPE_ID = siteWork.eqp_type_id
+			   left join TB_COM_EQP_MODEL eqpModel ON
+						    eqpModel.EQP_MODEL_ID = siteWork.EQP_MODEL_ID		 
+			   left join TB_COM_COMPANY company ON
+						  company.CO_VAT_NO = outsourcing.CO_VAT_NO
+					join TB_ORG_DEPT dept on 
+							dept.DEPT_ID = siteWorkOrder.REP_DEPT
+			   left outer join TB_SITE_WORK_ORDER siteWorkOrderIn ON
+							siteWorkOrderIn.ORDER_ID = materialOpt.ORDER_ID_IN
+			   left outer join TB_SITE_WORK siteWorkIn ON
+							 siteWorkIn.WORK_ID = siteWorkOrderIn.WORK_ID
+			   left outer join TB_INV_WAREHOUSE warehouse ON
+			     warehouse.wh_id = materialOpt.wh_id
+			      left outer join TB_SYS_LOOKUP syslookup ON
+				   (syslookup.type='INV_MR_STATUS' and syslookup.CODE = materialOpt.status) OR
+				  (syslookup.type='INV_RT_STATUS' and syslookup.CODE = materialOpt.status)
+				 <where>
+				 	materialOpt.OPT_TYPE != 'TRO'
+				 	<if test="OS_ID != null  and OS_ID != ''">
+				 		AND materialOpt.OS_ID = #{OS_ID}
+				 	</if>
+				 </where>
+				 ORDER BY materialOpt.OPT_ID
+	</select>
+	
+	<select id="selectForExportMaterialExeclTitle" parameterType="com.foya.noms.dto.inv.TbInvMaterialOptDTO" resultMap="ResultSiteWorkTroMap">
+		select workOrder.REP_DEPT,company.CO_NAME,
+        siteWork.WORK_TYPE,outsourcing.OS_ID,
+	    sitework.BTS_SITE_ID,siteWork.SITE_NAME,dept.DEPT_NAME,
+	    siteWork.EQP_MODEL_ID,siteWork.EQP_TYPE_ID,eqpModel.EQP_MODEL,
+		eqpType.EQP_NAME,siteWork.ADDR
+						 
+		from tb_site_work_order workOrder
+		left outer join TB_SITE_WORK siteWork ON
+		 siteWork.WORK_ID = workOrder.WORK_ID
+		 left join TB_SITE_OUTSOURCING outsourcing ON
+						 outsourcing.ORDER_ID = workOrder.ORDER_ID	
+		left join TB_COM_EQP_TYPE eqpType ON
+								 eqpType.EQP_TYPE_ID = siteWork.eqp_type_id
+					   left join TB_COM_EQP_MODEL eqpModel ON
+								    eqpModel.EQP_MODEL_ID = siteWork.EQP_MODEL_ID		 
+					   left join TB_COM_COMPANY company ON
+								  company.CO_VAT_NO = outsourcing.CO_VAT_NO
+							join TB_ORG_DEPT dept on 
+									dept.DEPT_ID = workOrder.REP_DEPT
+					<where>
+				 	<if test="ORDER_ID != null  and ORDER_ID != ''">
+				 		AND workOrder.ORDER_ID = #{ORDER_ID}
+				 	</if>
+				 </where>
+		</select>
+	
+	<select id="selectTroDetail" resultMap="ResultSiteWorkTroMap">
+		select  TRO.MAT_NO,TRO.SRL_NO ,
+				material.MAT_NAME,
+				invSrl.VEN_SN,invSrl.TAG_NO,
+				TRO.TRO_QTY
+		from  (
+				select  OS_ID,MAT_NO,ISNULL(SRL_NO,0) as SRL_NO,sum(b.QTY) as TRO_QTY, a.ORDER_ID from
+						TB_INV_MATERIAL_OPT a
+				left join TB_INV_TRO_D b on a.OPT_ID=b.OPT_ID 
+					where a.OPT_TYPE='TRO' AND a.OPT_ID=#{optId}
+					group by OS_ID,MAT_NO,SRL_NO, a.ORDER_ID
+			) TRO
+		left outer join TB_INV_MATERIAL material
+		on 	TRO.MAT_NO=material.MAT_NO
+		left outer join TB_INV_SRL invSrl
+		on 	TRO.SRL_NO=invSrl.SRL_NO		
+	</select>
+	
+	<select id="selectTroHistory" resultMap="ResultSiteWorkTroMap" >
+		select  tro.OPT_ID,
+				tro.ORDER_ID,
+				tro.SITE_ID,
+				tro.OS_ID,
+				tro.WH_ID,
+				tro.ORDER_ID_IN,
+				tro.OS_ID_IN,
+				personnel.CHN_NM,
+				dept.DEPT_NAME,
+				tro.CR_TIME,
+				tro.OPT_DESC 
+		from tb_inv_material_opt tro
+		left join TB_AUTH_PERSONNEL personnel ON
+		  personnel.PSN_NO = tro.APP_USER
+		left join TB_ORG_DEPT dept ON
+		  dept.DEPT_ID = personnel.DEPT_ID
+		where opt_type='TRO'
+		AND OPT_ID = #{optId}
+	</select>
+	
+	<select id="selectInsItemOnSiteForOrder" resultType="int">
+<!-- 		select count(*) as insNum from ( -->
+<!-- 		    select INS.ORDER_ID as orderId,INS.OS_ID as osId,INS.MAT_NO as matNo,INS.SRL_NO as srlNo, -->
+<!-- 		    material.MAT_NAME as matName,material.CTRL_TYPE as ctrlType, -->
+<!-- 		    invSrl.VEN_SN as venSn,invSrl.TAG_NO as tagNo, -->
+<!-- 		    QTY_INS as qtyIns, -->
+<!-- 		    QTY_REM as qtyRem, -->
+<!-- 		    (ISNULL(QTY_INS,0)-ISNULL(QTY_REM,0)) as assetQty  -->
+<!-- 		    from  -->
+<!-- 		    ( -->
+<!-- 		    select  ORDER_ID,OS_ID,MAT_NO,ISNULL(SRL_NO,0) as SRL_NO,sum(b.QTY) as QTY_INS from -->
+<!-- 		    TB_INV_MATERIAL_OPT a -->
+<!-- 		    left join TB_INV_INS_REM_D b on a.OPT_ID=b.OPT_ID  -->
+<!-- 		    where a.OPT_TYPE='INS' -->
+<!-- 		    group by ORDER_ID,OS_ID,MAT_NO,SRL_NO -->
+<!-- 		    ) INS  -->
+<!-- 		    left join -->
+<!-- 		    ( -->
+<!-- 		    select  ORDER_ID,OS_ID,MAT_NO,ISNULL(SRL_NO,0) as SRL_NO,sum(b.QTY) as QTY_REM from -->
+<!-- 		    TB_INV_MATERIAL_OPT a -->
+<!-- 		    left join TB_INV_INS_REM_D b on a.OPT_ID=b.OPT_ID  -->
+<!-- 		    where a.OPT_TYPE='REM' -->
+<!-- 		    group by ORDER_ID,OS_ID,MAT_NO,SRL_NO -->
+<!-- 		    ) REM on INS.OS_ID=REM.OS_ID and INS.MAT_NO=REM.MAT_NO and INS.SRL_NO=REM.SRL_NO -->
+		
+<!-- 		    left outer join TB_INV_MATERIAL material -->
+<!-- 		    on INS.MAT_NO=material.MAT_NO -->
+<!-- 		    left outer join TB_INV_SRL invSrl -->
+<!-- 		    on INS.SRL_NO=invSrl.SRL_NO -->
+		
+<!-- 		    where INS.ORDER_ID = #{orderId} -->
+<!-- 		) a -->
+<!-- 		where assetQty != 0 -->
+		select count(*) as insNum from (
+		    select INS.ORDER_ID as orderId,INS.OS_ID as osId,INS.MAT_NO as matNo,INS.SRL_NO as srlNo,
+		    material.MAT_NAME as matName,material.CTRL_TYPE as ctrlType,
+		    invSrl.VEN_SN as venSn,invSrl.TAG_NO as tagNo,
+		    QTY_INS as qtyIns,
+		    QTY_REM as qtyRem,
+		    (ISNULL(QTY_INS,0)-ISNULL(QTY_REM,0)) as assetQty --工單領料安裝未拆下之數量
+		    from 
+		    (
+		     --工單領料
+		    select  ORDER_ID,OS_ID,MAT_NO,ISNULL(SRL_NO,0) as SRL_NO from
+		    TB_INV_MATERIAL_OPT a
+		    inner join TB_INV_MR_ACT b on a.OPT_ID=b.OPT_ID and (a.STATUS='MR04' or a.STATUS='MR05')
+		              where a.OPT_TYPE='MRQ' AND ORDER_ID = #{orderId}
+		              group by ORDER_ID,OS_ID,MAT_NO,SRL_NO
+		    ) MRQ
+		    left join
+		    (
+		     --工單領料安裝數
+		    select  ORDER_ID,OS_ID,MAT_NO,ISNULL(SRL_NO,0) as SRL_NO,sum(b.QTY) as QTY_INS from
+		    TB_INV_MATERIAL_OPT a    
+		    left join TB_INV_INS_REM_D b on a.OPT_ID=b.OPT_ID 
+		    where a.OPT_TYPE='INS'
+		    group by ORDER_ID,OS_ID,MAT_NO,SRL_NO
+		    ) INS on MRQ.OS_ID=INS.OS_ID and MRQ.MAT_NO=INS.MAT_NO and MRQ.SRL_NO=INS.SRL_NO
+		    left join
+		    (
+		    --工單領料拆下數
+		    select  ORDER_ID,OS_ID,MAT_NO,ISNULL(SRL_NO,0) as SRL_NO,sum(b.QTY) as QTY_REM from
+		    TB_INV_MATERIAL_OPT a
+		    left join TB_INV_INS_REM_D b on a.OPT_ID=b.OPT_ID 
+		    where a.OPT_TYPE='REM'
+		    group by ORDER_ID,OS_ID,MAT_NO,SRL_NO
+		    ) REM on MRQ.OS_ID=REM.OS_ID and MRQ.MAT_NO=REM.MAT_NO and MRQ.SRL_NO=REM.SRL_NO
+		
+		    left outer join TB_INV_MATERIAL material
+		    on MRQ.MAT_NO=material.MAT_NO
+		    left outer join TB_INV_SRL invSrl
+		    on MRQ.SRL_NO=invSrl.SRL_NO    
+		) a
+		where assetQty != 0
+	</select>
+</mapper>

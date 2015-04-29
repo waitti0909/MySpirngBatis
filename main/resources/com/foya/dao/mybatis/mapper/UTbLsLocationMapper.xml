@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbLsLocationMapper">
+
+	<!--************************************************************************************************************ -->
+	<!--************************************************************************************************************ -->
+	<!--************************************************************************************************************ -->
+
+	<resultMap id="lsLocationResultMap" type="com.foya.noms.dto.ls.TbLsLocationCompleteDTO">
+		<result column="prepaidBalanceSum" property="prepaidBalanceSum" />
+		<result column="PRE_PR_END_DATE" property="payLocationInfoEndDate" />
+	</resultMap>
+
+	<sql id="lsLocationColumns">
+		lsLocation.LS_NO,
+		lsLocation.LS_VER,
+		lsLocation.LOCATION_ID,
+		lsLocation.ZIP_CODE,
+		lsLocation.DOMAIN,
+		lsLocation.PAY_BEGIN_DATE,
+		lsLocation.LS_E_DATE,
+		lsLocation.APP_DEPT_ID,
+		lsLocation.APP_USER,
+		lsLocation.APP_TIME,
+		lsLocation.TRMN_DEPT_ID,
+		lsLocation.TRMN_USER,
+		lsLocation.TRMN_TIME,
+		lsLocation.ELEC_PLUS,
+		lsLocation.PLUS_ALOC,
+		lsLocation.EFF_DATE,
+		lsLocation.END_DATE,
+		lsLocation.RENT_AMT,
+		lsLocation.INCR_MONTH,
+		lsLocation.INCR_MODEL,
+		lsLocation.INCR_RANGE,
+		lsLocation.INCR_BEGIN_M,
+		lsLocation.INCR_BEGIN_D,
+		lsLocation.NEXT_INCR,
+		lsLocation.EQP_TYPE_ID,
+		lsLocation.EQP_MODEL_ID,
+		lsLocation.PLDG_AMT,
+		lsLocation.EST_COST,
+		lsLocation.EST_ELEC,
+		lsLocation.EST_DT,
+		lsLocation.EST_HOA,
+		lsLocation.EST_OTHERS,
+		lsLocation.EST_TRAFFIC,
+		lsLocation.EST_ERL,
+		lsLocation.EST_INCOME,
+		lsLocation.BLDG_SM,
+		lsLocation.ORG_RENT,
+		lsLocation.CP_RISE,
+		lsLocation.REDUCE_CNT,
+		lsLocation.REDUCE_AMT,
+		lsLocation.MAIN_DOMAIN,
+		lsLocation.IMPROVE,
+		lsLocation.CR_USER,
+		lsLocation.CR_TIME,
+		lsLocation.MD_USER,
+		lsLocation.MD_TIME,
+		lsLocation.AREA_AVG
+	</sql>
+
+	<!-- 取得合約站點檔 -->
+	<select id="getLsLocationData" resultMap="lsLocationResultMap"
+		parameterType="String">
+		Select
+		<include refid="lsLocationColumns" />
+		,
+		(select SUM(G.prepayment_balance) from TB_PAY_PREPAYMENT G,
+		TB_PAY_PAYMENT H
+		where
+		G.payment_seq_nbr = H.seq_nbr and G.contract_no =
+		#{contractNo}
+		and G.payment_req_no = #{paymentReqNo}
+		and H.location_id=
+		lsLocation.LOCATION_ID
+		) as prepaidBalanceSum
+		,
+		payLocationInfo.PRE_PR_END_DATE
+		From TB_LS_LOCATION lsLocation
+		Join
+		TB_PAY_LOCATION_INFO
+		payLocationInfo
+		On
+		lsLocation.LOCATION_ID =
+		payLocationInfo.LOCATION_ID
+		Where
+		lsLocation.LS_NO = #{contractNo}
+		And
+		#{appDate} Between CONVERT(date,lsLocation.PAY_BEGIN_DATE) And
+		CONVERT(date,lsLocation.LS_E_DATE)
+	</select>
+
+	<!--************************************************************************************************************ -->
+	<!--************************************************************************************************************ -->
+	<!--************************************************************************************************************ -->
+	<select id="getLeaseLocation" resultMap="leaseLocationMap"
+		parameterType="String">
+		select a.* ,b.ADDR,b.LOC_NAME  
+		from tb_ls_location a   , tb_site_location b
+		where a.location_id = b.location_id and
+		 a.ls_no = #{lsNo} 
+		 
+		  <choose>
+		    <when test="lsVer != null and lsVer != ''">
+		      and a.ls_ver =#{lsVer} 
+		    </when>
+		    <otherwise>
+		   	 and a.ls_ver = (Select max(CONVERT(INT, LS_VER)) from tb_ls_location where ls_no = #{lsNo})
+		    </otherwise>
+		  </choose>
+		 
+		<if test="domain != null and domain != ''">
+			and a.DOMAIN = #{domain}
+		</if>
+		order by a. md_time desc
+	</select>
+	
+	<select id="getLeaseLocationAdded" resultMap="leaseLocationMap"
+		parameterType="String">
+		select a.* ,b.ADDR,b.LOC_NAME  
+		from tb_ls_location_added a   , tb_site_location b
+		where a.location_id = b.location_id and
+		 a.app_seq = #{appSeq} 
+		 
+		<if test="domain != null and domain != ''">
+			and a.DOMAIN = #{domain}
+		</if>
+		order by a. md_time desc
+	</select>
+
+	<resultMap id="leaseLocationMap" type="com.foya.noms.dto.ls.LeaseLocationDTO">
+		
+		
+		
+    <result column="LS_NO" jdbcType="VARCHAR" property="LS_NO" />
+    <result column="LS_VER" jdbcType="VARCHAR" property="LS_VER" />
+    <result column="LOCATION_ID" jdbcType="VARCHAR" property="LOCATION_ID" />
+  
+    <result column="ADDR" property="ADDR" />
+	<result column="LOC_NAME" property="LOC_NAME" />
+	</resultMap>
+
+	<select id="getLeaseByLocation" resultMap="lsLocationResultMap"
+		parameterType="String">
+		select * from tb_ls_location a, tb_ls_main b
+		where
+		a.ls_no = b.ls_no and a.ls_ver = b.ls_ver
+		and b.ls_status = #{lsStatus}
+		and a.location_id = #{locationId}
+	</select>
+	<select id="getLsLocationByLsNoVer" resultMap="BaseResultMap" parameterType="String">
+		select * from tb_ls_location where LS_NO = #{lsNo}
+		and ls_ver = (Select max(CONVERT(INT, LS_VER)) from tb_ls_location where ls_no = #{lsNo} and LOCATION_ID = #{locId})
+		and LOCATION_ID = #{locId}
+	</select>
+	
+	<select id="getLsSiteLocationByLsNoVer" resultMap="leaseLocationMap" parameterType="String">
+		select * from tb_ls_location where LS_NO = #{lsNo}
+		<choose>
+		    <when test="lsVer != null and lsVer != ''">
+		      and ls_ver =#{lsVer} 
+		    </when>
+		    <otherwise>
+		   	 and ls_ver = (Select max(CONVERT(INT, LS_VER)) from tb_ls_location where ls_no = #{lsNo} and LOCATION_ID = #{locId})
+		    </otherwise>
+		</choose>
+		and LOCATION_ID = #{locId}
+	</select>
+	
+	
+	<select id="getLsSiteLocationAddedByAppSeqLoc" resultMap="leaseLocationMap" parameterType="String">
+		select * from tb_ls_location_added where app_seq = #{appSeq}
+		and LOCATION_ID = #{locId}
+	</select>
+	
+	
+	
+<resultMap id="BaseResultMap" type="com.foya.dao.mybatis.model.TbLsLocation">
+    <!--
+      WARNING - @mbggenerated
+      This element is automatically generated by MyBatis Generator, do not modify.
+      This element was generated on Thu Mar 19 15:18:13 CST 2015.
+    -->
+    <id column="LS_NO" jdbcType="VARCHAR" property="LS_NO" />
+    <id column="LS_VER" jdbcType="VARCHAR" property="LS_VER" />
+    <id column="LOCATION_ID" jdbcType="VARCHAR" property="LOCATION_ID" />
+    <id column="EFF_DATE" jdbcType="TIMESTAMP" property="EFF_DATE" />
+    <result column="ZIP_CODE" jdbcType="VARCHAR" property="ZIP_CODE" />
+    <result column="DOMAIN" jdbcType="VARCHAR" property="DOMAIN" />
+    <result column="PAY_BEGIN_DATE" jdbcType="TIMESTAMP" property="PAY_BEGIN_DATE" />
+    <result column="LS_E_DATE" jdbcType="TIMESTAMP" property="LS_E_DATE" />
+    <result column="APP_DEPT_ID" jdbcType="VARCHAR" property="APP_DEPT_ID" />
+    <result column="APP_USER" jdbcType="VARCHAR" property="APP_USER" />
+    <result column="APP_TIME" jdbcType="TIMESTAMP" property="APP_TIME" />
+    <result column="TRMN_DEPT_ID" jdbcType="VARCHAR" property="TRMN_DEPT_ID" />
+    <result column="TRMN_USER" jdbcType="VARCHAR" property="TRMN_USER" />
+    <result column="TRMN_TIME" jdbcType="TIMESTAMP" property="TRMN_TIME" />
+    <result column="ELEC_PLUS" jdbcType="VARCHAR" property="ELEC_PLUS" />
+    <result column="PLUS_ALOC" jdbcType="VARCHAR" property="PLUS_ALOC" />
+    <result column="END_DATE" jdbcType="TIMESTAMP" property="END_DATE" />
+    <result column="RENT_AMT" jdbcType="DECIMAL" property="RENT_AMT" />
+    <result column="INCR_MONTH" jdbcType="DECIMAL" property="INCR_MONTH" />
+    <result column="INCR_MODEL" jdbcType="VARCHAR" property="INCR_MODEL" />
+    <result column="INCR_RANGE" jdbcType="DECIMAL" property="INCR_RANGE" />
+    <result column="INCR_BEGIN_M" jdbcType="DECIMAL" property="INCR_BEGIN_M" />
+    <result column="INCR_BEGIN_D" jdbcType="DECIMAL" property="INCR_BEGIN_D" />
+    <result column="NEXT_INCR" jdbcType="TIMESTAMP" property="NEXT_INCR" />
+    <result column="EQP_TYPE_ID" jdbcType="VARCHAR" property="EQP_TYPE_ID" />
+    <result column="EQP_MODEL_ID" jdbcType="VARCHAR" property="EQP_MODEL_ID" />
+    <result column="PLDG_AMT" jdbcType="DECIMAL" property="PLDG_AMT" />
+    <result column="EST_COST" jdbcType="DECIMAL" property="EST_COST" />
+    <result column="EST_ELEC" jdbcType="DECIMAL" property="EST_ELEC" />
+    <result column="EST_DT" jdbcType="DECIMAL" property="EST_DT" />
+    <result column="EST_HOA" jdbcType="DECIMAL" property="EST_HOA" />
+    <result column="EST_OTHERS" jdbcType="DECIMAL" property="EST_OTHERS" />
+    <result column="EST_TRAFFIC" jdbcType="DECIMAL" property="EST_TRAFFIC" />
+    <result column="EST_ERL" jdbcType="DECIMAL" property="EST_ERL" />
+    <result column="EST_INCOME" jdbcType="DECIMAL" property="EST_INCOME" />
+    <result column="BLDG_SM" jdbcType="DECIMAL" property="BLDG_SM" />
+    <result column="ORG_RENT" jdbcType="DECIMAL" property="ORG_RENT" />
+    <result column="CP_RISE" jdbcType="DECIMAL" property="CP_RISE" />
+    <result column="REDUCE_CNT" jdbcType="DECIMAL" property="REDUCE_CNT" />
+    <result column="REDUCE_AMT" jdbcType="DECIMAL" property="REDUCE_AMT" />
+    <result column="MAIN_DOMAIN" jdbcType="VARCHAR" property="MAIN_DOMAIN" />
+    <result column="IMPROVE" jdbcType="VARCHAR" property="IMPROVE" />
+    <result column="CR_USER" jdbcType="VARCHAR" property="CR_USER" />
+    <result column="CR_TIME" jdbcType="TIMESTAMP" property="CR_TIME" />
+    <result column="MD_USER" jdbcType="VARCHAR" property="MD_USER" />
+    <result column="MD_TIME" jdbcType="TIMESTAMP" property="MD_TIME" />
+    <result column="BLDG_TYPE" jdbcType="VARCHAR" property="BLDG_TYPE" />
+    <result column="PLDG_IN" jdbcType="DECIMAL" property="PLDG_IN" />
+    <result column="PLDG_PAY_DATE" jdbcType="TIMESTAMP" property="PLDG_PAY_DATE" />
+    <result column="PLDG_OUT" jdbcType="DECIMAL" property="PLDG_OUT" />
+    <result column="PLDG_OUT_DATE" jdbcType="TIMESTAMP" property="PLDG_OUT_DATE" />
+  </resultMap>
+
+	<select id="select4Pay001Detail2" resultType="com.foya.dao.mybatis.model.TbLsLocation" parameterType="String">
+	select location_id, pay_begin_date, ls_e_date,
+		(select sum(rent_amt) 
+		from TB_LS_LOCATION L2
+		where convert(date, getdate()) between eff_date and end_date and L2.ls_no=L1.ls_no and L2.location_id=L1.location_id)
+		rent_amt
+	from TB_LS_LOCATION L1
+	where ls_no=#{lsNo} and convert(date, getdate()) between pay_begin_date and ls_e_date
+	</select>  
+	
+	<select id="getLocationVerMax" resultMap="leaseLocationMap"
+		parameterType="String">
+		Select * from tb_ls_location a left outer join
+		tb_site_location b
+		on a.location_id = b.location_id
+		where a.LS_VER=(Select max(CONVERT(INT, LS_VER)) from tb_ls_location where ls_no = #{lsNo}) 
+		and a.ls_no = #{lsNo}
+		<if test="domain != null and domain != ''">
+		and a.DOMAIN = #{domain}
+		</if>
+	</select>
+	
+	<update id="updateByExampleSelective" parameterType="map">
+    <!--
+      WARNING - @mbggenerated
+      This element is automatically generated by MyBatis Generator, do not modify.
+      This element was generated on Thu Mar 19 15:18:13 CST 2015.
+    -->
+    update TB_LS_LOCATION
+    <set>
+      <if test="record.LS_NO != null">
+        LS_NO = #{record.LS_NO,jdbcType=VARCHAR},
+      </if>
+      <if test="record.LS_VER != null">
+        LS_VER = #{record.LS_VER,jdbcType=VARCHAR},
+      </if>
+      <if test="record.LOCATION_ID != null">
+        LOCATION_ID = #{record.LOCATION_ID,jdbcType=VARCHAR},
+      </if>
+      <if test="record.EFF_DATE != null">
+        EFF_DATE = #{record.EFF_DATE,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.ZIP_CODE != null">
+        ZIP_CODE = #{record.ZIP_CODE,jdbcType=VARCHAR},
+      </if>
+      <if test="record.DOMAIN != null">
+        DOMAIN = #{record.DOMAIN,jdbcType=VARCHAR},
+      </if>
+      <if test="record.PAY_BEGIN_DATE != null">
+        PAY_BEGIN_DATE = #{record.PAY_BEGIN_DATE,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.LS_E_DATE != null">
+        LS_E_DATE = #{record.LS_E_DATE,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.APP_DEPT_ID != null">
+        APP_DEPT_ID = #{record.APP_DEPT_ID,jdbcType=VARCHAR},
+      </if>
+      <if test="record.APP_USER != null">
+        APP_USER = #{record.APP_USER,jdbcType=VARCHAR},
+      </if>
+      <if test="record.APP_TIME != null">
+        APP_TIME = #{record.APP_TIME,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.TRMN_DEPT_ID != null">
+        TRMN_DEPT_ID = #{record.TRMN_DEPT_ID,jdbcType=VARCHAR},
+      </if>
+      <if test="record.TRMN_USER != null">
+        TRMN_USER = #{record.TRMN_USER,jdbcType=VARCHAR},
+      </if>
+      <if test="record.TRMN_TIME != null">
+        TRMN_TIME = #{record.TRMN_TIME,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.ELEC_PLUS != null">
+        ELEC_PLUS = #{record.ELEC_PLUS,jdbcType=VARCHAR},
+      </if>
+      <if test="record.PLUS_ALOC != null">
+        PLUS_ALOC = #{record.PLUS_ALOC,jdbcType=VARCHAR},
+      </if>
+      <if test="record.END_DATE != null">
+        END_DATE = #{record.END_DATE,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.RENT_AMT != null">
+        RENT_AMT = #{record.RENT_AMT,jdbcType=DECIMAL},
+      </if>
+     
+        INCR_MONTH = #{record.INCR_MONTH,jdbcType=DECIMAL},
+    
+   
+        INCR_MODEL = #{record.INCR_MODEL,jdbcType=VARCHAR},
+   
+        INCR_RANGE = #{record.INCR_RANGE,jdbcType=DECIMAL},
+    
+      <if test="record.INCR_BEGIN_M != null">
+        INCR_BEGIN_M = #{record.INCR_BEGIN_M,jdbcType=DECIMAL},
+      </if>
+      <if test="record.INCR_BEGIN_D != null">
+        INCR_BEGIN_D = #{record.INCR_BEGIN_D,jdbcType=DECIMAL},
+      </if>
+    
+        NEXT_INCR = #{record.NEXT_INCR,jdbcType=TIMESTAMP},
+    
+      <if test="record.EQP_TYPE_ID != null">
+        EQP_TYPE_ID = #{record.EQP_TYPE_ID,jdbcType=VARCHAR},
+      </if>
+      <if test="record.EQP_MODEL_ID != null">
+        EQP_MODEL_ID = #{record.EQP_MODEL_ID,jdbcType=VARCHAR},
+      </if>
+      <if test="record.PLDG_AMT != null">
+        PLDG_AMT = #{record.PLDG_AMT,jdbcType=DECIMAL},
+      </if>
+      <if test="record.EST_COST != null">
+        EST_COST = #{record.EST_COST,jdbcType=DECIMAL},
+      </if>
+      <if test="record.EST_ELEC != null">
+        EST_ELEC = #{record.EST_ELEC,jdbcType=DECIMAL},
+      </if>
+      <if test="record.EST_DT != null">
+        EST_DT = #{record.EST_DT,jdbcType=DECIMAL},
+      </if>
+      <if test="record.EST_HOA != null">
+        EST_HOA = #{record.EST_HOA,jdbcType=DECIMAL},
+      </if>
+      <if test="record.EST_OTHERS != null">
+        EST_OTHERS = #{record.EST_OTHERS,jdbcType=DECIMAL},
+      </if>
+      <if test="record.EST_TRAFFIC != null">
+        EST_TRAFFIC = #{record.EST_TRAFFIC,jdbcType=DECIMAL},
+      </if>
+      <if test="record.EST_ERL != null">
+        EST_ERL = #{record.EST_ERL,jdbcType=DECIMAL},
+      </if>
+      <if test="record.EST_INCOME != null">
+        EST_INCOME = #{record.EST_INCOME,jdbcType=DECIMAL},
+      </if>
+    
+        BLDG_SM = #{record.BLDG_SM,jdbcType=DECIMAL},
+    
+      <if test="record.ORG_RENT != null">
+        ORG_RENT = #{record.ORG_RENT,jdbcType=DECIMAL},
+      </if>
+     
+        CP_RISE = #{record.CP_RISE,jdbcType=DECIMAL},
+    
+   
+        REDUCE_CNT = #{record.REDUCE_CNT,jdbcType=DECIMAL},
+      
+    
+        REDUCE_AMT = #{record.REDUCE_AMT,jdbcType=DECIMAL},
+     
+        MAIN_DOMAIN = #{record.MAIN_DOMAIN,jdbcType=VARCHAR},
+     
+      <if test="record.IMPROVE != null">
+        IMPROVE = #{record.IMPROVE,jdbcType=VARCHAR},
+      </if>
+      <if test="record.CR_USER != null">
+        CR_USER = #{record.CR_USER,jdbcType=VARCHAR},
+      </if>
+      <if test="record.CR_TIME != null">
+        CR_TIME = #{record.CR_TIME,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.MD_USER != null">
+        MD_USER = #{record.MD_USER,jdbcType=VARCHAR},
+      </if>
+      <if test="record.MD_TIME != null">
+        MD_TIME = #{record.MD_TIME,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.BLDG_TYPE != null">
+        BLDG_TYPE = #{record.BLDG_TYPE,jdbcType=VARCHAR},
+      </if>
+      <if test="record.PLDG_IN != null">
+        PLDG_IN = #{record.PLDG_IN,jdbcType=DECIMAL},
+      </if>
+      <if test="record.PLDG_PAY_DATE != null">
+        PLDG_PAY_DATE = #{record.PLDG_PAY_DATE,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.PLDG_OUT != null">
+        PLDG_OUT = #{record.PLDG_OUT,jdbcType=DECIMAL},
+      </if>
+      <if test="record.PLDG_OUT_DATE != null">
+        PLDG_OUT_DATE = #{record.PLDG_OUT_DATE,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.AREA_AVG != null">
+        AREA_AVG = #{record.AREA_AVG,jdbcType=CLOB},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  
+  <sql id="Update_By_Example_Where_Clause">
+    <!--
+      WARNING - @mbggenerated
+      This element is automatically generated by MyBatis Generator, do not modify.
+      This element was generated on Thu Mar 19 15:18:13 CST 2015.
+    -->
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  
+  <select id="getEditElecCh" resultType="com.foya.dao.mybatis.model.TbLsLocation" parameterType="String">
+	SELECT
+    *
+	FROM
+    TB_LS_LOCATION 
+	WHERE
+    LOCATION_ID =
+    (
+        SELECT DISTINCT
+            LOCATION_ID
+        FROM
+            TB_LS_LOC_ELEC_ADDED
+        WHERE
+            APP_SEQ = #{appSeq}
+      )
+      and
+      LS_NO = #{lsNo}
+	</select> 
+	
+	   <select id="selectMaLsvar" parameterType="String" resultType="com.foya.dao.mybatis.model.TbLsLocation">
+   SELECT
+	MAX (TEMP.LS_VER) AS LS_VER
+FROM
+	(
+		SELECT
+			CONVERT (INT, LS_VER) AS LS_VER
+		FROM
+			TB_LS_LOCATION
+		WHERE
+			LS_NO = #{ lsNo } 
+<if test = "locateionId != null and locateionId != ''">
+		AND LOCATION_ID = #{ locateionId }  
+</if>
+	) TEMP
+   
+  
+  </select>
+</mapper>

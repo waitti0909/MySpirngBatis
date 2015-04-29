@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbLsRewardAddedMapper" >
+  <resultMap id="BaseResultMap" type="com.foya.noms.dto.ls.TbLsRewardAddedDTO" >
+    <result column="LS_NO" property="LS_NO" jdbcType="VARCHAR" />
+    <result column="LS_VER" property="LS_VER" jdbcType="VARCHAR" />
+    <result column="REWARD_TYPE" property="REWARD_TYPE" jdbcType="VARCHAR" />
+    <result column="REWARD_ID" property="REWARD_ID" jdbcType="VARCHAR" />
+    <result column="CUST_NAME" property="CUST_NAME" jdbcType="VARCHAR" />
+    <result column="PHONE_NBR" property="PHONE_NBR" jdbcType="VARCHAR" />
+    <result column="PRCING" property="PRCING" jdbcType="VARCHAR" />
+    <result column="REWARD_QTY" property="REWARD_QTY" jdbcType="DECIMAL" />
+    <result column="ESTIMATE_AMT" property="ESTIMATE_AMT" jdbcType="DECIMAL" />
+    <result column="GET_DATE" property="GET_DATE" jdbcType="TIMESTAMP" />
+    <result column="REWARD_RESN" property="REWARD_RESN" jdbcType="VARCHAR" />
+    <result column="REWARD_DESC" property="REWARD_DESC" jdbcType="VARCHAR" />
+    <result column="CR_USER" property="CR_USER" jdbcType="VARCHAR" />
+    <result column="CR_TIME" property="CR_TIME" jdbcType="TIMESTAMP" />
+    <result column="MD_USER" property="MD_USER" jdbcType="VARCHAR" />
+    <result column="MD_TIME" property="MD_TIME" jdbcType="TIMESTAMP" />
+    <result column="ADDED_STATE" property="ADDED_STATE" jdbcType="VARCHAR" />
+    <result column="APP_SEQ" property="APP_SEQ" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <select id="getLsRewardAddedByAppSeq" parameterType="hashmap" resultMap="BaseResultMap">
+    select 
+    LS_NO, LS_VER, REWARD_TYPE, REWARD_ID, CUST_NAME, PHONE_NBR, PRCING, REWARD_QTY, 
+    ESTIMATE_AMT, GET_DATE, REWARD_RESN, REWARD_DESC, CR_USER, CR_TIME, MD_USER, MD_TIME, 
+    ADDED_STATE, APP_SEQ
+    from TB_LS_REWARD_ADDED
+    where LS_NO =#{lsNo}
+    and APP_SEQ=#{appSeq}
+    and ADDED_STATE=#{addState}
+  </select>
+
+</mapper>

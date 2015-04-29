@@ -1,0 +1,42 @@
+package com.foya.noms.service.common;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.foya.dao.mybatis.model.TbSysEmailTemplate;
+import com.foya.dao.mybatis.model.TbSysEmailTemplateExample;
+import com.foya.noms.GenericTest;
+import com.foya.noms.dao.common.EmailTemplateDao;
+import com.foya.noms.enums.WorkflowEmailType;
+
+public class EmailTemplateServiceTest extends GenericTest {
+
+	@Autowired
+	private EmailTemplateDao emailTemplateDao;
+
+	@Test
+	public void testGetEmailTemplate() {
+		String type = WorkflowEmailType.workflow_todo.name();
+		TbSysEmailTemplateExample example = new TbSysEmailTemplateExample();
+		example.createCriteria().andEMAIL_TYPEEqualTo(type);
+		List<TbSysEmailTemplate> list = emailTemplateDao.findByCondition(example);
+		Assert.assertNotNull(list);
+		Assert.assertFalse(list.isEmpty());
+	}
+
+	public void testGetEmailTemplates() {
+		List<String> types = new ArrayList<>();
+		for (WorkflowEmailType value : WorkflowEmailType.values()) {
+			types.add(value.name());
+		}
+		TbSysEmailTemplateExample example = new TbSysEmailTemplateExample();
+		example.createCriteria().andEMAIL_TYPEIn(types);
+		List<TbSysEmailTemplate> list = emailTemplateDao.findByCondition(example);
+		Assert.assertNotNull(list);
+		Assert.assertFalse(list.isEmpty());
+	}
+}

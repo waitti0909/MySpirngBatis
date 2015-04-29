@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbPayPaymentMapper">
+	<select id="selectTbPayPaymentByLocationId" resultType="com.foya.noms.dto.pay.TbPayPaymentDTO" parameterType="hashmap">	 
+	Select payment_user_id, payment_user_name, 
+		(select lessor_id+'('+lessor_name+')' from TB_LS_LOC_PAYMENT 
+		where 
+			ls_no=#{contractNo} and location_id=#{locationId} 
+			and convert(date,#{appDate}) between eff_date and end_date and lessor_id=P.payment_req_user_id) lessorName,
+		(select lookup_code_desc from TB_PAY_LOOKUP_CODE where lookup_type='PAYMENT_METHOD' and lookup_code=payment_method )
+		paymethodName,
+		(Select pay_amt from TB_LS_LOC_PAYMENT L 
+		where ls_no=#{contractNo}
+			and location_id=#{locationId} 
+			and L.RECIPIENT_ID=P.payment_user_id
+			and LESSOR_ID = P.payment_req_user_id 
+			<if test="processType == 'REN01'">		
+			and PAYMENT_ITEM='RD'
+			</if>
+			<if test="processType != 'REN01'">	
+			and PAYMENT_ITEM='R'
+			</if>
+			and convert(date,#{appDate}) between EFF_DATE and END_DATE
+		) rentAmt,
+		tax_exclusive_total_amt+total_business_tax totalAmt,
+		tax_exclusive_total_amt,
+		total_business_tax,
+		total_income_tax,
+		total_NHI_amt,
+		tax_exclusive_total_amt+total_business_tax-total_income_tax-total_NHI_amt sumAllAmt		
+	from TB_PAY_PAYMENT P
+	where location_id=#{locationId} and payment_req_no = #{paymentReqNo} and payment_req_item_no = #{paymentReqItemNo}
+	
+	</select>
+	
+	<!--************************************************************************************************************-->
+	<!--************************************************************************************************************-->
+	<!--************************************************************************************************************-->
+	
+    <resultMap id="payPaymentResultMap" type="com.foya.noms.dto.pay.TbPayPaymentCompleteDTO">
+    	<result column="LESSOR_ID" property="locPaymentUserId" />
+    	<result column="LESSOR_NAME" property="locPaymentUserName" />
+    	<result column="PAY_AMT" property="locPaymentPayAmt" />
+    	<result column="BUSINESS_TAX" property="locPaymentBusinessTax" />
+    </resultMap>
+    
+    <sql id="payPaymentColumns">
+	    payPayment.SEQ_NBR,
+		payPayment.PAYMENT_REQ_NO,
+		payPayment.PAYMENT_REQ_USER_ID,
+		payPayment.PAYMENT_USER_ID,
+		payPayment.PAYMENT_USER_NAME,
+		payPayment.PAYMENT_METHOD,
+		payPayment.BANK_CODE,
+		payPayment.BANK_BRANCH_CODE,
+		payPayment.ACCOUNT_NBR,
+		payPayment.TAX_EXCLUSIVE_TOTAL_AMT,
+		payPayment.TOTAL_BUSINESS_TAX,
+		payPayment.TOTAL_INCOME_TAX,
+		payPayment.TOTAL_NHI_AMT,
+		payPayment.REMITTANCE_CHECK_DATE,
+		payPayment.RESIDENT_ADDRESS,
+		payPayment.CHECK_NBR,
+		payPayment.CHECK_CASH_DATE,
+		payPayment.CHECK_DISREGARD_DATE,
+		payPayment.CHECK_DISREGARD_REASON,
+		payPayment.DISREGARD_MEMO,
+		payPayment.STATUS,
+		payPayment.ORIGINAL_CHECK_NBR,
+		payPayment.AMT_WITH_VOUCHER,
+		payPayment.ERP_REPLY_DATE,
+		payPayment.MEMO,
+		payPayment.CR_USER,
+		payPayment.CR_TIME,
+		payPayment.MD_USER,
+		payPayment.MD_TIME,
+		payPayment.LOCATION_ID,
+		payPayment.PAYMENT_REQ_ITEM_NO
+	</sql>
+    
+	<!-- 取得合約站點檔 -->
+	<select id="getPayPaymentData" resultMap="payPaymentResultMap" parameterType="String">
+		Select 
+			<include refid="payPaymentColumns"/>,
+			locPayment.LESSOR_ID,
+			locPayment.LESSOR_NAME,
+			locPayment.PAY_AMT,
+			locPayment.BUSINESS_TAX
+		From TB_PAY_PAYMENT payPayment
+		Join TB_LS_LOC_PAYMENT locPayment
+		On
+			locPayment.LOCATION_ID = payPayment.LOCATION_ID
+		And
+			locPayment.LS_NO = #{contractNo}
+		And 
+			#{appDate} Between CONVERT(date, EFF_DATE) And CONVERT(date, END_DATE)
+		where 
+			payPayment.location_id = #{locationId}
+		And 
+			payment_req_no = #{paymentReqNo}
+		And
+			payPayment.payment_req_item_no = #{itemNo}
+	</select>
+	
+	<select id="selectByCashReqNo1" resultType="com.foya.noms.dto.pay.TbPayPaymentDTO" parameterType="java.lang.String">	
+		SELECT 
+		B.ITEM_NO PAYMENT_REQ_ITEM_NO,B.PAYMENT_REQ_BEGIN_DATE,B.PAYMENT_REQ_END_DATE,
+		B.ELECTRICITY_METER_NBR,B.LOCATION_ID,B.PAYMENT_REQ_USER_ID,
+		B.TAX_EXCLUSIVE_AMT,B.BUSINESS_TAX,
+		C.PAYMENT_REQ_NO,C.CONTRACT_NO
+		FROM TB_PAY_PAYMENT_REQUEST_DTL B
+		LEFT JOIN TB_PAY_PAYMENT_REQUEST C
+		ON B.PAYMENT_REQ_NO=C.PAYMENT_REQ_NO
+		WHERE C.CASH_REQ_NO = #{cashReqNo}
+	</select>
+	
+	<select id="selectByCashReqNo2" resultType="com.foya.noms.dto.pay.TbPayPaymentDTO" parameterType="java.lang.String">	
+		SELECT 
+		A.PAYMENT_USER_ID,A.PAYMENT_USER_NAME,A.PAYMENT_METHOD,A.BANK_CODE,A.BANK_BRANCH_CODE,A.ACCOUNT_NBR,
+		A.TAX_EXCLUSIVE_TOTAL_AMT,A.TOTAL_BUSINESS_TAX,A.TOTAL_INCOME_TAX,A.TOTAL_NHI_AMT,A.CHECK_CASH_DATE,
+		A.DOCUMENT_NO,A.CHECK_NBR,A.ORIGINAL_ACCOUNT_NBR,
+		B.ITEM_NO PAYMENT_REQ_ITEM_NO,B.PAYMENT_REQ_BEGIN_DATE,B.PAYMENT_REQ_END_DATE,
+		B.ELECTRICITY_METER_NBR,B.LOCATION_ID,B.PAYMENT_REQ_USER_ID,
+		B.TAX_EXCLUSIVE_AMT,B.BUSINESS_TAX,
+		C.PAYMENT_REQ_NO,C.CONTRACT_NO
+		FROM TB_PAY_PAYMENT A 
+		LEFT JOIN TB_PAY_PAYMENT_REQUEST_DTL B
+		ON A.PAYMENT_REQ_NO=B.PAYMENT_REQ_NO  AND A.PAYMENT_REQ_ITEM_NO=B.ITEM_NO
+		LEFT JOIN TB_PAY_PAYMENT_REQUEST C
+		ON B.PAYMENT_REQ_NO=C.PAYMENT_REQ_NO
+		WHERE C.CASH_REQ_NO = #{cashReqNo}
+	</select>
+	
+	<!--************************************************************************************************************-->
+	<!--************************************************************************************************************-->
+	<!--************************************************************************************************************-->
+	<insert id="insertSelective" parameterType="com.foya.dao.mybatis.model.TbPayPayment" useGeneratedKeys="true" keyProperty="SEQ_NBR">
+    <!--
+      WARNING - @mbggenerated
+      This element is automatically generated by MyBatis Generator, do not modify.
+      This element was generated on Tue Feb 03 11:03:36 CST 2015.
+    -->
+    insert into TB_PAY_PAYMENT
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="SEQ_NBR != null">
+        SEQ_NBR,
+      </if>
+      <if test="PAYMENT_REQ_NO != null">
+        PAYMENT_REQ_NO,
+      </if>
+      <if test="PAYMENT_REQ_USER_ID != null">
+        PAYMENT_REQ_USER_ID,
+      </if>
+      <if test="PAYMENT_USER_ID != null">
+        PAYMENT_USER_ID,
+      </if>
+      <if test="PAYMENT_USER_NAME != null">
+        PAYMENT_USER_NAME,
+      </if>
+      <if test="PAYMENT_METHOD != null">
+        PAYMENT_METHOD,
+      </if>
+      <if test="BANK_CODE != null">
+        BANK_CODE,
+      </if>
+      <if test="BANK_BRANCH_CODE != null">
+        BANK_BRANCH_CODE,
+      </if>
+      <if test="ACCOUNT_NBR != null">
+        ACCOUNT_NBR,
+      </if>
+      <if test="TAX_EXCLUSIVE_TOTAL_AMT != null">
+        TAX_EXCLUSIVE_TOTAL_AMT,
+      </if>
+      <if test="TOTAL_BUSINESS_TAX != null">
+        TOTAL_BUSINESS_TAX,
+      </if>
+      <if test="TOTAL_INCOME_TAX != null">
+        TOTAL_INCOME_TAX,
+      </if>
+      <if test="TOTAL_NHI_AMT != null">
+        TOTAL_NHI_AMT,
+      </if>
+      <if test="REMITTANCE_CHECK_DATE != null">
+        REMITTANCE_CHECK_DATE,
+      </if>
+      <if test="RESIDENT_ADDRESS != null">
+        RESIDENT_ADDRESS,
+      </if>
+      <if test="CHECK_NBR != null">
+        CHECK_NBR,
+      </if>
+      <if test="CHECK_CASH_DATE != null">
+        CHECK_CASH_DATE,
+      </if>
+      <if test="CHECK_DISREGARD_DATE != null">
+        CHECK_DISREGARD_DATE,
+      </if>
+      <if test="CHECK_DISREGARD_REASON != null">
+        CHECK_DISREGARD_REASON,
+      </if>
+      <if test="DISREGARD_MEMO != null">
+        DISREGARD_MEMO,
+      </if>
+      <if test="STATUS != null">
+        STATUS,
+      </if>
+      <if test="ORIGINAL_CHECK_NBR != null">
+        ORIGINAL_CHECK_NBR,
+      </if>
+      <if test="AMT_WITH_VOUCHER != null">
+        AMT_WITH_VOUCHER,
+      </if>
+      <if test="ERP_REPLY_DATE != null">
+        ERP_REPLY_DATE,
+      </if>
+      <if test="MEMO != null">
+        MEMO,
+      </if>
+      <if test="CR_USER != null">
+        CR_USER,
+      </if>
+      <if test="CR_TIME != null">
+        CR_TIME,
+      </if>
+      <if test="MD_USER != null">
+        MD_USER,
+      </if>
+      <if test="MD_TIME != null">
+        MD_TIME,
+      </if>
+      <if test="LOCATION_ID != null">
+        LOCATION_ID,
+      </if>
+      <if test="PAYMENT_REQ_ITEM_NO != null">
+        PAYMENT_REQ_ITEM_NO,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="SEQ_NBR != null">
+        #{SEQ_NBR,jdbcType=BIGINT},
+      </if>
+      <if test="PAYMENT_REQ_NO != null">
+        #{PAYMENT_REQ_NO,jdbcType=BIGINT},
+      </if>
+      <if test="PAYMENT_REQ_USER_ID != null">
+        #{PAYMENT_REQ_USER_ID,jdbcType=VARCHAR},
+      </if>
+      <if test="PAYMENT_USER_ID != null">
+        #{PAYMENT_USER_ID,jdbcType=VARCHAR},
+      </if>
+      <if test="PAYMENT_USER_NAME != null">
+        #{PAYMENT_USER_NAME,jdbcType=VARCHAR},
+      </if>
+      <if test="PAYMENT_METHOD != null">
+        #{PAYMENT_METHOD,jdbcType=VARCHAR},
+      </if>
+      <if test="BANK_CODE != null">
+        #{BANK_CODE,jdbcType=VARCHAR},
+      </if>
+      <if test="BANK_BRANCH_CODE != null">
+        #{BANK_BRANCH_CODE,jdbcType=VARCHAR},
+      </if>
+      <if test="ACCOUNT_NBR != null">
+        #{ACCOUNT_NBR,jdbcType=VARCHAR},
+      </if>
+      <if test="TAX_EXCLUSIVE_TOTAL_AMT != null">
+        #{TAX_EXCLUSIVE_TOTAL_AMT,jdbcType=DECIMAL},
+      </if>
+      <if test="TOTAL_BUSINESS_TAX != null">
+        #{TOTAL_BUSINESS_TAX,jdbcType=DECIMAL},
+      </if>
+      <if test="TOTAL_INCOME_TAX != null">
+        #{TOTAL_INCOME_TAX,jdbcType=DECIMAL},
+      </if>
+      <if test="TOTAL_NHI_AMT != null">
+        #{TOTAL_NHI_AMT,jdbcType=DECIMAL},
+      </if>
+      <if test="REMITTANCE_CHECK_DATE != null">
+        #{REMITTANCE_CHECK_DATE,jdbcType=TIMESTAMP},
+      </if>
+      <if test="RESIDENT_ADDRESS != null">
+        #{RESIDENT_ADDRESS,jdbcType=VARCHAR},
+      </if>
+      <if test="CHECK_NBR != null">
+        #{CHECK_NBR,jdbcType=VARCHAR},
+      </if>
+      <if test="CHECK_CASH_DATE != null">
+        #{CHECK_CASH_DATE,jdbcType=TIMESTAMP},
+      </if>
+      <if test="CHECK_DISREGARD_DATE != null">
+        #{CHECK_DISREGARD_DATE,jdbcType=TIMESTAMP},
+      </if>
+      <if test="CHECK_DISREGARD_REASON != null">
+        #{CHECK_DISREGARD_REASON,jdbcType=VARCHAR},
+      </if>
+      <if test="DISREGARD_MEMO != null">
+        #{DISREGARD_MEMO,jdbcType=VARCHAR},
+      </if>
+      <if test="STATUS != null">
+        #{STATUS,jdbcType=CHAR},
+      </if>
+      <if test="ORIGINAL_CHECK_NBR != null">
+        #{ORIGINAL_CHECK_NBR,jdbcType=VARCHAR},
+      </if>
+      <if test="AMT_WITH_VOUCHER != null">
+        #{AMT_WITH_VOUCHER,jdbcType=DECIMAL},
+      </if>
+      <if test="ERP_REPLY_DATE != null">
+        #{ERP_REPLY_DATE,jdbcType=TIMESTAMP},
+      </if>
+      <if test="MEMO != null">
+        #{MEMO,jdbcType=VARCHAR},
+      </if>
+      <if test="CR_USER != null">
+        #{CR_USER,jdbcType=VARCHAR},
+      </if>
+      <if test="CR_TIME != null">
+        #{CR_TIME,jdbcType=TIMESTAMP},
+      </if>
+      <if test="MD_USER != null">
+        #{MD_USER,jdbcType=VARCHAR},
+      </if>
+      <if test="MD_TIME != null">
+        #{MD_TIME,jdbcType=TIMESTAMP},
+      </if>
+      <if test="LOCATION_ID != null">
+        #{LOCATION_ID,jdbcType=VARCHAR},
+      </if>
+      <if test="PAYMENT_REQ_ITEM_NO != null">
+        #{PAYMENT_REQ_ITEM_NO,jdbcType=SMALLINT},
+      </if>
+    </trim>
+  </insert>
+  
+  <update id="updateByExampleSelectiveWithPlus" parameterType="map">
+    update TB_PAY_PAYMENT
+    set tax_exclusive_total_amt=#{TAX_EXCLUSIVE_TOTAL_AMT},
+		total_business_tax=#{TOTAL_BUSINESS_TAX}, 
+		total_income_tax=#{TOTAL_INCOME_TAX},
+		total_NHI_amt=#{TOTAL_NHI_AMT},
+		md_user=#{MD_USER},
+		md_time=#{MD_TIME}
+    where PAYMENT_REQ_NO=#{PAYMENT_REQ_NO}
+		and LOCATION_ID=#{LOCATION_ID}
+  </update>
+  
+  <select id="getPaymentAmt" resultType="com.foya.noms.dto.pay.TbPayPaymentDTO">
+  	Select  SUM(tax_exclusive_total_amt ) sumTaxExclusiveTotalAmt,
+		SUM(total_business_tax) sumTotalBusinessTax ,
+		SUM(total_income_tax) sumTotalIncomeTax,
+		SUM(total_NHI_amt) sumTotalNHIAmt,
+		SUM(tax_exclusive_total_amt+ total_business_tax- total_income_tax- total_NHI_amt) sumAmt,payment_req_no 
+		from TB_PAY_PAYMENT
+		Group by payment_req_no 
+		having payment_req_no= #{paymentReqNo}
+  	
+  
+  </select>
+</mapper>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbPayVoucherCreditMapper">
+	<update id="updatePlusTax" parameterType="map" >
+    update TB_PAY_VOUCHER_CREDIT
+    set credit_amt = credit_amt+#{taxExclusiveAmt},
+    	credit_tax = credit_tax +#{businessTax}
+    where mst_seq_nbr=#{mstSeq}
+		and payment_req_no=#{paymentReq}
+		and payment_req_item_no=#{paymentReqItemNo}
+  </update>
+  <update id="updatePlusTaxByRecord" parameterType="com.foya.dao.mybatis.model.TbPayVoucherCredit" >
+    update TB_PAY_VOUCHER_CREDIT
+    set credit_amt = credit_amt + #{CREDIT_AMT,jdbcType=DECIMAL},
+    	credit_tax = dbo.PAY_FN_GET_TAX('3', credit_amt + #{CREDIT_AMT,jdbcType=DECIMAL}, 'N'),
+    	MD_TIME = #{MD_TIME,jdbcType=TIMESTAMP},
+    	MD_USER = #{MD_USER,jdbcType=VARCHAR}
+    where mst_seq_nbr=#{MST_SEQ_NBR,jdbcType=BIGINT}
+		and payment_req_no=#{PAYMENT_REQ_NO,jdbcType=BIGINT}
+		and payment_req_item_no=#{PAYMENT_REQ_ITEM_NO,jdbcType=SMALLINT}
+  </update>
+    <insert id="insertSelectiveTaxFromFn" parameterType="com.foya.dao.mybatis.model.TbPayVoucherCredit" >   
+    insert into TB_PAY_VOUCHER_CREDIT
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="MST_SEQ_NBR != null">
+        MST_SEQ_NBR,
+      </if>
+      <if test="CONTRACT_PO_NO != null">
+        CONTRACT_PO_NO,
+      </if>
+      <if test="CREDIT_AMT != null" >
+        CREDIT_AMT,
+        CREDIT_TAX,
+      </if>
+      <if test="CREDIT_DATE != null">
+        CREDIT_DATE,
+      </if>
+      <if test="CR_USER != null">
+        CR_USER,
+      </if>
+      <if test="CR_TIME != null">
+        CR_TIME,
+      </if>
+      <if test="MD_USER != null">
+        MD_USER,
+      </if>
+      <if test="MD_TIME != null">
+        MD_TIME,
+      </if>
+      <if test="PAYMENT_REQ_NO != null">
+        PAYMENT_REQ_NO,
+      </if>
+      <if test="PAYMENT_REQ_ITEM_NO != null">
+        PAYMENT_REQ_ITEM_NO,
+      </if>
+      <if test="CASH_REQ_AP_NO != null">
+        CASH_REQ_AP_NO,
+      </if>
+      <if test="PR_TYPE != null">
+        PR_TYPE,
+      </if>
+      <if test="LOCATION_ID != null">
+        LOCATION_ID,
+      </if>
+      <if test="PAYMENT_REQ_USER_ID != null">
+        PAYMENT_REQ_USER_ID,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="MST_SEQ_NBR != null">
+        #{MST_SEQ_NBR,jdbcType=BIGINT},
+      </if>
+      <if test="CONTRACT_PO_NO != null">
+        #{CONTRACT_PO_NO,jdbcType=VARCHAR},
+      </if>
+      <if test="CREDIT_AMT != null" >
+        #{CREDIT_AMT,jdbcType=DECIMAL},
+        dbo.PAY_FN_GET_TAX('3', #{CREDIT_AMT,jdbcType=DECIMAL}, 'N'),
+      </if>
+      <if test="CREDIT_DATE != null">
+        #{CREDIT_DATE,jdbcType=TIMESTAMP},
+      </if>
+      <if test="CR_USER != null">
+        #{CR_USER,jdbcType=VARCHAR},
+      </if>
+      <if test="CR_TIME != null">
+        #{CR_TIME,jdbcType=TIMESTAMP},
+      </if>
+      <if test="MD_USER != null">
+        #{MD_USER,jdbcType=VARCHAR},
+      </if>
+      <if test="MD_TIME != null">
+        #{MD_TIME,jdbcType=TIMESTAMP},
+      </if>
+      <if test="PAYMENT_REQ_NO != null">
+        #{PAYMENT_REQ_NO,jdbcType=BIGINT},
+      </if>
+      <if test="PAYMENT_REQ_ITEM_NO != null">
+        #{PAYMENT_REQ_ITEM_NO,jdbcType=SMALLINT},
+      </if>
+      <if test="CASH_REQ_AP_NO != null">
+        #{CASH_REQ_AP_NO,jdbcType=VARCHAR},
+      </if>
+      <if test="PR_TYPE != null">
+        #{PR_TYPE,jdbcType=VARCHAR},
+      </if>
+      <if test="LOCATION_ID != null">
+        #{LOCATION_ID,jdbcType=VARCHAR},
+      </if>
+      <if test="PAYMENT_REQ_USER_ID != null">
+        #{PAYMENT_REQ_USER_ID,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+</mapper>

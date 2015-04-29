@@ -1,0 +1,322 @@
+package com.foya.noms.service.inv;
+
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.foya.dao.mybatis.model.TbInvOnhand;
+import com.foya.dao.mybatis.model.TbInvSrl;
+import com.foya.dao.mybatis.model.TbInvTr;
+import com.foya.dao.mybatis.model.TbInvTrAct;
+import com.foya.dao.mybatis.model.TbInvTxn;
+import com.foya.dao.mybatis.model.TbInvWarehouse;
+import com.foya.noms.GenericTest;
+import com.foya.noms.dto.inv.TbInvTrActCompleteDTO;
+import com.foya.noms.dto.inv.TbInvTrCompleteDTO;
+import com.foya.noms.dto.inv.TbInvTrDtlCompleteDTO;
+import com.foya.noms.enums.InvEnumCommon;
+
+public class INV008ServiceTest extends GenericTest {
+
+	@Autowired
+	private INV008Service inv008Service;
+
+	// -----------------------------------------------------------------------
+	/**
+	 * 狀態 List
+	 */
+	private Object[] stateList = new Object[] {
+			InvEnumCommon.Allocationstatus.APPROVED.getCode(),
+			InvEnumCommon.Allocationstatus.PART_EXIT.getCode() };
+
+	// -----------------------------------------------------------------------
+
+	@Test
+	public void testGetInvTrDataPageByDate() {
+
+		List<TbInvTrCompleteDTO> invTrCompleteDtoList = inv008Service
+				.getInvTrDataPageByDate("JunitTest", null, null, null, null,
+						null, null, null, null, stateList);
+
+		assertFalse(sizeJudge(invTrCompleteDtoList.size()));
+		assertNotNull(invTrCompleteDtoList);
+
+	}
+
+	@Test
+	public void testGetInvTrDtlDTo() throws Exception {
+
+		List<TbInvTrDtlCompleteDTO> TnvTrCompleteDto = inv008Service
+				.getInvTrDtlDTo("JunitText", null, null);
+
+		assertNotNull(TnvTrCompleteDto);
+		assertFalse(sizeJudge(TnvTrCompleteDto.size()));
+
+	}
+
+	@Test
+	public void testGetInvTrActDtoData() throws Exception {
+
+		List<TbInvTrActCompleteDTO> invTrCompleteDtoList = inv008Service
+				.getInvTrActDtoData("Junit", null, 0, null, 0);
+
+		assertNotNull(invTrCompleteDtoList);
+		assertFalse(sizeJudge(invTrCompleteDtoList.size()));
+
+	}
+
+	@Test
+	public void testUpdateTbInvTrByKey() {
+
+		TbInvTr invTr = new TbInvTr();
+
+		boolean results = inv008Service.updateTbInvTrByKey(invTr);
+
+		assertFalse(results);
+
+	}
+
+	@Test
+	public void testUpdateBookingQty() {
+
+		boolean results = inv008Service.updateBookingQty("0", "0", "0", "0", 0);
+
+		assertFalse(results);
+	}
+
+	@Test
+	public void testUpdateInvInvStock() {
+
+		boolean results = inv008Service.updateInvInvStock(1, "M001", "1235", 1,
+				1, 1, 1);
+
+		assertFalse(results);
+
+		results = inv008Service.updateInvInvStock(0, "0", "0", 0, 0, 0, 0);
+
+		assertFalse(results);
+	}
+
+	@Test
+	public void testInsertInvTxn() {
+
+		TbInvTxn tInvTxn = new TbInvTxn();
+
+		boolean results = inv008Service.insertInvTxn(tInvTxn);
+		assertFalse(results);
+
+		// tInvTxn.setInv_txn_no((long)99999);
+		tInvTxn.setTxn_type((byte) 2);
+		tInvTxn.setTxn_no("1234");
+		tInvTxn.setWh_id("1235");
+		tInvTxn.setMat_no("M001");
+		tInvTxn.setMat_status((byte) 1);
+		tInvTxn.setQty(1);
+		tInvTxn.setCr_time(new Date());
+		tInvTxn.setCr_user("Test");
+
+		results = inv008Service.insertInvTxn(tInvTxn);
+		assertTrue(results);
+
+	}
+
+	@Test
+	public void testInsertTrAct() {
+
+		TbInvTrAct invTrAct = new TbInvTrAct();
+
+		boolean results = inv008Service.insertTrAct(invTrAct);
+		assertFalse(results);
+
+		invTrAct.setTr_no("123");
+		invTrAct.setMat_no("M001");
+		invTrAct.setTr_qty(5);
+		invTrAct.setCr_user("User");
+		invTrAct.setCr_time(new Date());
+		invTrAct.setMd_user("User");
+		invTrAct.setMd_time(new Date());
+
+		results = inv008Service.insertTrAct(invTrAct);
+		assertTrue(results);
+	}
+
+	@Test
+	public void testInsertOnHand() {
+
+		TbInvOnhand invOnhand = new TbInvOnhand();
+
+		boolean results = inv008Service.insertOnHand(invOnhand);
+		assertFalse(results);
+
+		invOnhand.setOnhand_no((long) 999);
+		invOnhand.setTxn_type((byte) InvEnumCommon.OnHandStatus.EXIT.getCode());
+		invOnhand.setTxn_no("A123");
+		invOnhand.setWh_id("123321");
+		invOnhand.setMat_no("M001");
+		invOnhand.setMat_status((byte) 1);
+		invOnhand.setQty(2);
+		invOnhand.setOnhand_qty(2);
+		invOnhand.setTr_dtl_no((long) 19);
+		invOnhand.setCr_time(new Date());
+		invOnhand.setCr_user("User");
+		invOnhand.setMd_time(new Date());
+		invOnhand.setMd_user("User");
+
+		results = inv008Service.insertOnHand(invOnhand);
+		assertFalse(results);
+	}
+
+	@Test
+	public void testGetInvTrAct() {
+
+		List<TbInvTrActCompleteDTO> trActDtoList = inv008Service.getInvTrAct(
+				"JunitTest", null, null, null, 0);
+
+		assertNotNull(trActDtoList);
+		assertFalse(sizeJudge(trActDtoList.size()));
+	}
+
+	@Test
+	public void testExecutionExportModify() {
+
+		List<TbInvTrDtlCompleteDTO> invTrDtlDtoList = new ArrayList<TbInvTrDtlCompleteDTO>();
+
+		TbInvTrCompleteDTO completeDTO = new TbInvTrCompleteDTO();
+
+		try {
+			inv008Service.executionExportModify(invTrDtlDtoList, completeDTO,
+					null, null);
+		} catch (NullPointerException e) {
+
+			assertEquals(
+					"[INV008M][/inv/inv008M/executionExportModify] ERROR : 執行調出錯誤 。 [ TbInvTr IS NULL! ]",
+					e.getMessage());
+		}
+
+		TbInvTr invTr = new TbInvTr();
+		TbInvWarehouse invWarehouse = new TbInvWarehouse();
+		invWarehouse.setWh_id("1232");
+
+		TbInvTrDtlCompleteDTO completeDTO2 = new TbInvTrDtlCompleteDTO();
+		completeDTO2.setInputVal(1);
+		completeDTO2.setMat_no("123");
+		completeDTO2.setMat_status((byte) 1);
+		completeDTO2.setTr_dtl_no((long) 123);
+		completeDTO2.setLabelNo("ABC");
+		completeDTO2.setApp_qty(10);
+		completeDTO2
+				.setExportHistoryTrActDtoList(new ArrayList<TbInvTrActCompleteDTO>());
+		completeDTO2.setInvTr(invTr);
+
+		completeDTO.setTr_no("123");
+		completeDTO.setInvWarehouseByeExport(invWarehouse);
+
+		invTrDtlDtoList.add(completeDTO2);
+
+		try {
+			inv008Service.executionExportModify(invTrDtlDtoList, completeDTO,
+					null, null);
+		} catch (NullPointerException e) {
+
+			assertEquals(e.getMessage(), e.getMessage());
+		}
+
+	}
+
+	@Test
+	public void testGetIbInvTxn() {
+
+		TbInvWarehouse invWarehouse = new TbInvWarehouse();
+		invWarehouse.setWh_id("1232");
+		
+		TbInvTrCompleteDTO completeDTO = new TbInvTrCompleteDTO();
+		completeDTO.setTr_no("123");
+		completeDTO.setInvWarehouseByeExport(invWarehouse);
+		
+		TbInvSrl invSrl = new TbInvSrl();
+		invSrl.setFa_no("a");
+		invSrl.setSrl_no((long)1);
+		
+		TbInvTrDtlCompleteDTO completeDTO2 = new TbInvTrDtlCompleteDTO();
+		completeDTO2.setInputVal(1);
+		completeDTO2.setMat_no("123");
+		completeDTO2.setMat_status((byte) 1);
+		completeDTO2.setTr_dtl_no((long) 123);
+		completeDTO2.setLabelNo("ABC");
+		completeDTO2.setApp_qty(10);
+
+		inv008Service.getIbInvTxn(completeDTO2, completeDTO, invSrl, 0, "0", "user", new Date());
+		inv008Service.getIbInvTxn(completeDTO2, completeDTO, invSrl, 0, null, "user", new Date());
+
+	}
+
+	@Test
+	public void testGetTbInvTrAct() {
+		
+		TbInvWarehouse invWarehouse = new TbInvWarehouse();
+		invWarehouse.setWh_id("1232");
+		
+		TbInvTrCompleteDTO completeDTO = new TbInvTrCompleteDTO();
+		completeDTO.setTr_no("123");
+		completeDTO.setInvWarehouseByeExport(invWarehouse);
+		
+		TbInvSrl invSrl = new TbInvSrl();
+		invSrl.setFa_no("a");
+		invSrl.setSrl_no((long)1);
+		
+		TbInvTrDtlCompleteDTO completeDTO2 = new TbInvTrDtlCompleteDTO();
+		completeDTO2.setInputVal(1);
+		completeDTO2.setMat_no("123");
+		completeDTO2.setMat_status((byte) 1);
+		completeDTO2.setTr_dtl_no((long) 123);
+		completeDTO2.setLabelNo("ABC");
+		completeDTO2.setApp_qty(10);
+
+		inv008Service.getTbInvTrAct(completeDTO2, completeDTO, invSrl, 0, "0", "user");
+		inv008Service.getTbInvTrAct(completeDTO2, completeDTO, invSrl, 0, null, "user");
+	}
+
+	@Test
+	public void testGetTbInvOnhand() {
+		TbInvWarehouse invWarehouse = new TbInvWarehouse();
+		invWarehouse.setWh_id("1232");
+		
+		TbInvTrCompleteDTO completeDTO = new TbInvTrCompleteDTO();
+		completeDTO.setTr_no("123");
+		completeDTO.setInvWarehouseByeExport(invWarehouse);
+		
+		TbInvSrl invSrl = new TbInvSrl();
+		invSrl.setFa_no("a");
+		invSrl.setSrl_no((long)1);
+		
+		TbInvTrDtlCompleteDTO completeDTO2 = new TbInvTrDtlCompleteDTO();
+		completeDTO2.setInputVal(1);
+		completeDTO2.setMat_no("123");
+		completeDTO2.setMat_status((byte) 1);
+		completeDTO2.setTr_dtl_no((long) 123);
+		completeDTO2.setLabelNo("ABC");
+		completeDTO2.setApp_qty(10);
+
+		inv008Service.getTbInvOnhand(completeDTO2, completeDTO, invSrl, 0, "0", "user");
+		inv008Service.getTbInvOnhand(completeDTO2, completeDTO, invSrl, 0, null, "user");
+	}
+
+	@Ignore
+	public boolean sizeJudge(int size) {
+
+		boolean judge = false;
+
+		if (size > 0) {
+			judge = true;
+		}
+
+		return judge;
+	}
+
+}

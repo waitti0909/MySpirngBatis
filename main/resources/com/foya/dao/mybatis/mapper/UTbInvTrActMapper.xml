@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbInvTrActMapper" >
+
+	<resultMap id="invTrActDtoMap" type="com.foya.noms.dto.inv.TbInvTrActCompleteDTO">
+		<id column="TR_ACT_NO" property="TR_ACT_NO" />
+	    <result column="TR_NO" property="TR_NO" />
+	    <result column="MAT_NO" property="MAT_NO" />
+	    <result column="SRL_NO" property="SRL_NO" />
+	    <result column="TR_QTY" property="TR_QTY" />
+	    <result column="TR_OUT_WH_ID" property="TR_OUT_WH_ID" />
+	    <result column="TR_OUT_USER" property="TR_OUT_USER" />
+	    <result column="TR_OUT_DATE" property="TR_OUT_DATE" />
+	    <result column="TR_IN_WH_ID" property="TR_IN_WH_ID" />
+	    <result column="TR_IN_USER" property="TR_IN_USER" />
+	    <result column="TR_IN_DATE" property="TR_IN_DATE" />
+	    <result column="IF_TR_IN" property="IF_TR_IN" />
+	    <result column="CR_USER" property="CR_USER" />
+	    <result column="CR_TIME" property="CR_TIME" />
+	    <result column="MD_USER" property="MD_USER" />
+	    <result column="MD_TIME" property="MD_TIME" />
+	    <result column="TR_DTL_NO" property="TR_DTL_NO" />
+	    <result column="IF_RETURN_TR_OUT" property="IF_RETURN_TR_OUT" />
+	    <result column="OUT_ACT_NO" property="OUT_ACT_NO" />
+	    <result column="VEN_SN" property="venSn" />
+	    <result column="TAG_NO" property="tagNo" />
+	    <result column="FA_NO" property="faNo" />
+	    <result column="MAT_NAME" property="matName" />
+	    <result column="MAT_STATUS" property="matStatus" />
+	    <result column="APP_QTY" property="appQty" />
+	    <result column="dtlTrQty" property="dtlTrQty" />
+	    
+<!-- 	    <association property="invMaterial" column="mat_no" -->
+<!-- 			javaType="com.foya.dao.mybatis.model.TbInvMaterial" resultMap="materialMap" /> -->
+<!-- 		<association property="invSrl" column="srl_no" -->
+<!-- 			javaType="com.foya.dao.mybatis.model.TbInvSrl" resultMap="invSrlMap" /> -->
+<!-- 		<association property="invTrDtl" column="tr_dtl_no" -->
+<!-- 			javaType="com.foya.dao.mybatis.model.TbInvTrDtl" resultMap="trDetaileDtoMap" /> -->
+	</resultMap>
+
+	<sql id="invTrActColumns">
+		trAct.TR_ACT_NO,
+		trAct.TR_NO,
+		trAct.MAT_NO,
+		trAct.SRL_no,
+		trAct.TR_QTY,
+		trAct.TR_OUT_WH_ID,
+		trAct.TR_OUT_USER,
+		trAct.TR_OUT_DATE,
+		trAct.TR_IN_WH_ID,
+		trAct.TR_IN_USER,
+		trAct.TR_IN_DATE,
+		trAct.IF_TR_IN,
+		trAct.TR_DTL_NO,
+		trAct.CR_USER,
+		trAct.CR_TIME,
+		trAct.MD_USER,
+		trAct.MD_TIME,
+		trAct.OUT_ACT_NO,
+		trAct.IF_RETURN_TR_OUT
+	</sql>
+
+	<select id="getActExportNumber" resultType="java.lang.Integer" parameterType="java.lang.String">
+		SELECT
+			SUM(TB_INV_TR_ACT.tr_qty) as tr_qty
+		FROM TB_INV_TR_ACT 
+		WHERE 
+			TB_INV_TR_ACT.tr_no = #{trNo}
+		AND
+			TB_INV_TR_ACT.mat_no = #{matNo}
+		AND
+			TB_INV_TR_ACT.tr_dtl_no = #{trDtlNo}
+		<if test="trIn == 0 or trIn == 1">
+		AND
+			TB_INV_TR_ACT.if_tr_in = #{trIn}
+		</if>
+	</select>
+	
+	<select id="getActExportNumberGroup" resultType="java.lang.Integer" parameterType="java.lang.String">
+		SELECT
+			SUM(TB_INV_TR_ACT.tr_qty) as tr_qty
+		FROM TB_INV_TR_ACT 
+		WHERE 
+			TB_INV_TR_ACT.tr_no = #{trNo}
+		AND
+			TB_INV_TR_ACT.mat_no = #{matNo}
+		AND
+			TB_INV_TR_ACT.tr_dtl_no = #{trDtlNo}
+		<if test="trIn == 0 or trIn == 1">
+		AND
+			TB_INV_TR_ACT.if_tr_in = #{trIn}
+		</if>
+		<if test="returnTr == 0">
+		AND
+			TB_INV_TR_ACT.if_return_tr_out = #{returnTr}
+		</if>
+		group by tr_no,mat_no,tr_dtl_no
+	</select>
+	
+	<select id="getExportHistory" resultMap="invTrActDtoMap">
+		Select
+			<include refid="invTrActColumns"/>,
+			invSrl.VEN_SN,
+			invSrl.TAG_NO
+		From TB_INV_TR_ACT trAct
+		Left Join TB_INV_SRL invSrl 
+		On 
+			trAct.SRL_NO = invSrl.SRL_NO
+		Where
+			trAct.tr_no = #{trNo}
+		<if test="trDtlNo > 0">
+			AND trAct.tr_dtl_no = #{trDtlNo}
+		</if>
+		<if test="outActNo > 0">
+			AND trAct.OUT_ACT_NO = #{outActNo}
+		</if>
+		<if test="matNo != null and matNo != ''">
+			AND trAct.mat_no = #{matNo}
+		</if>
+		<if test="trIn != null and trIn != ''">
+			AND trAct.if_tr_in = #{trIn}
+		</if>
+	</select>
+	
+	<select id="getInvTrExportDtlData" resultMap="invTrActDtoMap">
+		Select
+			<include refid="invTrActColumns"/>,
+			(Select MAT_NAME From TB_INV_MATERIAL material Where material.MAT_NO = trAct.MAT_NO ) as MAT_NAME,
+			invSrl.VEN_SN,
+			invSrl.TAG_NO,
+			invSrl.FA_NO,
+			trDtl.MAT_STATUS,
+			trDtl.APP_QTY,
+			(Select SUM(TB_INV_TR_ACT.TR_QTY) From TB_INV_TR_ACT Where TB_INV_TR_ACT.OUT_ACT_NO=trAct.TR_ACT_NO And TB_INV_TR_ACT.IF_RETURN_TR_OUT='0' And TB_INV_TR_ACT.IF_TR_IN='1') as dtlTrQty
+		From TB_INV_TR_ACT trAct
+		Join TB_INV_TR_DTL trDtl
+		On 
+			trAct.TR_DTL_NO = trDTL.TR_DTL_NO
+		Left Join TB_INV_SRL invSrl 
+		On 
+			trAct.SRL_NO = invSrl.SRL_NO
+		Where 
+			trAct.TR_NO = #{trNo}
+		And
+			trAct.IF_TR_IN = '0'
+		Order by trAct.MAT_NO
+	</select>
+	
+	<select id="getApplyTotal" resultMap="invTrActDtoMap">
+		Select	
+			trAct.MAT_NO,trDtl.APP_QTY
+		From TB_INV_TR_ACT trAct
+		Join TB_INV_TR_DTL trDtl
+		On 
+			trAct.TR_DTL_NO = trDTL.TR_DTL_NO
+		Where 
+			trDtl.TR_NO = #{trNo}
+		Group by trAct.MAT_NO,trDtl.APP_QTY
+	</select>
+	
+	<!-- 序號主檔 -->
+<!-- 	<resultMap id="invSrlMap" type="com.foya.dao.mybatis.model.TbInvSrl"> -->
+<!-- 	    <id column="srl_no3" property="srl_no" /> -->
+<!-- 	    <result column="wh_id" property="wh_id" /> -->
+<!-- 	    <result column="mat_no3" property="mat_no" /> -->
+<!-- 	    <result column="ven_sn" property="ven_sn" /> -->
+<!-- 	    <result column="fa_no" property="fa_no" /> -->
+<!-- 	    <result column="rcv_date" property="rcv_date" /> -->
+<!-- 	    <result column="mat_status" property="mat_status" /> -->
+<!-- 	    <result column="site_id" property="site_id" /> -->
+<!-- 	    <result column="discard_date" property="discard_date" /> -->
+<!-- 	    <result column="discard_no" property="discard_no" /> -->
+<!-- 	    <result column="cr_user3" property="cr_user" /> -->
+<!-- 	    <result column="cr_time3" property="cr_time" /> -->
+<!-- 	    <result column="md_user3" property="md_user" /> -->
+<!-- 	    <result column="md_time3" property="md_time" /> -->
+<!-- 	    <result column="tag_no" property="tag_no" /> -->
+<!-- 	</resultMap> -->
+	
+
+	
+	
+<!-- 	<sql id="invSrlColumns"> -->
+<!-- 		TB_INV_SRL.srl_no As srl_no3, -->
+<!-- 		TB_INV_SRL.wh_id, -->
+<!-- 		TB_INV_SRL.mat_no As mat_no3, -->
+<!-- 		TB_INV_SRL.ven_sn, -->
+<!-- 		TB_INV_SRL.fa_no, -->
+<!-- 		TB_INV_SRL.rcv_date, -->
+<!-- 		TB_INV_SRL.mat_status, -->
+<!-- 		TB_INV_SRL.site_id, -->
+<!-- 		TB_INV_SRL.discard_date, -->
+<!-- 		TB_INV_SRL.discard_no, -->
+<!-- 		TB_INV_SRL.cr_user AS cr_user3, -->
+<!-- 		TB_INV_SRL.cr_time AS cr_time3, -->
+<!-- 		TB_INV_SRL.md_user AS md_user3, -->
+<!-- 		TB_INV_SRL.md_time AS md_time3, -->
+<!-- 		TB_INV_SRL.tag_no -->
+<!-- 	</sql> -->
+	
+</mapper>

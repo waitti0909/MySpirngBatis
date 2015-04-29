@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbPayLocationInfoMapper">
+	<select id="estimateReeData" resultType="com.foya.noms.dto.pay.TbPayLocationInfoDTO">
+		Select A.domain,A.contract_no,A.payment_period, A.lease_valid_begin_date, A.lease_valid_end_date ,
+			   B.location_id, B.pre_pr_begin_date, B.pre_pr_end_date  
+			from TB_PAY_CONTRACT_INFO A,TB_PAY_LOCATION_INFO B 
+			where A.domain=B.domain 
+			and A.contract_no=B.contract_no 
+			and A.lease_pay_begin_date is not null 
+			and convert(date,getdate()) between A.lease_valid_begin_date and A.lease_valid_end_date 
+			and B.pre_pr_begin_date is not null
+			and B.pre_pr_end_date is not null
+			order by A.domain,A.contract_no,B.location_id, B.pre_pr_begin_date, A.lease_valid_end_date, B.pre_pr_end_date
+	</select>
+	
+	<!--由於不想被其他模組異動 擺放在這個XML裏面-->
+	<select id="getLsSiteData" resultType="com.foya.noms.dto.ls.SiteAlocDetailDTO" parameterType="hashmap">
+		<!-- select D.SITE_ID,E.ALOC_RATIO from TB_LS_SITE D,
+ 			TB_LS_ALOC_DTL E where D.ALOC_ID=E.ALOC_ID and
+			D.LS_NO=#{lsNo} and
+			D.LOCATION_ID=#{locationId} and
+			convert(date,getdate()) between D.PAY_BEGIN_DATE and D.LS_E_DATE and
+			D.EXPN_TYPE='R'  Order by D.SITE_ID -->
+			select A.SITE_ID as siteId,C.FEQ_TYPE from TB_LS_SITE A
+			left join TB_SITE_MAIN  B
+			ON A.SITE_ID=B.SITE_ID
+			left join TB_COM_SITE_FEQ C
+			ON B.FEQ_ID=C.FEQ_ID where A.LS_NO=#{lsNo}
+			and A.LOCATION_ID=#{locationId} 
+			and A.EXPN_TYPE='R' 
+			and	convert(date,getdate()) between A.PAY_BEGIN_DATE and A.LS_E_DATE
+	</select>
+	
+	<select id="getLsApplyData" resultType="com.foya.noms.dto.ls.SiteAlocDetailDTO" parameterType="hashmap">
+	<!-- select D.SITE_ID,D.SHARE_RATE from TB_SITE_LINE_APPLY 
+		C,TB_SITE_LINE_SITE_DATA D　where C.APP_ID=D.APP_ID and 
+		C.Line_status='L02' and C.line_id=#{lineId} 
+		and C.B_LOC=D.LOC_ID
+		and C.B_LOC=#{loc} -->
+			select A.SITE_ID, C.FEQ_TYPE from TB_SITE_LINE_SITE_DATA A
+			left join TB_SITE_MAIN  B
+			ON A.SITE_ID=B.SITE_ID
+			left join TB_COM_SITE_FEQ C
+			ON B.FEQ_ID=C.FEQ_ID
+			left join TB_SITE_LINE_APPLY D
+			on A.APP_ID=D.APP_ID and D.B_LOC=A.LOC_ID
+			where D.Line_status='L02'
+			and B. site_status in ('S05','S06','S07')
+			and D. line_id=#{contractNo}
+			and D. B_LOC=#{locationId}
+						
+	</select>
+</mapper>

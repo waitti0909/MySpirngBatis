@@ -1,0 +1,19 @@
+#jdbc.driverClassName=org.postgresql.Driver
+#jdbc.url=jdbc:postgresql://10.1.1.186:5432/tstart
+#jdbc.username=tstar
+#jdbc.password=900tstart
+# JTDS for MS SQL
+#jdbc.driverClassName=net.sourceforge.jtds.jdbc.Driver
+#jdbc.url=jdbc:jtds:sqlserver://10.1.1.231:1433/tstar
+#jdbc.username=tstar
+#jdbc.password=900tstar
+# MS SQL JDBC(DEV)
+jdbc.driverClassName=com.microsoft.sqlserver.jdbc.SQLServerDriver
+jdbc.url=jdbc:sqlserver://172.16.17.5:1433;databaseName=nomssitsql
+jdbc.username=nomssitadm
+jdbc.password=c2l0LW5vbXNAMDk4Ng==
+# MS SQL JDBC(SIT)
+#jdbc.driverClassName=com.microsoft.sqlserver.jdbc.SQLServerDriver
+#jdbc.url=jdbc:sqlserver://172.16.17.5:1433;databaseName=NOMSSITSQL
+#jdbc.username=nomssitadm
+#jdbc.password=c2l0LW5vbXNAMDk4Ng==

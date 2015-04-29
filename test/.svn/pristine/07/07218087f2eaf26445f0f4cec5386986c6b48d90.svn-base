@@ -1,0 +1,244 @@
+package com.foya.noms.dao.inv;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.foya.dao.mybatis.model.TbInvAsset;
+import com.foya.dao.mybatis.model.TbInvInv;
+import com.foya.dao.mybatis.model.TbInvLot;
+import com.foya.dao.mybatis.model.TbInvMaterial;
+import com.foya.dao.mybatis.model.TbInvOnhand;
+import com.foya.dao.mybatis.model.TbInvSiteTxn;
+import com.foya.dao.mybatis.model.TbInvSrl;
+import com.foya.dao.mybatis.model.TbInvTxn;
+import com.foya.dao.mybatis.model.TbInvWarehouse;
+import com.foya.noms.GenericTest;
+
+
+/**
+ * 供站點模組呼叫之Dao Junit
+ */
+public class InvDaoTest extends GenericTest {
+
+	@Autowired
+	private INVDao invDao;
+
+	@Test
+	public void testInsertInvSiteTxn() {
+		int status = invDao.insertInvSiteTxn("P","T001", 1, "T201420141", "2014121200061", "M001",
+				3, "F001", 2, "inv1");
+		
+		Assert.assertTrue(status == 1);
+	}
+
+	@Test
+	public void testInsertInvTxn() {
+		int status = invDao.insertInvTxn("T001", 1, "12345678", "T201420141", "2014121200061",
+				"MDN141212001", "M001", 1, 2, "F001", 2, "PO001", 2, "FAIL2", null, "inv1");
+		Assert.assertTrue(status == 1);
+	}
+
+	@Test
+	public void testInsertInvInv() {
+		int status = invDao.insertInvInv("12345678", "M018", 3, "PO001", 2, "inv1");
+		Assert.assertTrue(status == 1);
+	}
+
+	@Test
+	public void testInsertInvOnHand() {
+		int status = invDao.insertInvOnHand("T001", 3, "T201420141", "2014121200061", "M001",
+				1, 2, "F001", 2, "inv1");
+		Assert.assertTrue(status == 1);
+	}
+
+	@Test
+	public void testInsertInvToErpLoc() {
+		int status = invDao.insertInvToErpLoc("T201420141", "2014112500071", "M001", "V001",
+				"F001", 2, "F4301", "12345678", "inv1", "inv1");
+		Assert.assertTrue(status == 1);
+	}
+
+	@Test
+	public void testInsertInvAsset() {
+		int status = invDao.insertInvAsset("LOC001", "T201420141", "M", "M040", 5, "F001", 2,
+				new BigDecimal("1000"), new Date(), "inv1", "inv1",new Date(),"A001",1,null);
+		Assert.assertTrue(status == 1);
+	}
+
+	@Test
+	public void testInsertInvLotDtl() {
+		int status = invDao.insertInvLotDtl(1, 1, "T001", "T201420141", 2, "inv1");
+		Assert.assertTrue(status == 1);
+	}
+
+	@Test
+	public void testInsertInvToErpMat() {
+		int status = invDao.insertInvToErpMat("T201420141", "2014112500071", "OS001", "PO001",
+				2, "M001", "V001", "F001", 2, "RCV001", "inv1", "inv1", new Date());
+		Assert.assertTrue(status == 1);
+	}
+
+	@Test
+	public void testUpdateInvOnHand() {
+		int status = invDao.updateInvOnHand(1,"ST001",null,"1", "M001", 2, "inv1",123);
+		Assert.assertTrue(status == 1);
+	}
+
+	@Test
+	public void testUpdateInvAsset_Unload() {
+		int status = invDao.updateInvAsset_Unload("201411270014", "M", "M001", 2,new Date() ,"A001","inv1");
+		Assert.assertTrue(status == 1);
+	}
+	@Test
+	public void testUpdateInvAsset_Setup() {
+		int status = invDao.updateInvAsset_Setup("L001",123,"F001",10,"201411270014", "M", "M001",new Date(),"A001",3,"inv1","inv1");
+		Assert.assertTrue(status == 1);
+	}
+
+	@Test
+	public void testUpdateInvAsset_Complete() {
+		int status = invDao.updateInvAsset_Complete("201411270014", "M", "M001", 2,new Date(),new Date(), "inv1");
+		Assert.assertTrue(status == 1);
+	}
+
+	@Test
+	public void testUpdateInvSrl() {
+		int status = invDao.updateInvSrl(1, "T201420142", "12345678", "inv1", 5);
+		Assert.assertTrue(status == 1);
+	}
+
+	@Test
+	public void testUpdateInvLot_SetUpQty_Setup() {
+		int status = invDao.updateInvLot_SetUpQty_Setup(2, "F001", "M002", "inv1");
+		Assert.assertTrue(status == 1);
+	}
+
+	@Test
+	public void testUpdateInvLot_StdQty_Unload() {
+		int status = invDao.updateInvLot_StdQty_Unload(2, "F001", "M002", "inv1");
+		Assert.assertTrue(status == 1);
+	}
+
+	@Test
+	public void testUpdateInvInv_StdQty() {
+		int status = invDao.updateInvInv_StdQty(2, "M002", "12345678", "inv1");
+		Assert.assertTrue(status == 1);
+	}
+
+	@Test
+	public void testUpdateInvSiteTxn_ToErpDate() {
+		int status = invDao
+				.updateInvSiteTxn_ToErpDate("T201420141", "2014112500071", 1, "inv1");
+		Assert.assertTrue(status == 1);
+	}
+	
+	@Test
+	public void testDeleteInvAsset() {
+		int status = invDao.deleteInvAsset("201411270014","M001","M");
+		Assert.assertTrue(status == 1);
+	}
+	
+	@Test
+	public void testGetMaterialByMatSrlNo() {
+		TbInvSrl record = invDao.selectInvSrl(5);
+		Assert.assertNotNull(record);
+		Assert.assertTrue(record != null);
+	}
+
+	@Test
+	public void testSelectInvLot_Setup() {
+		List<TbInvLot> recordList = invDao.selectInvLot_Setup("M002");
+		Assert.assertNotNull(recordList);
+		Assert.assertTrue(recordList.size() > 0);
+	}
+
+	@Test
+	public void testSelectInvLot_Unload() {
+		List<TbInvLot> recordList = invDao.selectInvLot_Unload("M002");
+		Assert.assertNotNull(recordList);
+		Assert.assertTrue(recordList.size() > 0);
+	}
+
+	@Test
+	public void testSelectInvSiteTxn() {
+		List<TbInvSiteTxn> recordList = invDao.selectInvSiteTxn("T201420141", "2014112500071", 1);
+		Assert.assertNotNull(recordList);
+		Assert.assertTrue(recordList.size() > 0);
+	}
+
+	@Test
+	public void testSelectInvTxn() {
+		List<TbInvTxn> recordList = invDao.selectInvTxn("F4301", "12345", 1, "T");
+		Assert.assertNotNull(recordList);
+		Assert.assertTrue(recordList.size() > 0);
+	}
+	
+	@Test
+	public void testSelectInvAsset() {
+		List<TbInvAsset> recordList = invDao.selectInvAsset("201411270014", "M001","M");		
+		Assert.assertNotNull(recordList);
+		Assert.assertTrue(recordList.size() > 0);
+	}
+	@Test
+	public void testSelectInvOnhand() {
+		List<TbInvOnhand> recordList = invDao.selectInvOnhand(1,"M001","201411270014");		
+		Assert.assertNotNull(recordList);
+		Assert.assertTrue(recordList.size() > 0);
+	}
+	@Test
+	public void testSelectInvOnhandOrderbyTxnType() {		
+		List<TbInvOnhand> recordList = invDao.selectInvOnhandOrderbyTxnType("M001","201411270014");		
+		Assert.assertNotNull(recordList);
+		Assert.assertTrue(recordList.size() > 0);
+	}
+	
+	@Test
+	public void testGetTotalWareHouse() {
+		List<TbInvWarehouse> recordList = invDao.getTotalWareHouse("M", "C");
+		Assert.assertNotNull(recordList);
+		Assert.assertTrue(recordList.size() > 0);
+	}
+
+	@Test
+	public void testGetRtnWhIdBySiteIdAndOrderNo() {
+		List<TbInvTxn> recordList = invDao.getRtnWhIdBySiteIdAndOrderNo(2, "T201420141",
+				"2014121200061", "M002", "F001");
+		Assert.assertNotNull(recordList);
+		Assert.assertTrue(recordList.size() > 0);
+	}
+
+	@Test
+	public void testGetPoNoByWhIdAndMatNo() {
+		List<TbInvInv> recordList = invDao.getPoNoByWhIdAndMatNo("M002", "12345678");
+		Assert.assertNotNull(recordList);
+		Assert.assertTrue(recordList.size() > 0);
+	}
+
+	@Test
+	public void testGetMaterialByMatNo() {
+		TbInvMaterial tbInvMaterial = invDao.getMaterialByMatNo("M002");
+		Assert.assertNotNull(tbInvMaterial);
+		Assert.assertTrue(tbInvMaterial != null);
+	}
+
+	@Test
+	// ?
+	public void testCountInvAsset() {
+		int count = invDao.countInvAsset("T001", "M", "M002");
+		// Assert.assertNotNull(tbInvMaterial);
+		Assert.assertTrue(count > 0);
+	}
+
+	@Test
+	// ?
+	public void testCountInvInv() {
+		int count = invDao.countInvInv("M002", "12345678");
+		// Assert.assertNotNull(tbInvMaterial);
+		Assert.assertTrue(count > 0);
+	}
+}

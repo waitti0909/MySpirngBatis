@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
+
+
+	<!-- for AD Login 20141125 -->
+    <bean id="contextSource"
+          class="org.springframework.ldap.core.support.LdapContextSource" scope="prototype" >    
+       
+               
+        <!-- 台灣之星測試 begin -->
+        <property name="url" value="LDAP://172.22.131.224:389"/> 
+        <property name="base" value="DC=vibo,DC=corp"/>
+        <!-- <property name="userDn" value="cn=noms01,OU=廠商測試Account,OU=User Accounts,DC=vibo,DC=corp"/>
+        <property name="password" value="0986@vibo"/>-->
+        <property name="authenticationSource" ref="AuthenticationSource" /><!-- 20150414 -->
+        <!-- 台灣之星測試 end -->
+        
+        <!-- 公司環境測試 begin 
+        <property name="url" value="LDAP://10.0.2.15:389"/> 
+        <property name="base" value="dc=mycompany,dc=com"/>
+        <property name="userDn" value="cn=Manager,dc=mycompany,dc=com"/>
+        <property name="password" value="secret"/>
+        -->
+        <!--<property name="url" value="LDAP://10.1.1.213:389"/> 
+        <property name="base" value="cn=Users,dc=dns2003,dc=foyatech,dc=com"/>
+        <property name="userDn" value="DNS2003\Administrator"/>
+        <property name="password" value="Foya27322031"/>-->
+        
+        <!--<property name="url" value="LDAP://10.0.2.15:389"/> 
+        <property name="base" value="dc=mycompany,dc=com"/>
+        <property name="userDn" value="cn=Manager,dc=mycompany,dc=com"/>
+        <property name="password" value="secret"/>-->
+        <!-- 公司環境測試 end -->
+        
+       <property name="referral" value="follow"/>
+       <!-- <property name="baseEnvironmentProperties">
+            <map>
+                <entry key="java.naming.security.authentication" value="simple"/>
+            </map>
+        </property>-->
+        <property name="pooled" value="false"/>
+        
+    </bean>
+    <!-- 20150414 begin -->
+    <bean id="AuthenticationSource"
+  		class="org.springframework.ldap.authentication.DefaultValuesAuthenticationSourceDecorator">
+  		<property name="target" ref="SpringSecurityAuthenticationSource" />
+  		<property name="defaultUser" value="" />
+  		<property name="defaultPassword" value="" />
+ 	</bean>
+ 	<bean id="SpringSecurityAuthenticationSource"
+ 		 class="com.foya.noms.ad.util.LdapAuthenticationSource">
+ 	 </bean>
+ 	 <!-- 20150414 end -->
+   
+    
+    <bean id="ldapTemplate" class="org.springframework.ldap.core.LdapTemplate" scope="prototype">
+        <constructor-arg ref="contextSource"/>
+        <property name="ignorePartialResultException" value="true"/>
+    </bean>
+    <bean id="ldapUser" class="com.foya.noms.ad.dao.UserDaoImpl">
+        <property name="ldapTemplate" ref="ldapTemplate"/>
+    </bean>
+</beans>

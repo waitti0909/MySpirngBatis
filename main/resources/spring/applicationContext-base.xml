@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
+
+	<bean id="WorkflowCfgService" class="com.foya.noms.service.workflow.WorkflowCfgService"></bean>
+	<bean id="WorkflowRestServiceImpl" class="com.foya.noms.service.workflow.WorkflowRestServiceImpl" ></bean> 
+<!-- 	<bean id="sT002Service" class="com.foya.noms.service.st.ST002Service" ></bean>  -->
+
+</beans>

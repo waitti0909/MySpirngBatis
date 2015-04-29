@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbSysSignLogMapper">
+	<resultMap id="SignLogDTO" type="com.foya.noms.dto.system.SignLogDTO">
+		<id column="APPLY_NO" jdbcType="VARCHAR" property="APPLY_NO" />
+		<id column="PROCESS_TYPE" jdbcType="VARCHAR" property="PROCESS_TYPE" />
+		<id column="SIGN_USER" jdbcType="VARCHAR" property="SIGN_USER" />
+		<id column="TASK_START_TIME" jdbcType="TIMESTAMP" property="TASK_START_TIME" />
+		<result column="SIGN_DEPT" jdbcType="VARCHAR" property="SIGN_DEPT" />
+		<result column="APPROVED" jdbcType="CHAR" property="APPROVED" />
+		<result column="COMMENT" jdbcType="VARCHAR" property="COMMENT" />
+		<result column="PREV_USER" jdbcType="VARCHAR" property="PREV_USER" />
+		<result column="SIGN_TIME" jdbcType="TIMESTAMP" property="SIGN_TIME" />
+		<result column="PROC_TIME" jdbcType="BIGINT" property="PROC_TIME" />
+		<result column="PRINCIPAL_USER" jdbcType="VARCHAR" property="PRINCIPAL_USER" />
+		<result column="SIGNDATE" jdbcType="TIMESTAMP" property="SIGNDATE" />
+		<result column="RESOLUTION" jdbcType="VARCHAR" property="RESOLUTION" />
+		<result column="SIGN_USER_NAME" property="SIGN_USER_NAME" jdbcType="VARCHAR" />
+		<result column="SIGN_DEPT_NAME" property="SIGN_DEPT_NAME" jdbcType="VARCHAR" />
+		<result column="SIGN_POS" property="SIGN_POS" jdbcType="VARCHAR" />
+		<result column="SIGN_POS_NAME" property="SIGN_POS_NAME" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<select id="selectSignHistory" resultMap="SignLogDTO">
+		select SIGN_TIME as SIGNDATE,
+		CASE
+		WHEN PRINCIPAL_USER is not null THEN
+		SIGN_USER+'(代)' ELSE SIGN_USER
+		END as SIGN_USER,
+		CASE APPROVED
+		WHEN 'Y'
+		THEN '核可' ELSE '駁回' END as RESOLUTION,
+		SIGN_USER_NAME,SIGN_DEPT_NAME,SIGN_POS, SIGN_POS_NAME, COMMENT from
+		TB_SYS_SIGN_LOG
+		where PROCESS_TYPE in
+		<foreach item="item" index="index" collection="processTypes"
+			open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		and APPLY_NO=#{applyNo}
+		order by SIGN_TIME desc
+	</select>
+
+</mapper>

@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbInvTrMapper">
+	
+	<select id="getInvTrDataDtoDate" resultMap="InvTrDtoMap">
+		Select 
+			<include refid="invTrColumns" />,
+			(Select	WH_NAME From TB_INV_WAREHOUSE outWarehouse Where outWarehouse.wh_id = invTr.TR_OUT_WH_ID) as outWhName,
+			(Select	WH_NAME From TB_INV_WAREHOUSE inWarehouse Where inWarehouse.wh_id = invTr.TR_IN_WH_ID) as inWhName,
+			(Select DEPT_NAME From TB_ORG_DEPT dept Where dept.DEPT_ID = invTr.APP_DEPT_ID) as applyDeptName,
+			(Select DEPT_NAME From TB_ORG_DEPT dept Where dept.DEPT_ID = invTr.APP_DEPT_ID) as needDeptName,
+			(Select CHN_NM From TB_AUTH_PERSONNEL personnel Where personnel.PSN_NO = invTr.APP_USER) as appUserName
+		From TB_INV_TR invTr
+		Where
+			(1=0
+		<if test="draft">
+			OR invTr.status='1'
+		</if>
+		<if test="submiting">
+			OR invTr.status='2'
+		</if>
+		<if test="approved">
+			OR invTr.status='3'
+		</if>
+		<if test="partExit">
+			OR invTr.status='4'
+		</if>
+		<if test="exit">
+			OR invTr.status='5'
+		</if>
+		<if test="callIn">
+			OR invTr.status='6'
+		</if>
+		<if test="closed">
+			OR invTr.status='7'
+		</if>
+		<if test="deleted">
+			OR invTr.status='8'
+		</if>
+		<if test="closeLost">
+			OR invTr.status='9'
+		</if>
+		)
+		<if test="outWhId != null and outWhId != ''">
+		And
+			invTr.TR_OUT_WH_ID = #{outWhId}
+		</if>	
+		<if test="wareHouseIdList != null and wareHouseIdList.size > 0">
+			<if test="wareHouseType != null">
+				<if test="wareHouseType == 'out'">
+					AND invTr.TR_OUT_WH_ID in 
+				</if>
+				<if test="wareHouseType == 'in'">
+					AND invTr.TR_IN_WH_ID in 
+				</if>
+				<foreach collection="wareHouseIdList" item="item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</if>
+		<if test="applyDateStr != null and applyDateEnd != null">
+		And
+			CONVERT(char(10), invTr.APP_DATE,126) Between #{applyDateStr} And #{applyDateEnd}
+		</if>
+		<if test="inWhId != null and inWhId != ''">
+		And
+			invTr.TR_IN_WH_ID = #{inWhId}
+		</if>
+		<if test="trNo != null and trNo != ''">
+		And
+			invTr.TR_NO like '%'+#{trNo}+'%'
+		</if>
+		<if test="needDept != null and needDept != ''">
+		And
+			invTr.NEED_DEPT_ID = #{needDept}
+		</if>
+		<if test="applyDept != null and applyDept != ''">
+		And
+			invTr.APP_DEPT_ID = #{applyDept}
+		</if>
+		<if test="applicant != null and applicant != ''">
+		And
+			invTr.APP_USER = #{applicant}
+		</if>
+	</select>
+	
+<!-- 	<select id="getInvTrDataDtoByDate" resultMap="InvTrDtoMap"> -->
+<!-- 		SELECT -->
+<!-- 			<include refid="invTrColumns" /> -->
+<!-- 			, -->
+<!-- 			<include refid="invOrgDeptColumns" /> -->
+<!-- 			, -->
+<!-- 			<include refid="invWarehouseColumns" /> -->
+<!-- 			, -->
+<!-- 			TB_AUTH_PERSONNEL.CHN_NM -->
+<!-- 		FROM TB_INV_TR -->
+<!-- 		JOIN TB_INV_WAREHOUSE -->
+<!-- 		ON -->
+<!-- 		TB_INV_TR.tr_out_wh_id = TB_INV_WAREHOUSE.wh_id -->
+<!-- 		JOIN TB_ORG_DEPT -->
+<!-- 		ON -->
+<!-- 		TB_INV_TR.NEED_DEPT_ID = TB_ORG_DEPT.DEPT_ID -->
+<!-- 		JOIN TB_AUTH_PERSONNEL -->
+<!-- 		ON -->
+<!-- 		TB_INV_TR.APP_USER = TB_AUTH_PERSONNEL.PSN_NO -->
+<!-- 		WHERE -->
+			
+<!-- 		(1=0 -->
+<!-- 		<if test="draft"> -->
+<!-- 			OR TB_INV_TR.status='1' -->
+<!-- 		</if> -->
+<!-- 		<if test="submiting"> -->
+<!-- 			OR TB_INV_TR.status='2' -->
+<!-- 		</if> -->
+<!-- 		<if test="approved"> -->
+<!-- 			OR TB_INV_TR.status='3' -->
+<!-- 		</if> -->
+<!-- 		<if test="partExit"> -->
+<!-- 			OR TB_INV_TR.status='4' -->
+<!-- 		</if> -->
+<!-- 		<if test="exit"> -->
+<!-- 			OR TB_INV_TR.status='5' -->
+<!-- 		</if> -->
+<!-- 		<if test="callIn"> -->
+<!-- 			OR TB_INV_TR.status='6' -->
+<!-- 		</if> -->
+<!-- 		<if test="closed"> -->
+<!-- 			OR TB_INV_TR.status='7' -->
+<!-- 		</if> -->
+<!-- 		<if test="deleted"> -->
+<!-- 			OR TB_INV_TR.status='8' -->
+<!-- 		</if> -->
+<!-- 		<if test="closeLost"> -->
+<!-- 			OR TB_INV_TR.status='9' -->
+<!-- 		</if> -->
+<!-- 		) -->
+		
+<!-- 		<if test="strDemandDate!=null and endDemandDate!=null"> -->
+<!-- 			AND CONVERT(char(10), TB_INV_TR.APP_DATE,126) &gt;= #{strDemandDate} And CONVERT(char(10), TB_INV_TR.APP_DATE,126) &lt;= #{endDemandDate} -->
+<!-- 		</if> -->
+<!-- 		<if test="applyNumber != null and applyNumber != ''"> -->
+<!-- 			AND TB_INV_TR.tr_no like '%'+#{applyNumber}+'%'		 -->
+<!-- 		</if> -->
+<!-- 		<if test="outDepot != null and outDepot != ''"> -->
+<!-- 			AND TB_INV_TR.tr_out_wh_id = #{outDepot} -->
+<!-- 		</if> -->
+<!-- 		<if test="depotIdList != null and depotIdList.size > 0"> -->
+			
+<!-- 			<if test="depot == 'out'"> -->
+<!-- 				AND TB_INV_TR.tr_out_wh_id in  -->
+<!-- 				<foreach collection="depotIdList" item="item" open="(" separator="," close=")"> -->
+<!-- 					#{item} -->
+<!-- 				</foreach> -->
+<!-- 			</if> -->
+<!-- 			<if test="depot == 'in'"> -->
+<!-- 				AND TB_INV_TR.tr_in_wh_id in  -->
+<!-- 				<foreach collection="depotIdList" item="item" open="(" separator="," close=")"> -->
+<!-- 					#{item} -->
+<!-- 				</foreach> -->
+<!-- 			</if> -->
+		
+<!-- 		</if> -->
+<!-- 		<if test="inDepot != null and inDepot !=''"> -->
+<!-- 			AND TB_INV_TR.tr_in_wh_id = #{inDepot} -->
+<!-- 		</if> -->
+<!-- 		<if test="demandDept != null and demandDept != ''"> -->
+<!-- 			AND TB_INV_TR.need_dept_id = #{demandDept} -->
+<!-- 		</if> -->
+<!-- 		<if test="applyDept != null and applyDept != ''"> -->
+<!-- 			AND TB_INV_TR.app_dept_id = #{applyDept} -->
+<!-- 		</if> -->
+<!-- 		<if test="applicant != null and applicant !=''"> -->
+<!-- 			AND TB_INV_TR.app_user = #{applicant} -->
+<!-- 		</if> -->
+<!-- 		<if test="domain!=null and domain!=''"> -->
+<!-- 				AND TR_NO like '%'+#{domain}+'%' -->
+<!-- 		</if> -->
+<!-- 	</select> -->
+	
+	<sql id="invTrColumns">
+		invTr.tr_no,
+		invTr.tr_out_wh_id,
+		invTr.tr_in_wh_id,
+		invTr.need_dept_id,
+		invTr.need_date,
+		invTr.app_dept_id,
+		invTr.app_user,
+		invTr.app_date,
+		invTr.status,
+		invTr.if_manual_close,
+		invTr.memo AS trMemo,
+		invTr.cr_user AS trCrUser,
+		invTr.cr_time AS trCrTime,
+		invTr.md_user AS trMdUser,
+		invTr.md_time AS trMdTime
+	</sql>
+	
+	<sql id="invOrgDeptColumns">
+		TB_ORG_DEPT.DEPT_ID AS orgDeptId,
+		TB_ORG_DEPT.DEPT_NAME,
+		TB_ORG_DEPT.PARENT_DEPT_ID,
+		TB_ORG_DEPT.TYPE,
+		TB_ORG_DEPT.DOMAIN AS orgDomain,
+		TB_ORG_DEPT.MANAGER,
+		TB_ORG_DEPT.MD_USER AS orgMdUser,
+		TB_ORG_DEPT.MD_TIME AS orgMdTime,
+		TB_ORG_DEPT.DEPT_LEVEL,
+		TB_ORG_DEPT.CODE_RULE,
+		TB_ORG_DEPT.HR_DEPT_ID,
+		TB_ORG_DEPT.HIERARCHY
+	</sql>
+	
+	<sql id="invWarehouseColumns">
+		TB_INV_WAREHOUSE.wh_id,
+		TB_INV_WAREHOUSE.wh_name,
+		TB_INV_WAREHOUSE.is_effective,
+		TB_INV_WAREHOUSE.wh_type,
+		TB_INV_WAREHOUSE.wh_attribute,
+		TB_INV_WAREHOUSE.domain AS warehouseDomain,
+		TB_INV_WAREHOUSE.dept_id AS warehouseDeptId,
+		TB_INV_WAREHOUSE.assigned_name,
+		TB_INV_WAREHOUSE.co_vat_no,
+		TB_INV_WAREHOUSE.fax_nbr,
+		TB_INV_WAREHOUSE.wh_email,
+		TB_INV_WAREHOUSE.contact_address,
+		TB_INV_WAREHOUSE.zip,
+		TB_INV_WAREHOUSE.city,
+		TB_INV_WAREHOUSE.area,
+		TB_INV_WAREHOUSE.village,
+		TB_INV_WAREHOUSE.adject,
+		TB_INV_WAREHOUSE.road,
+		TB_INV_WAREHOUSE.lane,
+		TB_INV_WAREHOUSE.alley,
+		TB_INV_WAREHOUSE.sub_alley,
+		TB_INV_WAREHOUSE.door_no,
+		TB_INV_WAREHOUSE.door_no_ex,
+		TB_INV_WAREHOUSE.floor,
+		TB_INV_WAREHOUSE.floor_ex,
+		TB_INV_WAREHOUSE.room,
+		TB_INV_WAREHOUSE.add_other,
+		TB_INV_WAREHOUSE.contact1,
+		TB_INV_WAREHOUSE.contact1_nbr1,
+		TB_INV_WAREHOUSE.contact1_nbr2,
+		TB_INV_WAREHOUSE.contact2,
+		TB_INV_WAREHOUSE.contact2_nbr,
+		TB_INV_WAREHOUSE.memo AS warehouseMemo,
+		TB_INV_WAREHOUSE.failure_date,
+		TB_INV_WAREHOUSE.failure_resn,
+		TB_INV_WAREHOUSE.failure_resn_desc,
+		TB_INV_WAREHOUSE.cr_user AS warehouseCrUser,
+		TB_INV_WAREHOUSE.cr_time AS warehouseCrTime,
+		TB_INV_WAREHOUSE.md_user AS warehouseMdUser,
+		TB_INV_WAREHOUSE.md_time AS warehouseMdTime
+	</sql>
+	
+	<resultMap id="InvTrDtoMap" type="com.foya.noms.dto.inv.TbInvTrCompleteDTO">
+	    <id column="tr_no" property="tr_no" />
+	    <result column="tr_out_wh_id" property="tr_out_wh_id" />
+	    <result column="tr_in_wh_id" property="tr_in_wh_id" />
+	    <result column="need_dept_id" property="need_dept_id" />
+	    <result column="need_date" property="need_date" />
+	    <result column="app_dept_id" property="app_dept_id" />
+	    <result column="app_user" property="app_user" />
+	    <result column="app_date" property="app_date" />
+	    <result column="status" property="status" />
+	    <result column="if_manual_close"  property="if_manual_close" />
+	    <result column="trMemo" property="memo" />
+	    <result column="trCrUser" property="cr_user" />
+	    <result column="trCrTime" property="cr_time" />
+	    <result column="trMdUser" property="md_user" />
+	    <result column="trMdTime"  property="md_time" />
+	    
+		<result column="outWhName" property="outWhName" />
+		<result column="inWhName" property="inWhName" />
+		<result column="applyDeptName" property="applyDeptName" />
+		<result column="needDeptName" property="needDeptName" />
+		<result column="appUserName" property="appUserName" />
+  	</resultMap>
+	
+<!-- 	<resultMap id="InvTrDtoMap" type="com.foya.noms.dto.inv.TbInvTrCompleteDTO"> -->
+<!-- 	    <id column="tr_no" jdbcType="VARCHAR" property="tr_no" /> -->
+<!-- 	    <result column="tr_out_wh_id" jdbcType="VARCHAR" property="tr_out_wh_id" /> -->
+<!-- 	    <result column="tr_in_wh_id" jdbcType="VARCHAR" property="tr_in_wh_id" /> -->
+<!-- 	    <result column="need_dept_id" jdbcType="VARCHAR" property="need_dept_id" /> -->
+<!-- 	    <result column="need_date" jdbcType="TIMESTAMP" property="need_date" /> -->
+<!-- 	    <result column="app_dept_id" jdbcType="VARCHAR" property="app_dept_id" /> -->
+<!-- 	    <result column="app_user" jdbcType="VARCHAR" property="app_user" /> -->
+<!-- 	    <result column="app_date" jdbcType="TIMESTAMP" property="app_date" /> -->
+<!-- 	    <result column="status" jdbcType="TINYINT" property="status" /> -->
+<!-- 	    <result column="if_manual_close" jdbcType="BIT" property="if_manual_close" /> -->
+<!-- 	    <result column="trMemo" jdbcType="VARCHAR" property="memo" /> -->
+<!-- 	    <result column="trCrUser" jdbcType="VARCHAR" property="cr_user" /> -->
+<!-- 	    <result column="trCrTime" jdbcType="TIMESTAMP" property="cr_time" /> -->
+<!-- 	    <result column="trMdUser" jdbcType="VARCHAR" property="md_user" /> -->
+<!-- 	    <result column="trMdTime" jdbcType="TIMESTAMP" property="md_time" /> -->
+<!-- 		<result column="CHN_NM" property="applyUserName" /> -->
+<!-- 		<association property="tbOrgNeedDept" column="need_dept_id" -->
+<!-- 			javaType="com.foya.dao.mybatis.model.TbOrgDept" resultMap="InvOrgDeptMap" /> -->
+<!-- 	    <association property="invWarehouseByeExport" column="tr_out_wh_id" -->
+<!-- 			javaType="com.foya.dao.mybatis.model.TbInvWarehouse" resultMap="InvWarehouseMap" /> -->
+<!--   	</resultMap> -->
+  	
+  	<resultMap id="InvWarehouseMap" type="com.foya.dao.mybatis.model.TbInvWarehouse">
+	    <id column="wh_id" property="wh_id" />
+	    <result column="wh_name" property="wh_name" />
+	    <result column="is_effective" property="is_effective" />
+	    <result column="wh_type" property="wh_type" />
+	    <result column="wh_attribute" property="wh_attribute" />
+	    <result column="warehouseDomain" property="domain" />
+	    <result column="warehouseDeptId" property="dept_id" />
+	    <result column="assigned_name" property="assigned_name" />
+	    <result column="co_vat_no" property="co_vat_no" />
+	    <result column="fax_nbr" property="fax_nbr" />
+	    <result column="wh_email" property="wh_email" />
+	    <result column="contact_address" property="contact_address" />
+	    <result column="zip" property="zip" />
+	    <result column="city" property="city" />
+	    <result column="area" property="area" />
+	    <result column="village" property="village" />
+	    <result column="adject" property="adject" />
+	    <result column="road" property="road" />
+	    <result column="lane" property="lane" />
+	    <result column="alley" property="alley" />
+	    <result column="sub_alley" property="sub_alley" />
+	    <result column="door_no" property="door_no" />
+	    <result column="door_no_ex" property="door_no_ex" />
+	    <result column="floor" property="floor" />
+	    <result column="floor_ex" property="floor_ex" />
+	    <result column="room" property="room" />
+	    <result column="add_other" property="add_other" />
+	    <result column="contact1" property="contact1" />
+	    <result column="contact1_nbr1" property="contact1_nbr1" />
+	    <result column="contact1_nbr2" property="contact1_nbr2" />
+	    <result column="contact2" property="contact2" />
+	    <result column="contact2_nbr" property="contact2_nbr" />
+	    <result column="warehouseMemo" property="memo" />
+	    <result column="failure_date" property="failure_date" />
+	    <result column="failure_resn" property="failure_resn" />
+	    <result column="failure_resn_desc" property="failure_resn_desc" />
+	    <result column="warehouseCrUser" property="cr_user" />
+	    <result column="warehouseCrTime" property="cr_time" />
+	    <result column="warehouseMdUser" property="md_user" />
+	    <result column="warehouseMdTime" property="md_time" />
+  	</resultMap>
+  	
+  	<resultMap id="InvOrgDeptMap" type="com.foya.dao.mybatis.model.TbOrgDept">
+	    <id column="orgDeptId" property="DEPT_ID" />
+	    <result column="DEPT_NAME" property="DEPT_NAME" />
+	    <result column="PARENT_DEPT_ID" property="PARENT_DEPT_ID" />
+	    <result column="TYPE" property="TYPE" />
+	    <result column="orgDomain" property="DOMAIN" />
+	    <result column="MANAGER" property="MANAGER" />
+	    <result column="orgMdUser" property="MD_USER" />
+	    <result column="orgMdTime" property="MD_TIME" />
+	    <result column="DEPT_LEVEL" property="DEPT_LEVEL" />
+	    <result column="CODE_RULE" property="CODE_RULE" />
+	    <result column="HR_DEPT_ID" property="HR_DEPT_ID" />
+	    <result column="HIERARCHY" property="HIERARCHY" />
+  	</resultMap>
+ 	
+  	<resultMap id="dscrResultMap" type="com.foya.noms.dto.inv.TbInvTrDTO">
+	  	<result column="statusDscr" jdbcType="VARCHAR" property="statusDscr" />
+	  	<result column="trOutWhIdDscr" jdbcType="VARCHAR" property="trOutWhIdDscr" />
+	    <result column="trInWhIdDscr" jdbcType="VARCHAR" property="trInWhIdDscr" />
+	    <result column="needDeptIdDscr" jdbcType="VARCHAR" property="needDeptIdDscr" />
+	    <result column="appDeptIdDscr" jdbcType="VARCHAR" property="appDeptIdDscr" />
+	    <result column="appUserDscr" jdbcType="VARCHAR" property="appUserDscr" />
+  	</resultMap>
+	
+	<resultMap id="BaseResultMap" type="com.foya.dao.mybatis.model.TbInvTr">
+	    <id column="tr_no" jdbcType="VARCHAR" property="tr_no" />
+	    <result column="tr_out_wh_id" jdbcType="VARCHAR" property="tr_out_wh_id" />
+	    <result column="tr_in_wh_id" jdbcType="VARCHAR" property="tr_in_wh_id" />
+	    <result column="need_dept_id" jdbcType="VARCHAR" property="need_dept_id" />
+	    <result column="need_date" jdbcType="TIMESTAMP" property="need_date" />
+	    <result column="app_dept_id" jdbcType="VARCHAR" property="app_dept_id" />
+	    <result column="app_user" jdbcType="VARCHAR" property="app_user" />
+	    <result column="app_date" jdbcType="TIMESTAMP" property="app_date" />
+	    <result column="status" jdbcType="TINYINT" property="status" />
+	    <result column="if_manual_close" jdbcType="BIT" property="if_manual_close" />
+	    <result column="memo" jdbcType="VARCHAR" property="memo" />
+	    <result column="cr_user" jdbcType="VARCHAR" property="cr_user" />
+	    <result column="cr_time" jdbcType="TIMESTAMP" property="cr_time" />
+	    <result column="md_user" jdbcType="VARCHAR" property="md_user" />
+	    <result column="md_time" jdbcType="TIMESTAMP" property="md_time" />
+  	</resultMap>
+  	
+  	<select id="searchInvTrByInitSearch" parameterType="hashmap" resultMap="dscrResultMap">
+		select *,(select name from tb_sys_lookup where type='INV_TR_STATUS' and code=status) statusDscr ,
+		(SELECT WH_NAME FROM TB_INV_WAREHOUSE WHERE WH_ID=TR_OUT_WH_ID) trOutWhIdDscr,
+		(SELECT WH_NAME FROM TB_INV_WAREHOUSE WHERE WH_ID=TR_IN_WH_ID) trInWhIdDscr,
+		(SELECT DEPT_NAME FROM TB_ORG_DEPT WHERE DEPT_ID=NEED_DEPT_ID) needDeptIdDscr
+		from TB_INV_TR
+		<where>
+			<if test="trNo!=null and trNo!=''">
+				AND TR_NO like '%'+#{trNo}+'%'
+			</if>
+			<if test="domain!=null and domain!=''">
+				AND TR_NO like '%'+#{domain}+'%'
+			</if>
+			<if test="statusSelect!=null and statusSelect!=''">
+				AND STATUS = #{statusSelect}
+			</if>
+			<!-- <if test="checkOutWareHouse!=null and checkOutWareHouse!=''">
+				AND if_manual_close = #{checkOutWareHouse}
+			</if> -->
+			<if test="wareHouseOut!=null and wareHouseOut!=''">
+				AND TR_OUT_WH_ID = #{wareHouseOut}
+			</if>
+			<if test="wareHouseIn!=null and wareHouseIn!=''">
+				AND TR_IN_WH_ID = #{wareHouseIn}
+			</if>
+			<if test="deptNeed!=null and deptNeed!=''">
+				AND NEED_DEPT_ID = #{deptNeed}
+			</if>
+			<if test="appDept!=null and appDept!=''">
+				AND APP_DEPT_ID = #{appDept}
+			</if>
+			<if test="appUser!=null and appUser!=''">
+				AND APP_USER = #{appUser}
+			</if>
+			<if test="needStartDate!=null and needStartDate!='' and needEndDate!=null and needEndDate!='' ">
+				AND NEED_DATE BETWEEN #{needStartDate} AND #{needEndDate}
+			</if>
+			<if test="applyStartDate!=null and applyStartDate!='' and applyEndDate!=null and applyEndDate!='' ">
+				AND APP_DATE BETWEEN #{applyStartDate} AND #{applyEndDate}
+			</if>
+			<!-- 調出調入必須多串TB_INV_TR_ACT-->
+			<if test="troutStartDate!=null and troutStartDate!='' and troutEndDate!=null and troutEndDate!='' ">
+				AND TR_NO IN (SELECT TR_NO FROM TB_INV_TR_ACT WHERE TR_OUT_DATE BETWEEN #{troutStartDate} AND #{troutEndDate})
+			</if>
+			<if test="trinStartDate!=null and trinStartDate!='' and trinEndDate!=null and trinEndDate!='' ">
+				AND TR_NO IN (SELECT TR_NO FROM TB_INV_TR_ACT WHERE TR_IN_DATE BETWEEN #{trinStartDate} AND #{trinEndDate})
+			</if>
+			
+			<!-- <if test="status == '7' and checkOutWareHouse == '0'">
+				AND TR_NO IN (SELECT TR_NO FROM TB_INV_TR_DTL B TR_INV_TR_ACT C WHERE B.TR_NO=TR_NO AND B.TR_NO=C.TR_NO
+							  AND B.MAT_NO=C.MAT_NO  AND B.APP_QTY=C.QTY)
+			</if> -->
+		</where>
+	</select>
+	<!-- 如果狀態為結案 且沒勾選返回調出倉 必須計算每筆DTL筆數於記錄檔是否相同 -->
+	<select id="searchInvDtlCntByStatusSevenWareHouseClose" resultType="int" parameterType="java.lang.String">
+		SELECT SUM(APP_QTY) FROM TB_INV_TR_DTL
+		WHERE TR_NO = #{trNo} 
+		GROUP BY TR_NO
+	</select>
+	<select id="searchInvActCntByStatusSevenWareHouseClose" resultType="int" parameterType="java.lang.String">
+		SELECT SUM(TR_QTY) FROM TB_INV_TR_ACT
+		WHERE TR_NO = #{trNo} 
+		AND IF_TR_IN = 1
+		GROUP BY TR_NO
+	</select>
+	<select id="searchMasterColumsDscr" parameterType="hashmap" resultMap="dscrResultMap">
+		SELECT A.TR_NO,A.NEED_DATE,A.APP_DATE,A.TR_IN_WH_ID,A.TR_OUT_WH_ID,
+		A.NEED_DEPT_ID,APP_DEPT_ID,A.APP_USER,
+		(SELECT NAME FROM TB_SYS_LOOKUP WHERE TYPE='INV_TR_STATUS' AND CODE=A.STATUS) statusDscr,
+		(SELECT WH_NAME FROM TB_INV_WAREHOUSE WHERE WH_ID=A.TR_OUT_WH_ID) trOutWhIdDscr,
+		(SELECT WH_NAME FROM TB_INV_WAREHOUSE WHERE WH_ID=A.TR_IN_WH_ID) trInWhIdDscr,
+		(SELECT DEPT_NAME FROM TB_ORG_DEPT WHERE DEPT_ID=A.NEED_DEPT_ID) needDeptIdDscr,
+		(SELECT DEPT_NAME FROM TB_ORG_DEPT WHERE DEPT_ID=A.APP_DEPT_ID) appDeptIdDscr,
+		(SELECT CHN_NM FROM TB_AUTH_PERSONNEL WHERE PSN_NO=A.APP_USER) appUserDscr,MEMO,processType
+		FROM TB_INV_TR  A
+		WHERE A.TR_NO=#{trNo} 
+	</select>
+	
+	<select id="selerctMaxSeq" resultMap="BaseResultMap" parameterType="hashmap">
+		select max(SUBSTRing(tr_no,4,13)) tr_no from TB_INV_TR 
+		 where	1=1
+	    <if test="trNo!=null and trNo!=''" >
+	        and SUBSTRing(tr_no,4,13) like '%'+#{trNo}+'%'
+	    </if>
+	</select>
+</mapper>

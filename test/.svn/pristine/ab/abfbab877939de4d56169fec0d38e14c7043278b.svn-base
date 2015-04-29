@@ -1,0 +1,55 @@
+package com.foya.noms.dao.auth;
+
+import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.foya.dao.mybatis.model.TbAuthPersonnel;
+import com.foya.dao.mybatis.model.TbAuthPersonnelExample;
+import com.foya.noms.GenericTest;
+import com.foya.noms.dto.auth.PersonnelDTO;
+
+public class PersonnelDaoTest extends GenericTest {
+
+	@Autowired
+	private PersonnelDao dao;
+	
+	@Test
+	public void testSelectAllPsn(){
+		List<TbAuthPersonnel> users = dao.selectAllPsn();
+		Assert.assertNotNull(users);
+		Assert.assertTrue(users.size()>0);
+	}
+	
+	@Test
+	public void testGetPersonnel() {
+		List<TbAuthPersonnel> users =dao.getPersonnel(new TbAuthPersonnelExample());
+		Assert.assertNotNull(users);
+		Assert.assertTrue(users.size()>0);
+	}
+	
+	@Test
+	public void testInsertComputer() {
+		TbAuthPersonnel record = new TbAuthPersonnel();
+		dao.insertComputer(record);
+	}
+	
+	@Test
+	public void testGetPsnDeptById(){
+		PersonnelDTO psn = dao.getPsnDeptById(3);
+		Assert.assertNotNull(psn);
+		Assert.assertEquals(psn.getPSN_ID().intValue(), 3);
+	}
+	
+	@Test
+	public void testSearchPsnByIdNoEmail(){
+		List<TbAuthPersonnel> psn = dao.searchPsnByIdNoEmail("junit", "junitCHN_NM", "junit@junit.com");
+		Assert.assertNotNull(psn);
+		Assert.assertTrue(psn.size()>0);
+		Assert.assertEquals(psn.get(0).getCHN_NM(),"junitCHN_NM");
+		Assert.assertEquals(psn.get(0).getPSN_NO(), "junit");
+		Assert.assertEquals(psn.get(0).getE_MAIL(), "junit@junit.com");
+	}
+}

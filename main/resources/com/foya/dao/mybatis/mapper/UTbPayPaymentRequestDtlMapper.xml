@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbPayPaymentRequestDtlMapper">
+ 
+  	<select id="selectDistinctLocationId" resultType="com.foya.dao.mybatis.model.TbPayPaymentRequestDtl">
+	select
+		distinct location_id 
+	from TB_PAY_PAYMENT_REQUEST_DTL
+	</select>	
+	  
+  	<select id="selectTaxSumAmt" resultType="com.foya.noms.dto.pay.TbPayPaymentRequestDtlDTO" parameterType="hashmap">
+	select 
+		SUM(B.tax_exclusive_amt+B.business_tax) sumPrAmt,
+		SUM(B.tax_exclusive_amt) sumTaxExclusiveAmt,
+		SUM(B.business_tax) sumBusinessTax,
+		0 payment_req_no
+	from TB_PAY_PAYMENT_REQUEST A,TB_PAY_PAYMENT_REQUEST_DTL B
+	where A.payment_req_no=B.payment_req_no
+		and A.cash_req_no like #{prType}
+		and B.location_id= #{locationId}
+	</select>
+	
+  	<select id="select4Pay009Detail2" resultType="com.foya.noms.dto.pay.TbPayPaymentRequestDtlDTO" parameterType="hashmap">	
+	select
+		SUM(B.tax_exclusive_amt+B.business_tax) sumPrAmt,
+		SUM(B.tax_exclusive_amt) sumTaxExclusiveAmt,
+		SUM(B.business_tax) sumBusinessTax,
+		(select lookup_code_desc from TB_PAY_LOOKUP_CODE where lookup_type='PR_TYPE' and lookup_code=C.Pr_Type) prTypeDesc,
+		C.Pr_Type ,
+		C.location_id ,
+		C.credit_date ,
+		sum(credit_amt) sumCreditAmt
+	from TB_PAY_PAYMENT_REQUEST A,
+		TB_PAY_PAYMENT_REQUEST_DTL B,
+		TB_PAY_VOUCHER_CREDIT C
+	where A.payment_req_no=B.payment_req_no
+		and C.payment_req_no=B.payment_req_no
+		and C.payment_req_item_no=B.item_no 
+		and C.mst_seq_nbr = #{mstSeqNbr}
+		and A.cash_req_no like '%'+C.pr_type+'%'
+		and B.location_id=C.location_id
+		Group by 
+			C.Pr_Type ,C.location_id ,C.credit_date 
+	</select>
+		
+  	<select id="select4Pay009Detail3" resultType="com.foya.noms.dto.pay.TbPayPaymentRequestDtlDTO" parameterType="hashmap">	
+	select
+		A.cash_req_no cashReqNo,
+		A.contract_no contractNo,
+		B.payment_req_user_id paymentReqUserId,
+		(select chn_nm from TB_AUTH_PERSONNEL where psn_no=B.payment_req_user_id) paymentUserName,
+		convert(varchar(10), B.payment_req_begin_date, 111) +'~'+convert(varchar(10),B.payment_req_end_date, 111) paymentReqDate,
+		(B.tax_exclusive_amt+B.business_tax)sumPrAmt,
+		B.tax_exclusive_amt tax_exclusive_amt,
+		B.business_tax business_tax,
+		B.payment_req_no,
+		B.item_no,
+		<choose>
+		    <when test="mstSeqNbr != null">
+			(Select sum(credit_amt) s_credit_amt from TB_PAY_VOUCHER_CREDIT where mst_seq_nbr=#{mstSeqNbr}
+			And pr_type=#{eqPrType}
+			And location_id=#{locationId}
+			and payment_req_no=B.payment_req_no
+			and payment_req_item_no=B.item_no
+			and payment_req_user_id = b.payment_req_user_id
+			)
+			</when>
+			<otherwise>
+			0
+			</otherwise>
+		</choose>
+		 sumCreditAmt
+	from TB_PAY_PAYMENT_REQUEST A,TB_PAY_PAYMENT_REQUEST_DTL B
+	where A.payment_req_no=B.payment_req_no 		
+		and A.cash_req_no like #{prType}
+		and B.location_id= #{locationId}
+	</select>
+	
+  	<select id="select4Pay001Detail2" resultType="com.foya.noms.dto.pay.TbPayPaymentRequestDtlDTO" parameterType="hashmap">
+  	select location_id,
+		(select pay_begin_date from TB_LS_LOCATION L where 
+			ls_no=#{contractNo} and L.location_id=D.location_id and convert(date,#{appDate}) between pay_begin_date and ls_e_date)
+		payBeginDate,
+		(select ls_e_date from TB_LS_LOCATION L where 
+			ls_no=#{contractNo} and L.location_id=D.location_id and convert(date,#{appDate}) between pay_begin_date and ls_e_date)
+		lsEDate,
+		(select L.rent_amt from TB_LS_LOCATION L where 
+			L.ls_no=#{contractNo} and L.location_id=D.location_id and convert(date,#{appDate})  between L.pay_begin_date and L.ls_e_date)
+		rentAmt,
+		Case 
+			When payment_request_item='REP03' Then
+			(select SUM(G.prepayment_balance) from TB_PAY_PREPAYMENT G where G.contract_no=#{contractNo} and G.location_id= D.LOCATION_ID)
+			Else 0 End 
+		sumPrepaymentBalance,
+		(select exp_item_desc from TB_PAY_PAYMENT_ITEM where exp_item=D.payment_request_item and payment_req_item='REP')
+		itemDesc,
+		payment_req_begin_date, payment_req_end_date,
+		tax_exclusive_amt+business_tax sumAmt,
+		payment_request_item,
+		item_no
+	from TB_PAY_PAYMENT_REQUEST_DTL D
+	where payment_req_no=#{paymentReqNo} 
+		order by location_id	
+	</select>	
+	
+	<update id="updatePlusTax" parameterType="map" >
+    update TB_PAY_PAYMENT_REQUEST_DTL
+    set tax_exclusive_amt = tax_exclusive_amt+#{taxExclusiveAmt},
+    	business_tax = business_tax +#{businessTax}
+    where payment_req_no=#{paymentReqNo}
+		and location_id=#{locationId}
+  </update>
+  
+  	<select id="selectTbPayPaymentRequestDtlByPAY011" resultType="com.foya.noms.dto.pay.TbPayPaymentRequestDtlDTO" parameterType="hashmap">
+	SELECT A.LOCATION_ID,
+	       (SELECT PAY_BEGIN_DATE
+	          FROM TB_LS_LOCATION
+	         WHERE LS_NO = #{contractNo}
+	           AND LOCATION_ID = A.LOCATION_ID
+	           AND convert(date,#{appDate})  BETWEEN PAY_BEGIN_DATE AND LS_E_DATE) PAY_BEGIN_DATE,
+	       (SELECT LS_E_DATE
+	          FROM TB_LS_LOCATION
+	         WHERE LS_NO = #{contractNo}
+	           AND LOCATION_ID = A.LOCATION_ID
+	           AND convert(date,#{appDate})  BETWEEN PAY_BEGIN_DATE AND LS_E_DATE) LS_E_DATE,
+	       CASE A.PAYMENT_REQUEST_ITEM
+	          WHEN 'ELP04' THEN
+	           (SELECT SUM(PREPAYMENT_BALANCE)
+	              FROM TB_PAY_PREPAYMENT
+	             WHERE CONTRACT_NO = #{contractNo}
+	               AND LOCATION_ID = A.LOCATION_ID
+	               AND PAYMENT_REQ_NO = #{paymentReqNo})
+	          ELSE
+	           NULL
+	       END S_PREPAYMENT_BALANCE,
+	       (SELECT EXP_ITEM_DESC
+	          FROM TB_PAY_PAYMENT_ITEM
+	         WHERE EXP_ITEM = A.PAYMENT_REQUEST_ITEM
+	           AND PAYMENT_REQ_ITEM = 'ELP') PAYMENT_REQUEST_ITEM_DESC,
+	       CASE A.PAYMENT_REQUEST_ITEM
+	          WHEN 'ELP04' THEN
+	           NULL
+	          ELSE
+	           A.PAYMENT_REQ_BEGIN_DATE
+	       END PAYMENT_REQ_BEGIN_DATE,
+	       CASE A.PAYMENT_REQUEST_ITEM
+	          WHEN 'ELP04' THEN
+	           NULL
+	          ELSE
+	           A.PAYMENT_REQ_END_DATE
+	       END PAYMENT_REQ_END_DATE,
+	       (A.TAX_EXCLUSIVE_AMT + A.BUSINESS_TAX) PAYMENT_REQUEST_AMT
+	  FROM TB_PAY_PAYMENT_REQUEST_DTL A
+	 WHERE A.ELECTRICITY_METER_NBR = #{electricityMeterNbr}
+	</select>
+	
+	<select id="selectDtlForPAY003Table3" resultType="com.foya.noms.dto.pay.TbPayPaymentRequestDtlDTO" parameterType="hashmap">
+	select A.location_id,
+		(select pay_begin_date from TB_LS_LOCATION where  location_id= A.LOCATION_ID and ls_no=#{contractNo} and convert(VARCHAR,#{paymentReqBeginDate},101) between convert(VARCHAR,pay_begin_date,101) and convert(VARCHAR,ls_e_date,101)) PAY_BEGIN_DATE,
+		(select ls_e_date from TB_LS_LOCATION where  location_id= A.LOCATION_ID and ls_no=#{contractNo} and convert(VARCHAR,#{paymentReqBeginDate},101) between convert(VARCHAR,pay_begin_date,101) and convert(VARCHAR,ls_e_date,101)) LS_E_DATE,
+		(select SUM(prepayment_balance) from TB_PAY_PREPAYMENT where contract_no= #{contractNo} and location_id= A.LOCATION_ID ) S_PREPAYMENT_BALANCE,
+		(select exp_item_desc from TB_PAY_PAYMENT_ITEM where exp_item=A.PAYMENT_REQUEST_ITEM and payment_req_item='ELP') exp_item_desc,
+		A.PAYMENT_REQ_BEGIN_DATE,
+		A.PAYMENT_REQ_END_DATE,
+		(A.TAX_EXCLUSIVE_AMT+A.BUSINESS_TAX) s_exclusive_business_amt
+	from TB_PAY_PAYMENT_REQUEST_DTL A 
+	where electricity_meter_nbr=#{electricityMeterNbr} ;
+	</select>
+	
+	<!--************************************************************************************************************-->
+	<!--************************************************************************************************************-->
+	<!--************************************************************************************************************-->
+	
+	<resultMap id="payPaymentResultMap" type="com.foya.noms.dto.pay.TbPayPaymentRequestDtlCompleteDTO">
+	 	<result column="PAY_BEGIN_DATE" property="payBeginDate" />
+    	<result column="LS_E_DATE" property="lsEndDate" />
+	    <result column="RENT_AMT" property="rentAmt" />
+	    <result column="s_prepayment_balance" property="prepaidBalance" />
+	    <result column="itemName" property="itemName" />
+    </resultMap>
+	
+	<!-- 取得租約站點清單 -->
+	<select id="getContractDetailData" resultMap="payPaymentResultMap">
+		SELECT
+			(Select EXP_ITEM_DESC From TB_PAY_PAYMENT_ITEM Where EXP_ITEM = requestDtl.PAYMENT_REQUEST_ITEM) as itemName,
+			requestDtl.LOCATION_ID,
+			location.PAY_BEGIN_DATE,
+			location.LS_E_DATE,
+			location.RENT_AMT,
+			(Select SUM(PREPAYMENT_BALANCE) From TB_PAY_PREPAYMENT Where CONTRACT_NO = #{contractNo} And LOCATION_ID = requestDtl.LOCATION_ID And PAYMENT_REQ_NO = #{paymentReqNo} ) as s_prepayment_balance,
+			requestDtl.PAYMENT_REQ_BEGIN_DATE,
+			requestDtl.PAYMENT_REQ_END_DATE,
+			requestDtl.TAX_EXCLUSIVE_AMT,
+			requestDtl.BUSINESS_TAX,
+			requestDtl.ITEM_NO
+		FROM
+			TB_PAY_PAYMENT_REQUEST_DTL requestDtl
+		JOIN
+			TB_LS_LOCATION location
+		On
+			location.LOCATION_ID = requestDtl.LOCATION_ID
+		AND
+			#{appDate} BETWEEN  CONVERT(date,location.PAY_BEGIN_DATE) And CONVERT(date,location.LS_E_DATE)
+		WHERE
+			location.LS_NO = #{contractNo}
+		And	
+			requestDtl.PAYMENT_REQ_NO= #{paymentReqNo}
+		ORDER BY
+			requestDtl.LOCATION_ID
+	</select>
+	<!--************************************************************************************************************-->
+	<!--************************************************************************************************************-->
+	<!--************************************************************************************************************-->
+</mapper>

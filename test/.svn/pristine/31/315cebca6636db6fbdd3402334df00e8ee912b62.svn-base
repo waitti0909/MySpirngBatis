@@ -1,0 +1,184 @@
+package com.foya.noms.service.inv;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.foya.dao.mybatis.model.TbOrgDept;
+import com.foya.dao.mybatis.model.TbSysLookup;
+import com.foya.dao.mybatis.model.TbSysLookupExample;
+import com.foya.dao.mybatis.model.UTbInvSrlExample;
+import com.foya.dao.mybatis.model.UTbInvStatTranExample;
+import com.foya.dao.mybatis.model.UTbInvWarehouseExample;
+import com.foya.noms.GenericTest;
+import com.foya.noms.dto.inv.TbInvSrlDTO;
+import com.foya.noms.dto.inv.TbInvStatTranDTO;
+import com.foya.noms.dto.inv.TbInvWarehouseDTO;
+
+public class INV018ServiceTest extends GenericTest {
+
+	@Autowired
+	private INV018Service inv018Service;
+
+	@Test
+	public void testSelectInvWarehouseByExample() {
+		UTbInvWarehouseExample warehouseExample = new UTbInvWarehouseExample();
+		warehouseExample.createCriteria().andIs_effectiveEqualTo(true);
+		List<TbInvWarehouseDTO> warehouseList = inv018Service.selectInvWarehouseByExample(warehouseExample);
+		Assert.assertNotNull(warehouseList);
+		Assert.assertTrue(warehouseList.size() > 0);
+	}
+
+	@Test
+	public void testSelectSysLookupByExample() {
+		TbSysLookupExample lookupExample = new TbSysLookupExample();
+		lookupExample.createCriteria().andTYPEEqualTo("INV_TRAN_AUDIT_STAT");
+		List<TbSysLookup> list = inv018Service.selectSysLookupByExample(lookupExample);
+		Assert.assertNotNull(list);
+		Assert.assertTrue(list.size() > 0);
+
+		lookupExample = new TbSysLookupExample();
+		lookupExample.createCriteria().andTYPEEqualTo("MAT_STATUS");
+		list = inv018Service.selectSysLookupByExample(lookupExample);
+		Assert.assertNotNull(list);
+		Assert.assertTrue(list.size() > 0);
+
+		lookupExample = new TbSysLookupExample();
+		lookupExample.createCriteria().andTYPEEqualTo("INV_STAT_TRAN_RESN");
+		list = inv018Service.selectSysLookupByExample(lookupExample);
+		Assert.assertNotNull(list);
+		Assert.assertTrue(list.size() > 0);
+	}
+
+	@Test
+	public void testSelectInvStatTranByExample() {
+		UTbInvStatTranExample example = new UTbInvStatTranExample();
+		UTbInvStatTranExample.Criteria cr = example.createCriteria();
+		cr.andInv_tran_noLike("%IAH2014%");
+		cr.andInv_tran_audit_statusEqualTo(Byte.valueOf("1"));
+		cr.andWh_idEqualTo("0001");
+		List<TbInvStatTranDTO> list = inv018Service.selectInvStatTranByExample(example);
+		Assert.assertNotNull(list);
+		Assert.assertTrue(list.size() > 0);
+	}
+
+	@Test
+	public void testCountInvStatTranByExample() {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+		UTbInvStatTranExample example = new UTbInvStatTranExample();
+		UTbInvStatTranExample.Criteria cr = example.createCriteria();
+		cr.andInv_tran_noLike("IAH2014%");
+		try {
+			cr.andCr_timeBetween(sdf.parse("2014/12/05 00:00:00.000"), sdf.parse("2014/12/08 23:59:59.999"));
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		int count = inv018Service.countInvStatTranByExample(example);
+		Assert.assertTrue(count > 0);
+	}
+
+	@Test
+	public void testCancelApply() {
+		String[] invTranNos = "A0001".split(",");
+		int status = inv018Service.cancelApply(invTranNos, "JUnitTestCase");
+		Assert.assertTrue(status == 1);
+	}
+
+	@Test
+	public void testUpdateInvStatTranByPrimaryKeySelectiveByRecord() {
+		TbInvStatTranDTO record = new TbInvStatTranDTO();
+		record.setInv_tran_no("IAH20141205001");
+		record.setInv_tran_audit_status(Byte.valueOf("1"));
+		record.setWh_id("0001");
+		record.setMat_no("M001");
+		record.setOld_mat_status(Byte.valueOf("1"));
+		record.setNew_mat_status(Byte.valueOf("2"));
+		record.setSrl_no(Long.valueOf(2));
+		record.setTran_qty(1);
+		record.setTran_reason("TRAN1");
+		record.setMemo("test");
+		record.setTran_user("JUnitTestCase");
+		record.setTran_date(new Date());
+		record.setMd_user("JUnitTestCase");
+		record.setMd_time(new Date());
+		int status = inv018Service.updateInvStatTranByPrimaryKeySelective(record);
+		Assert.assertTrue(status == 1);
+	}
+
+	@Test
+	public void testInsertInvStatTranSelective() {
+		TbInvStatTranDTO record = new TbInvStatTranDTO();
+		record.setInv_tran_no("IAH20141205003");
+		record.setInv_tran_audit_status(Byte.valueOf("1"));
+		record.setWh_id("0001");
+		record.setMat_no("M001");
+		record.setOld_mat_status(Byte.valueOf("1"));
+		record.setNew_mat_status(Byte.valueOf("2"));
+		record.setSrl_no(Long.valueOf(2));
+		record.setTran_qty(1);
+		record.setTran_reason("TRAN1");
+		record.setMemo("test");
+		record.setTran_user("JUnitTestCase");
+		record.setTran_date(new Date());
+		record.setMd_user("JUnitTestCase");
+		record.setMd_time(new Date());
+		record.setCr_user("JUnitTestCase");
+		record.setCr_time(new Date());
+		int status = inv018Service.insertInvStatTranSelective(record);
+		Assert.assertTrue(status == 1);
+	}
+
+	@Test
+	public void testUpdateInvStatTranStatus() {
+		String[] invTranNos = {"A0001"};
+		int status = inv018Service.updateInvStatTranStatus(invTranNos, "JUnitTestCase");
+		Assert.assertNotNull(status);
+		Assert.assertTrue(status == 1);
+	}
+
+	@Test
+	public void testApply() {
+		TbInvStatTranDTO record = new TbInvStatTranDTO();
+		record.setInv_tran_no("IAH20141205002");
+		record.setInv_tran_audit_status(Byte.valueOf("1"));
+		record.setWh_id("0001");
+		record.setMat_no("M002");
+		record.setOld_mat_status(Byte.valueOf("1"));
+		record.setNew_mat_status(Byte.valueOf("2"));
+		record.setSrl_no(Long.valueOf(2));
+		record.setTran_qty(1);
+		record.setTran_reason("TRAN1");
+		record.setMemo("test");
+		record.setTran_user("JUnitTestCase");
+		record.setTran_date(new Date());
+		record.setMd_user("JUnitTestCase");
+		record.setMd_time(new Date());
+		int status = inv018Service.apply(record, "JUnitTestCase");
+		Assert.assertNotNull(status);
+		Assert.assertTrue(status == 1);
+	}
+
+	@Test
+	public void testSelectInvSrlByExample() {
+		UTbInvSrlExample example = new UTbInvSrlExample();
+		UTbInvSrlExample.Criteria cr = example.createCriteria();
+		cr.andWh_idEqualTo("0001");
+		cr.andMat_noEqualTo("M001");
+		List<TbInvSrlDTO> list = inv018Service.selectInvSrlByExample(example);
+		Assert.assertNotNull(list);
+		Assert.assertTrue(list.size() > 0);
+	}
+
+	@Test
+	public void testSelectOrgDeptByPrimaryKey() {
+		TbOrgDept orgDept = inv018Service.selectOrgDeptByPrimaryKey("110000");
+		Assert.assertNotNull(orgDept);
+		Assert.assertEquals(orgDept.getDEPT_ID(), "110000");
+	}
+
+}

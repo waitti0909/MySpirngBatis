@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbAuthPersonnelMapper">
+
+	<resultMap id="Personnel" type="com.foya.noms.dto.auth.PersonnelDTO">
+    <id column="PSN_ID" property="PSN_ID" jdbcType="DECIMAL" />
+    <result column="PSN_NO" property="PSN_NO" jdbcType="VARCHAR" />
+    <result column="DEPT_NAME" property="deptName" jdbcType="VARCHAR" />
+    <result column="ENG_NM" property="ENG_NM" jdbcType="VARCHAR" />
+    <result column="CHN_NM" property="CHN_NM" jdbcType="VARCHAR" />
+    <result column="E_MAIL" property="e_MAIL" jdbcType="VARCHAR" />
+	<result column="PRIMARY_DEPT_POS_ID" property="PRIMARY_DEPT_POS_ID" jdbcType="VARCHAR" />
+	<result column="DISMISSION" property="dismission" jdbcType="VARCHAR" />	
+	</resultMap>
+	
+	<resultMap id="User" type="com.foya.noms.dto.auth.UserDTO">
+		<id column="psn_id" property="userId" jdbcType="INTEGER" />
+		<result column="psn_no" property="username" jdbcType="VARCHAR" />
+		<result column="psn_pwd" property="password" jdbcType="VARCHAR" />
+		<result column="dept_id" property="hrDeptId" jdbcType="VARCHAR" />
+		<result column="dept_name" property="hrDeptName" jdbcType="VARCHAR" />
+		<result column="PRIMARY_DEPT_POS_ID" property="primaryDeptPosId" jdbcType="VARCHAR" />
+		<result column="psn_type" property="psnType" jdbcType="VARCHAR" />
+		<result column="co_vat_no" property="coVatNo" jdbcType="VARCHAR" />
+		<result column="chn_nm" property="chName" jdbcType="VARCHAR" />
+		<result column="eng_nm" property="enName" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		psn_id,psn_no,psn_pwd,chn_nm
+	</sql>
+	
+	<select id="getPsnDeptById" resultMap="Personnel">
+	  SELECT 
+      psn.PSN_ID, psn.PSN_NO,dept.DEPT_NAME as DEPT_NAME
+      FROM TB_AUTH_PERSONNEL as psn
+	  inner join TB_ORG_DEPT as dept
+	  on dept.DEPT_ID=psn.DEPT_ID
+	  where psn.PSN_ID= #{psnId,jdbcType=DECIMAL}
+	</select>
+	
+	<select id="searchPsnByNoChnNameEmail" resultMap="Personnel">
+    select
+    PSN_ID,PSN_NO,CHN_NM,E_MAIL,PRIMARY_DEPT_POS_ID
+    from TB_AUTH_PERSONNEL
+    <where>
+    	DISMISSION = 'N'
+	    <if test="psnNo!=null and psnNo!=''" >
+	        AND PSN_NO = #{psnNo}
+	    </if>
+	    <if test="chnName!=null and chnName!='' "> 
+	         AND CHN_NM LIKE  '%'+#{chnName}+'%'
+ 		</if> 
+	    <if test="email!=null and email!=''" >
+	        AND E_MAIL = #{email}
+	    </if>	    
+	</where>
+  </select>
+  
+	<select id="searchPsnsByPsnNo" resultMap="Personnel">
+    select
+    PSN_ID,PSN_NO,CHN_NM,E_MAIL,PRIMARY_DEPT_POS_ID
+    from TB_AUTH_PERSONNEL
+    <where >
+    	<!-- DISMISSION = 'N' -->
+	    <if test="psnNo!=null and psnNo!=''" >
+	        AND PSN_NO = #{psnNo}
+	    </if>	    
+	</where>
+  </select>  
+  
+	<select id="getUserDtoByPsnNo" resultMap="User" parameterType="java.lang.String">
+		SELECT
+		<include refid="base_columns"/>
+		FROM tb_auth_personnel
+		WHERE 
+		psn_no = #{psnNo}
+	</select>
+	
+	<select id="getUserDtoByPsnNos" resultMap="User" parameterType="java.lang.String">
+		SELECT
+		<include refid="base_columns"/>
+		FROM tb_auth_personnel
+		WHERE 
+		psn_no in 
+		<foreach item="item" index="index" collection="psnNos"
+			open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+	
+	<select id="getUserDtoByDeptPosId" resultMap="User" parameterType="java.lang.String">
+		SELECT DISTINCT 
+		p.PSN_ID,p.PSN_NO,p.PSN_PWD,p.CHN_NM,p.ENG_NM
+		FROM TB_AUTH_PERSONNEL AS p INNER JOIN
+             TB_ORG_PSN_POS AS pp ON p.PSN_NO = pp.PSN_NO
+		<where>
+			pp.DEPT_POS_ID = #{deptPosId}
+		</where>
+	</select>
+	
+	<select id="selectLoginUserByPsnNo" resultMap="User" >
+	<![CDATA[
+		SELECT ps.*, de.DEPT_ID, de.DEPT_NAME
+		FROM tb_auth_personnel ps
+		left join tb_org_dept de on ps.DEPT_ID = de.DEPT_ID
+		WHERE 
+		psn_no = #{psnNo} and DISMISSION<>'Y' and  on_job<=#{sysdate}
+	]]></select>
+	
+	
+	<update id="updatePsnPrimaryJobByDeptPosId" parameterType="java.lang.String">
+		update tb_auth_personnel 
+		set PRIMARY_DEPT_POS_ID=#{newDeptPosId} 
+		where PRIMARY_DEPT_POS_ID=#{oldDeptPosId}
+	</update>
+	
+	
+	<update id="updatePrimaryJobByDeptPosIdPSNNo" parameterType="java.lang.String">
+		update tb_auth_personnel 	         
+	         	set PRIMARY_DEPT_POS_ID=#{dpetPosId}
+	         	<if test="deptId !=null">
+	         	,dept_id=#{deptId} 
+	         	</if>	         	
+	         	,job_ttl=#{jobTitle} 
+		<where>
+			PSN_NO IN(#{psnNo})
+			<if test="primaryDeptPosId !=null">
+				and PRIMARY_DEPT_POS_ID =#{primaryDeptPosId}
+			</if>
+		</where>	
+	</update>
+	
+	<update id="updatePsnDeptByDeptId" parameterType="map">
+		update tb_auth_personnel 
+		set MD_USER=#{mdUser},
+		MD_TIME=#{mdTime},
+	<!-- 	此欄位留作 HR 同步使用 DEPT_ID=#{deptId}, -->
+		PRIMARY_DEPT_POS_ID=#{primaryDeptPosId}
+		where DEPT_ID=#{editdeptID}
+	</update>
+	
+	<select id="selectByPsn" resultMap="User" parameterType="java.lang.String">
+		SELECT *
+		FROM tb_auth_personnel
+		WHERE 
+		psn_no = #{username}
+	</select>
+	
+	<select id="selectByDeptIdLike" resultMap="Personnel" parameterType="java.lang.String">
+		SELECT *
+		FROM tb_auth_personnel
+		WHERE 
+		dept_id like #{deptId}+'%'
+		and expire_date is null 
+	</select>
+	
+	<select id="selectByDeptId" resultMap="Personnel" parameterType="java.lang.String">
+		SELECT *
+		FROM tb_auth_personnel
+		WHERE 
+		dept_id = #{dept}
+	</select>
+
+	<select id="selectAppUserByDomain" resultMap="Personnel" parameterType="java.lang.String">
+		SELECT a.Psn_No, a.Chn_Nm
+  		FROM Tb_Auth_Personnel a
+ 		WHERE a.Expire_Date IS NULL
+  		AND a.Dept_Id IN (SELECT b.Dept_Id FROM Tb_Org_Dept b WHERE b.Domain = #{domain})
+	</select>
+	
+	
+	<select id="selectOnJobUserByDomain" resultMap="Personnel" parameterType="java.lang.String">
+		<![CDATA[
+		SELECT a.Psn_No, a.Chn_Nm
+  		FROM Tb_Auth_Personnel a
+ 		WHERE  (a.DISMISSION<>'Y' and a.DISMISSION<>'L') and  a.on_job<= getdate()
+ 		]]>
+  		<if test="list != null and list.size()>0">
+     	 and a.Domain in 
+          <foreach collection="list" item="listItem" open="(" close=")" separator="," >
+          	#{listItem}
+        </foreach>
+   		 </if>
+  		
+	</select>
+	
+	
+	
+	<select id="searchPsnByVatNo" resultMap="Personnel" parameterType="java.lang.String">
+		SELECT a.*,b.DEPT_NAME
+		FROM(
+		SELECT * from tb_auth_personnel
+		WHERE 
+		CO_VAT_NO = #{vatNo}
+		)a
+		left join TB_ORG_DEPT b
+		on a.DEPT_ID=b.DEPT_ID
+	</select>	
+	
+	
+	<select id="selectLoginUserByEName" resultMap="User" >
+	<![CDATA[
+		SELECT ps.*, de.DEPT_ID, de.DEPT_NAME
+		FROM tb_auth_personnel ps
+		left join tb_org_dept de on ps.DEPT_ID = de.DEPT_ID
+		WHERE 
+		ENG_NM = #{eName} and (DISMISSION<>'Y' and DISMISSION<>'L') and  on_job<=#{sysdate}
+	]]></select>
+	
+	
+	<select id="searchPsnByCondition" resultMap="Personnel">
+    select
+    A.PSN_ID,A.PSN_NO,A.CHN_NM,A.ENG_NM,A.E_MAIL,A.DISMISSION,A.EXPIRE_DATE,B.DEPT_NAME
+    from TB_AUTH_PERSONNEL A
+    left join TB_ORG_DEPT B
+    on A.DEPT_ID=B.DEPT_ID
+    where A.PSN_TYPE='E'
+    and (CO_VAT_NO is null or CO_VAT_NO='')
+         <if test="psnNO!=null and psnNO!=''" >
+	        AND PSN_NO = #{psnNO}
+	    </if>
+	    <if test="engNM!=null and engNM!='' "> 
+	         AND ENG_NM LIKE  '%'+#{engNM}+'%'
+ 		</if> 
+	    <if test="email!=null and email!=''" >
+	        AND E_MAIL = #{email}
+	    </if>	    
+  </select>
+  
+  	<select id="getDeptPersonnels" resultMap="Personnel">
+  	SELECT * FROM TB_AUTH_PERSONNEL
+	WHERE PSN_NO IN(
+		SELECT PSN_NO FROM TB_ORG_PSN_POS
+		WHERE DEPT_POS_ID IN(
+			SELECT DEPT_POS_ID FROM TB_ORG_DEPT_POS
+			WHERE DEPT_ID = #{deptID}))
+	AND PSN_TYPE ='E'
+   </select>
+	
+</mapper>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbComPoMainMapper">
+	<resultMap id="BaseResultMap" type="com.foya.noms.dto.common.PoMainDTO">
+		<id column="PO_ID" property="PO_ID" jdbcType="BIGINT" />
+		<result column="PO_NO" property="PO_NO" jdbcType="VARCHAR" />
+		<result column="IS_TEMP" property="IS_TEMP" jdbcType="CHAR" />
+		<result column="PO_TYPE" property="PO_TYPE" jdbcType="CHAR" />
+		<result column="FEE_TYPE" property="FEE_TYPE" jdbcType="CHAR" />
+		<result column="TAX_IN" property="TAX_IN" jdbcType="CHAR" />
+		<result column="PO_YEAR" property="PO_YEAR" jdbcType="VARCHAR" />
+		<result column="PO_NAME" property="PO_NAME" jdbcType="VARCHAR" />
+		<result column="PO_DOMAIN" property="PO_DOMAIN" jdbcType="VARCHAR" />
+		<result column="CO_VAT_NO" property="CO_VAT_NO" jdbcType="VARCHAR" />
+		<result column="USANCE" property="USANCE" jdbcType="VARCHAR" />
+		<result column="GUARANTEE" property="GUARANTEE" jdbcType="VARCHAR" />
+		<result column="CURRENCY" property="CURRENCY" jdbcType="CHAR" />
+		<result column="EXC_RATE" property="EXC_RATE" jdbcType="DECIMAL" />
+		<result column="ALERT_RATE" property="ALERT_RATE" jdbcType="INTEGER" />
+		<result column="AMOUNT" property="AMOUNT" jdbcType="INTEGER" />
+		<result column="START_DATE" property="START_DATE" jdbcType="VARCHAR" />
+		<result column="END_DATE" property="END_DATE" jdbcType="VARCHAR" />
+		<result column="OS_AMOUNT" property="OS_AMOUNT" jdbcType="INTEGER" />
+		<result column="AP_AMOUNT" property="AP_AMOUNT" jdbcType="INTEGER" />
+		<result column="ENABLED" property="ENABLED" jdbcType="CHAR" />
+		<result column="IS_MERGE" property="IS_MERGE" jdbcType="CHAR" />
+		<result column="CR_USER" property="CR_USER" jdbcType="VARCHAR" />
+		<result column="CR_TIME" property="CR_TIME" jdbcType="TIMESTAMP" />
+		<result column="MD_USER" property="MD_USER" jdbcType="VARCHAR" />
+		<result column="MD_TIME" property="MD_TIME" jdbcType="TIMESTAMP" />
+
+		<result column="CO_NAME" property="coName" jdbcType="VARCHAR" />
+		
+		<result column="CAT_ID" property="catId" jdbcType="VARCHAR" />
+		<result column="CAT_NAME" property="catName" jdbcType="VARCHAR" />
+		<result column="PO_LINE_ID" property="poLineId" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<select id="searchPoByCond" resultMap="BaseResultMap"
+		parameterType="java.lang.Long">
+		select poMain.PO_ID , poMain.PO_YEAR ,poMain.PO_NO ,poMain.PO_NAME ,
+		poMain.AMOUNT ,poMain.CO_VAT_NO, company.CO_NAME
+		CO_NAME,poMain.IS_TEMP,poMain.PO_DOMAIN,poMain.IS_MERGE
+		from
+		TB_COM_PO_MAIN poMain
+		left outer join TB_COM_COMPANY company
+		on
+		poMain.CO_VAT_NO = company.CO_VAT_NO
+		<where>
+			<if test="poNo !=null and poNo !=''">
+				AND poMain.PO_NO = #{poNo}
+			</if>
+			<if test="year !=null and year !=''">
+				AND poMain.PO_YEAR = #{year}
+			</if>
+			<if test="poName !=null and poName !=''">
+				AND poMain.PO_NAME like '%'+#{poName}+'%'
+			</if>
+			<if test="co_vat_No !=null and co_vat_No !=''">
+				AND poMain.CO_VAT_NO = #{co_vat_No}
+			</if>
+			<if test="isTemp !=null and isTemp !=''">
+				AND poMain.IS_TEMP = #{isTemp}
+			</if>
+			<if test="poDomain != null and poDomain !='HQ'">
+				AND poMain.PO_DOMAIN = #{poDomain}
+			</if>
+		</where>
+	</select>
+
+	<select id="selectTbComPoMain" resultMap="BaseResultMap">
+		<![CDATA[
+			SELECT PO_NO, PO_ID ,FEE_TYPE ,PO_NAME, PO_DOMAIN
+			FROM TB_COM_PO_MAIN
+			WHERE
+			CO_VAT_NO = #{coVatNo}
+			AND PO_TYPE = #{osType}
+			AND ISNULL(IS_MERGE,'') <> 'Y'
+			AND (PO_DOMAIN = #{poDomain} or PO_DOMAIN = 'HQ') 
+			AND START_DATE <= #{todateTime} 
+	        AND END_DATE   >= #{todateTime}
+	        AND ENABLED = 'Y'
+		]]>
+		
+	</select>
+	
+	<select id="selectMinYear" resultMap="BaseResultMap">
+		select cast (min(PO_YEAR) as VARCHAR)as PO_YEAR from TB_COM_PO_MAIN
+	</select>
+   </mapper>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbLsLocationAddedMapper">
+  <resultMap id="BaseResultMap" type="com.foya.noms.dto.ls.TbLsLocationAddedDTO">
+  
+    <result column="LS_NO" jdbcType="VARCHAR" property="LS_NO" />
+    <result column="LS_VER" jdbcType="VARCHAR" property="LS_VER" />
+    <result column="LOCATION_ID" jdbcType="VARCHAR" property="LOCATION_ID" />
+    <result column="ZIP_CODE" jdbcType="VARCHAR" property="ZIP_CODE" />
+    <result column="DOMAIN" jdbcType="VARCHAR" property="DOMAIN" />
+    <result column="PAY_BEGIN_DATE" jdbcType="TIMESTAMP" property="PAY_BEGIN_DATE" />
+    <result column="LS_E_DATE" jdbcType="TIMESTAMP" property="LS_E_DATE" />
+    <result column="APP_DEPT_ID" jdbcType="VARCHAR" property="APP_DEPT_ID" />
+    <result column="APP_USER" jdbcType="VARCHAR" property="APP_USER" />
+    <result column="APP_TIME" jdbcType="TIMESTAMP" property="APP_TIME" />
+    <result column="TRMN_DEPT_ID" jdbcType="VARCHAR" property="TRMN_DEPT_ID" />
+    <result column="TRMN_USER" jdbcType="VARCHAR" property="TRMN_USER" />
+    <result column="TRMN_TIME" jdbcType="TIMESTAMP" property="TRMN_TIME" />
+    <result column="ELEC_PLUS" jdbcType="VARCHAR" property="ELEC_PLUS" />
+    <result column="PLUS_ALOC" jdbcType="VARCHAR" property="PLUS_ALOC" />
+    <result column="EFF_DATE" jdbcType="TIMESTAMP" property="EFF_DATE" />
+    <result column="END_DATE" jdbcType="TIMESTAMP" property="END_DATE" />
+    <result column="RENT_AMT" jdbcType="DECIMAL" property="RENT_AMT" />
+    <result column="INCR_MONTH" jdbcType="DECIMAL" property="INCR_MONTH" />
+    <result column="INCR_MODEL" jdbcType="VARCHAR" property="INCR_MODEL" />
+    <result column="INCR_RANGE" jdbcType="DECIMAL" property="INCR_RANGE" />
+    <result column="INCR_BEGIN_M" jdbcType="DECIMAL" property="INCR_BEGIN_M" />
+    <result column="INCR_BEGIN_D" jdbcType="DECIMAL" property="INCR_BEGIN_D" />
+    <result column="NEXT_INCR" jdbcType="TIMESTAMP" property="NEXT_INCR" />
+    <result column="EQP_TYPE_ID" jdbcType="VARCHAR" property="EQP_TYPE_ID" />
+    <result column="EQP_MODEL_ID" jdbcType="VARCHAR" property="EQP_MODEL_ID" />
+    <result column="PLDG_AMT" jdbcType="DECIMAL" property="PLDG_AMT" />
+    <result column="EST_COST" jdbcType="DECIMAL" property="EST_COST" />
+    <result column="EST_ELEC" jdbcType="DECIMAL" property="EST_ELEC" />
+    <result column="EST_DT" jdbcType="DECIMAL" property="EST_DT" />
+    <result column="EST_HOA" jdbcType="DECIMAL" property="EST_HOA" />
+    <result column="EST_OTHERS" jdbcType="DECIMAL" property="EST_OTHERS" />
+    <result column="EST_TRAFFIC" jdbcType="DECIMAL" property="EST_TRAFFIC" />
+    <result column="EST_ERL" jdbcType="DECIMAL" property="EST_ERL" />
+    <result column="EST_INCOME" jdbcType="DECIMAL" property="EST_INCOME" />
+    <result column="BLDG_SM" jdbcType="DECIMAL" property="BLDG_SM" />
+    <result column="ORG_RENT" jdbcType="DECIMAL" property="ORG_RENT" />
+    <result column="CP_RISE" jdbcType="DECIMAL" property="CP_RISE" />
+    <result column="REDUCE_CNT" jdbcType="DECIMAL" property="REDUCE_CNT" />
+    <result column="REDUCE_AMT" jdbcType="DECIMAL" property="REDUCE_AMT" />
+    <result column="MAIN_DOMAIN" jdbcType="VARCHAR" property="MAIN_DOMAIN" />
+    <result column="IMPROVE" jdbcType="VARCHAR" property="IMPROVE" />
+    <result column="CR_USER" jdbcType="VARCHAR" property="CR_USER" />
+    <result column="CR_TIME" jdbcType="TIMESTAMP" property="CR_TIME" />
+    <result column="MD_USER" jdbcType="VARCHAR" property="MD_USER" />
+    <result column="MD_TIME" jdbcType="TIMESTAMP" property="MD_TIME" />
+    <result column="BLDG_TYPE" jdbcType="VARCHAR" property="BLDG_TYPE" />
+    <result column="APP_SEQ" jdbcType="VARCHAR" property="APP_SEQ" />
+    <result column="ADDED_STATE" jdbcType="VARCHAR" property="ADDED_STATE" />
+    <result column="CHG_DATE" jdbcType="VARCHAR" property="CHG_DATE" />
+  </resultMap>
+  
+  <select id="getLsLocationAddedByAppSeq" resultMap="BaseResultMap"	parameterType="hashmap">
+		Select     
+		LS_NO, LS_VER, LOCATION_ID, ZIP_CODE, DOMAIN, PAY_BEGIN_DATE, LS_E_DATE, APP_DEPT_ID, 
+		APP_USER, APP_TIME, TRMN_DEPT_ID, TRMN_USER, TRMN_TIME, ELEC_PLUS, PLUS_ALOC, EFF_DATE, 
+		END_DATE, RENT_AMT, INCR_MONTH, INCR_MODEL, INCR_RANGE, INCR_BEGIN_M, INCR_BEGIN_D, 
+		NEXT_INCR, EQP_TYPE_ID, EQP_MODEL_ID, PLDG_AMT, EST_COST, EST_ELEC, EST_DT, EST_HOA, 
+		EST_OTHERS, EST_TRAFFIC, EST_ERL, EST_INCOME, BLDG_SM, ORG_RENT, CP_RISE, REDUCE_CNT, 
+		REDUCE_AMT, MAIN_DOMAIN, IMPROVE, CR_USER, CR_TIME, MD_USER, MD_TIME, BLDG_TYPE, 
+		APP_SEQ, ADDED_STATE, CHG_DATE from TB_LS_LOCATION_ADDED
+		where LS_NO =#{lsNo}
+        and APP_SEQ=#{appSeq}
+        and ADDED_STATE=#{addState}
+        <if test="locId != null" >
+        	and LOCATION_ID = #{locId}
+        </if>
+  </select>
+</mapper>

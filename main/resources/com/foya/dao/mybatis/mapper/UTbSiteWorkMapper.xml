@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbSiteWorkMapper">
+  <resultMap id="BaseResultMap" type="com.foya.noms.dto.st.SiteWorkDTO">
+    <id column="WORK_ID" jdbcType="VARCHAR" property="WORK_ID" />
+    <result column="WORK_TYPE" jdbcType="VARCHAR" property="WORK_TYPE" />
+    <result column="WORK_STATUS" jdbcType="VARCHAR" property="WORK_STATUS" />
+    <result column="APP_DEPT" jdbcType="VARCHAR" property="APP_DEPT" />
+    <result column="APL_USER" jdbcType="VARCHAR" property="APL_USER" />
+    <result column="APL_TIME" jdbcType="TIMESTAMP" property="APL_TIME" />
+    <result column="END_TIME" jdbcType="TIMESTAMP" property="END_TIME" />
+    <result column="PRIORITY" jdbcType="CHAR" property="PRIORITY" />
+    <result column="WORK_DESC" jdbcType="VARCHAR" property="WORK_DESC" />
+    <result column="SR_ID" jdbcType="VARCHAR" property="SR_ID" />
+    <result column="SR_LON" jdbcType="DECIMAL" property="SR_LON" />
+    <result column="SR_LAT" jdbcType="DECIMAL" property="SR_LAT" />
+    <result column="SR_COVER_RANG" jdbcType="VARCHAR" property="SR_COVER_RANG" />
+    <result column="LOCATION_ID" jdbcType="VARCHAR" property="LOCATION_ID" />
+    <result column="SITE_ID" jdbcType="VARCHAR" property="SITE_ID" />
+    <result column="BTS_SITE_ID" jdbcType="VARCHAR" property="BTS_SITE_ID" />
+    <result column="FEQ_ID" jdbcType="VARCHAR" property="FEQ_ID" />
+    <result column="PURPOSE" jdbcType="VARCHAR" property="PURPOSE" />
+    <result column="SITE_NAME" jdbcType="VARCHAR" property="SITE_NAME" />
+    <result column="EQP_TYPE_ID" jdbcType="VARCHAR" property="EQP_TYPE_ID" />
+    <result column="EQP_MODEL_ID" jdbcType="VARCHAR" property="EQP_MODEL_ID" />
+    <result column="COVERAGE_TYPE" jdbcType="CHAR" property="COVERAGE_TYPE" />
+    <result column="BTS_CONFIG" jdbcType="VARCHAR" property="BTS_CONFIG" />
+    <result column="DONOR_SITE" jdbcType="VARCHAR" property="DONOR_SITE" />
+    <result column="FEEDERLESS" jdbcType="VARCHAR" property="FEEDERLESS" />
+    <result column="MASTER_SITE" jdbcType="VARCHAR" property="MASTER_SITE" />
+    <result column="OS_VEN" jdbcType="VARCHAR" property="OS_VEN" />
+    <result column="OS_TYPE" jdbcType="VARCHAR" property="OS_TYPE" />
+    <result column="PREDICE_END_DATE" jdbcType="TIMESTAMP" property="PREDICE_END_DATE" />
+    <result column="END_DATE" jdbcType="TIMESTAMP" property="END_DATE" />
+    <result column="ADDR" jdbcType="VARCHAR" property="ADDR" />
+    <result column="ZIP" jdbcType="VARCHAR" property="ZIP" />
+    <result column="CITY" jdbcType="VARCHAR" property="CITY" />
+    <result column="AREA" jdbcType="VARCHAR" property="AREA" />
+    <result column="VILLAGE" jdbcType="VARCHAR" property="VILLAGE" />
+    <result column="ADJACENT" jdbcType="VARCHAR" property="ADJACENT" />
+    <result column="ROAD" jdbcType="VARCHAR" property="ROAD" />
+    <result column="LANE" jdbcType="VARCHAR" property="LANE" />
+    <result column="ALLEY" jdbcType="VARCHAR" property="ALLEY" />
+    <result column="SUB_ALLEY" jdbcType="VARCHAR" property="SUB_ALLEY" />
+    <result column="DOOR_NO" jdbcType="VARCHAR" property="DOOR_NO" />
+    <result column="DOOR_NO_EX" jdbcType="VARCHAR" property="DOOR_NO_EX" />
+    <result column="FLOOR" jdbcType="VARCHAR" property="FLOOR" />
+    <result column="FLOOR_EX" jdbcType="VARCHAR" property="FLOOR_EX" />
+    <result column="ROOM" jdbcType="VARCHAR" property="ROOM" />
+    <result column="ADD_OTHER" jdbcType="VARCHAR" property="ADD_OTHER" />
+    <result column="CR_USER" jdbcType="VARCHAR" property="CR_USER" />
+    <result column="CR_TIME" jdbcType="TIMESTAMP" property="CR_TIME" />
+    <result column="MD_USER" jdbcType="VARCHAR" property="MD_USER" />
+    <result column="MD_TIME" jdbcType="TIMESTAMP" property="MD_TIME" />
+    
+    <result column="FEQ_NAME" jdbcType="VARCHAR" property="feqName" />
+    <result column="SITE_STATUS" jdbcType="VARCHAR" property="siteStatus" />
+    <result column="ADDR" jdbcType="VARCHAR" property="addr" />
+    <result column="DEPT_NAME" jdbcType="VARCHAR" property="deptName" />
+    <result column="FEQ_TYPE" jdbcType="VARCHAR" property="feqType" />
+    <result column="SR_FEQ_ID" jdbcType="VARCHAR" property="srFeqId" />
+    <result column="ORDER_ID" jdbcType="VARCHAR" property="orderId" />
+    <result column="REP_USER_NAME" jdbcType="VARCHAR" property="repUserName" />
+    <result column="ODR_STATUS" jdbcType="VARCHAR" property="ODR_STATUS" />
+    <result column="EQP_NAME" jdbcType="VARCHAR" property="eqpName" />
+    <result column="CPL_NO" jdbcType="VARCHAR" property="cplNo" />
+    <result column="PERMIT_NO" jdbcType="VARCHAR" property="permitNo" />
+    <result column="LICENSE_NO" jdbcType="VARCHAR" property="licenseNo" />
+    <result column="SITE_ID" jdbcType="VARCHAR" property="siteId" />
+     <result column="END_SITE_STATUS" jdbcType="VARCHAR" property="END_SITE_STATUS" />
+    
+  </resultMap>
+  <sql id="Base_Column_List">
+    WORK_ID, WORK_TYPE, WORK_STATUS, APP_DEPT, APL_USER, APL_TIME, END_TIME, PRIORITY, 
+    WORK_DESC, SR_ID, SR_LON, SR_LAT, SR_COVER_RANG, LOCATION_ID, SITE_ID, BTS_SITE_ID, 
+    FEQ_ID, PURPOSE, SITE_NAME, EQP_TYPE_ID, EQP_MODEL_ID, COVERAGE_TYPE, BTS_CONFIG, 
+    DONOR_SITE, FEEDERLESS, MASTER_SITE, OS_VEN, OS_TYPE, PREDICE_END_DATE, END_DATE, 
+    ADDR, ZIP, CITY, AREA, VILLAGE, ADJACENT, ROAD, LANE, ALLEY, SUB_ALLEY, DOOR_NO, 
+    DOOR_NO_EX, FLOOR, FLOOR_EX, ROOM, ADD_OTHER, CR_USER, CR_TIME, MD_USER, MD_TIME
+  </sql>
+  <select id="selectWorkList" resultMap="BaseResultMap">
+    select 
+    work.WORK_ID,work.SR_ID,work.WORK_TYPE,work.BTS_SITE_ID,work.SITE_NAME,
+    feq.FEQ_NAME FEQ_NAME,main.SITE_STATUS SITE_STATUS,work.WORK_STATUS,
+    work.LOCATION_ID,loc.ADDR ADDR
+    from TB_SITE_WORK work
+    left outer join TB_SITE_MAIN main
+    on work.SITE_ID = main.SITE_ID
+   	left outer join TB_COM_SITE_FEQ feq
+   	on work.FEQ_ID = feq.FEQ_ID
+   	left outer join TB_SITE_LOCATION loc
+   	on work.LOCATION_ID = loc.LOCATION_ID
+   	<where>
+		<if test="workType !=null and workType!=''">
+			and WORK_TYPE = #{workType}
+		</if>
+		<if test="srId !=null and srId !=''">
+			and work.SR_ID = #{srId}
+		</if>
+		<if test="siteWorkCity !=null and siteWorkCity !=''">
+			and work.CITY = #{siteWorkCity}
+		</if>
+		<if test="siteWorkArea !=null and siteWorkArea !=''">
+			and work.AREA = #{siteWorkArea}
+		</if>
+		<if test="btsSiteId !=null and btsSiteId !=''">
+			and work.BTS_SITE_ID = #{btsSiteId}
+		</if>
+		<if test="siteName !=null and siteName !=''">
+			and work.SITE_NAME like '%'+#{siteName}+'%'
+		</if>
+		<if test="locationId !=null and locationId !=''">
+			and work.LOCATION_ID = #{locationId}
+		</if>
+		<if test="siteFeq !=null and siteFeq !=''">
+			and work.FEQ_ID = #{siteFeq}
+		</if>
+		<if test="workStatus !=null and workStatus !=''">
+			and work.WORK_STATUS = #{workStatus}
+		</if> 
+		<if test="applyDept !=null and applyDept !=''">
+			and work.APP_DEPT = #{applyDept}
+		</if>
+		<if test="applyDeptList !=null ">
+			and work.APP_DEPT in 
+			<foreach collection="applyDeptList" item="listItem" open="(" close=")"
+					separator=",">
+					#{listItem}
+			</foreach>
+		</if>
+		<if test="applyDateStart != null and applyDateStart !=''">
+			and work.APL_TIME >= #{applyDateStart}
+		</if>
+		<if test="applyDateEnd != null and applyDateEnd !=''">
+			and work.APL_TIME <![CDATA[<=]]> #{applyDateEnd}
+		</if>
+		and work.WORK_TYPE in ('NSR','SH') 
+	</where>
+  </select>
+  <select id="selectWorkListByDeptId" resultMap="BaseResultMap" parameterType="list">
+  	select 
+  	DISTINCT
+  	dept.DEPT_NAME ,work.APP_DEPT
+  	from TB_SITE_WORK work
+  	left outer join TB_ORG_DEPT dept
+  	on work.APP_DEPT = dept.DEPT_ID
+  	<if test="list != null and list.size()>0">
+  	where work.APP_DEPT in 
+	  	<foreach collection="list" item="listItem" open="(" close=")" separator="," >
+	      #{listItem}
+	    </foreach>
+    </if>
+  </select>
+  <select id="selectSiteWorkByWorkId" resultMap="BaseResultMap">
+  	select work.WORK_ID ,work.WORK_TYPE,work.WORK_STATUS,
+	work.PRIORITY,work.SR_ID,work.PURPOSE,work.CITY,work.AREA,
+	work.SR_LON,work.SR_LAT,work.SR_COVER_RANG,work.SITE_ID,
+	work.BTS_SITE_ID,work.SITE_NAME,work.BTS_CONFIG,work.DONOR_SITE,
+	work.FEEDERLESS,work.MASTER_SITE,work.PREDICE_END_DATE,work.WORK_DESC,
+	work.FEQ_ID,work.EQP_TYPE_ID,work.EQP_MODEL_ID,
+	feq.FEQ_TYPE FEQ_TYPE,work.LOCATION_ID,work.SR_LON,work.SR_LAT,work.COVERAGE_TYPE,
+	work.APL_TIME,work.END_TIME,work.APL_USER,sr.FEQ_ID SR_FEQ_ID
+	from TB_SITE_WORK work
+	left outer join TB_COM_SITE_FEQ feq
+	on work.FEQ_ID = feq.FEQ_ID
+	left outer join TB_SITE_SEARCH_RING sr
+	on work.SR_ID = sr.SR_ID
+	where work.WORK_ID = #{workId}
+  </select>
+  
+  <select id="selectSiteWorkByOrderId" resultMap="BaseResultMap">
+  	select
+  	work.WORK_ID, work.WORK_TYPE, work.WORK_STATUS, work.APP_DEPT, work.APL_USER, 
+  	work.APL_TIME, work.END_TIME, work.PRIORITY, 
+    work.WORK_DESC, work.SR_ID, work.SR_LON, work.SR_LAT, work.SR_COVER_RANG, 
+    work.LOCATION_ID, work.SITE_ID, work.BTS_SITE_ID, 
+    work.FEQ_ID, work.PURPOSE, work.SITE_NAME, work.EQP_TYPE_ID, work.EQP_MODEL_ID, 
+    work.COVERAGE_TYPE, work.BTS_CONFIG, 
+    work.DONOR_SITE, work.FEEDERLESS, work.MASTER_SITE, work.OS_VEN, 
+    work.OS_TYPE, work.PREDICE_END_DATE, work.END_DATE, 
+    work.ADDR, work.ZIP, work.CITY, work.AREA, work.VILLAGE, work.ADJACENT, work.ROAD, 
+    work.LANE, work.ALLEY, work.SUB_ALLEY, work.DOOR_NO, 
+    work.DOOR_NO_EX, work.FLOOR, work.FLOOR_EX, work.ROOM, work.ADD_OTHER, 
+    work.CR_USER, work.CR_TIME, work.MD_USER, work.MD_TIME
+  	from TB_SITE_WORK work
+	left join TB_SITE_WORK_ORDER workOrder
+	on work.WORK_ID= workOrder.WORK_ID
+	where workOrder.ORDER_ID = #{orderId}
+  </select>
+  
+<!--     <select id="selectTbSiteWorkByOrderId" resultMap="BaseResultMap"> -->
+<!--   	select -->
+<!--   	<include refid="Base_Column_List" /> -->
+<!--   	from TB_SITE_WORK -->
+<!-- 	where WORK_ID = #{workId} -->
+<!--   </select> -->
+  <!--  -->
+    <select id="selectWorkListBySiteBuild" resultMap="BaseResultMap">
+    select 
+    work.WORK_ID,work.SR_ID,work.WORK_TYPE,work.BTS_SITE_ID,work.SITE_NAME,
+    feq.FEQ_NAME FEQ_NAME,main.SITE_STATUS SITE_STATUS,work.WORK_STATUS,
+    work.LOCATION_ID,loc.ADDR ADDR,work.END_DATE
+    from TB_SITE_WORK work
+    left outer join TB_SITE_MAIN main
+    on work.SITE_ID = main.SITE_ID
+   	left outer join TB_COM_SITE_FEQ feq
+   	on work.FEQ_ID = feq.FEQ_ID
+   	left outer join TB_SITE_LOCATION loc
+   	on work.LOCATION_ID = loc.LOCATION_ID
+   	<where>
+		<if test="workType !=null and workType!=''">
+			and WORK_TYPE = #{workType}
+		</if>
+		<if test="siteWorkCity !=null and siteWorkCity !=''">
+			and work.CITY = #{siteWorkCity}
+		</if>
+		<if test="siteWorkArea !=null and siteWorkArea !=''">
+			and work.AREA = #{siteWorkArea}
+		</if>
+		<if test="btsSiteId !=null and btsSiteId !=''">
+			and work.BTS_SITE_ID = #{btsSiteId}
+		</if>
+		<if test="siteName !=null and siteName !=''">
+			and work.SITE_NAME like '%'+#{siteName}+'%'
+		</if>
+		<if test="locationId !=null and locationId !=''">
+			and work.LOCATION_ID = #{locationId}
+		</if>
+		<if test="siteFeq !=null and siteFeq !=''">
+			and work.FEQ_ID = #{siteFeq}
+		</if>
+		<if test="workStatus !=null and workStatus !=''">
+			and work.WORK_STATUS = #{workStatus}
+		</if> 
+		<if test="applyDept !=null and applyDept !=''">
+			and work.APP_DEPT = #{applyDept}
+		</if>		
+		<if test="eqpTypeId != null and eqpTypeId !=''">
+			and work.EQP_TYPE_ID = #{eqpTypeId}
+		</if>
+		<if test="applyDateStart != null and applyDateStart !=''">
+			and work.APL_TIME >= #{applyDateStart}
+		</if>
+		<if test="applyDateEnd != null and applyDateEnd !=''">
+			and work.APL_TIME <![CDATA[<=]]> #{applyDateEnd}
+		</if>
+	    <if test="type != null and type !=''">
+			and work.WORK_TYPE in ('SB','SBH','SBN') 
+		</if>　
+		<if test="applyDeptList !=null">
+			and work.APP_DEPT in 
+			<foreach collection="applyDeptList" item="listItem" open="(" close=")"
+					separator=",">
+					#{listItem}
+			</foreach>
+		</if>
+	</where>
+  </select>
+  
+  <select id="selectSiteWorkDTOByWorkId" resultMap="BaseResultMap">
+  	select
+  	work.WORK_ID, work.WORK_TYPE, work.WORK_STATUS, work.APP_DEPT, work.APL_USER, 
+  	work.APL_TIME, work.END_TIME, work.PRIORITY, 
+    work.WORK_DESC, work.SR_ID, work.SR_LON, work.SR_LAT, work.SR_COVER_RANG, 
+    work.LOCATION_ID, work.SITE_ID, work.BTS_SITE_ID, 
+    work.FEQ_ID, work.PURPOSE, work.SITE_NAME, work.EQP_TYPE_ID, work.EQP_MODEL_ID, 
+    work.COVERAGE_TYPE, work.BTS_CONFIG, 
+    work.DONOR_SITE, work.FEEDERLESS, work.MASTER_SITE, work.OS_VEN, 
+    work.OS_TYPE, work.PREDICE_END_DATE, work.END_DATE, 
+    work.ADDR, work.ZIP, work.CITY, work.AREA, work.VILLAGE, work.ADJACENT, work.ROAD, 
+    work.LANE, work.ALLEY, work.SUB_ALLEY, work.DOOR_NO, 
+    work.DOOR_NO_EX, work.FLOOR, work.FLOOR_EX, work.ROOM, work.ADD_OTHER, 
+    work.CR_USER, work.CR_TIME, work.MD_USER, work.MD_TIME,
+	feq.FEQ_TYPE FEQ_TYPE,sr.FEQ_ID SR_FEQ_ID,
+	work.CPL_NO,work.PERMIT_NO,work.LICENSE_NO,work.END_SITE_STATUS,work.START_SITE_STATUS
+	from TB_SITE_WORK work
+	left outer join TB_COM_SITE_FEQ feq
+	on work.FEQ_ID = feq.FEQ_ID
+	left outer join TB_SITE_SEARCH_RING sr
+	on work.SR_ID = sr.SR_ID
+	where work.WORK_ID = #{workId}
+  </select>
+  
+  <select id="selectSiteWorkByConditions" resultMap="BaseResultMap" >
+  	select 
+  	   sitework.SITE_ID,
+  	   workOrder.ORDER_ID,
+  	   siteWork.WORK_ID,
+       siteWork.WORK_TYPE,
+	   siteWork.BTS_SITE_ID,
+	   siteWork.SITE_NAME,
+	   siteWork.FEQ_ID,
+	   feq.FEQ_NAME,
+	   workOrder.REP_DEPT,
+	   dept.DEPT_NAME,       
+	   workOrder.REP_TEAM,
+	   team.DEPT_NAME TEAM_NAME,
+	   workOrder.REP_USER,
+	   prs.CHN_NM REP_USER_NAME,
+	   workOrder.ODR_STATUS,
+	   siteEqp.EQP_NAME
+	FROM TB_SITE_WORK siteWork
+	join TB_SITE_WORK_ORDER workOrder  ON
+	  siteWork.WORK_ID = workOrder.WORK_ID
+	left outer join TB_COM_SITE_FEQ feq ON
+	  siteWork.FEQ_ID = feq.FEQ_ID
+	left outer join TB_ORG_DEPT dept on 
+	  dept.DEPT_ID = workOrder.REP_DEPT
+	left outer join TB_ORG_DEPT team on
+	  team.DEPT_ID = workOrder.REP_TEAM
+	left outer join TB_AUTH_PERSONNEL prs on
+	  prs.PSN_NO = workOrder.REP_USER
+	left outer join TB_COM_EQP_TYPE siteEqp ON 
+	  siteEqp.EQP_TYPE_ID = siteWork.EQP_TYPE_ID  
+  <where>
+  	<if test="depId != null and depId != ''">
+  		and (workOrder.REP_DEPT = #{depId} OR workOrder.REP_TEAM = #{depId})
+  	</if>
+  	<if test="orderStatus != null and orderStatus != ''">
+  		and workOrder.ODR_STATUS = #{orderStatus}
+  	</if>
+  	<if test="btsSiteId != null and btsSiteId != ''">
+  		and siteWork.BTS_SITE_ID = #{btsSiteId}
+  	</if>
+  	<if test="siteName != null and siteName != ''">
+  		and siteWork.SITE_NAME like '%'+#{siteName}+'%'
+  	</if>
+  </where>
+  </select>
+  
+  <select id="selectWorkAppDept" resultMap="BaseResultMap">
+	 	SELECT DISTINCT APP_DEPT from TB_SITE_WORK  WHERE APP_DEPT is not null
+  </select>
+  
+  
+    <select id="selectWorkSgnList" resultMap="BaseResultMap">
+    select sgl.* from ( 
+    select DISTINCT
+	    work.WORK_ID,work.SR_ID,work.WORK_TYPE,work.BTS_SITE_ID,work.SITE_NAME,
+	    work.WORK_STATUS, work.LOCATION_ID, work.ADDR, work.SITE_ID, work.FEQ_ID,
+	    workOrder.ODR_STATUS, 
+	    main.SITE_STATUS, main.NOIS_ON_AIR 
+    from TB_SITE_WORK work
+    left outer join TB_SITE_WORK_ORDER workOrder
+    on work.work_ID = workOrder.work_ID
+    left outer join TB_SITE_MAIN main
+    on work.SITE_ID = main.SITE_ID
+   	<where>
+		<if test="siteWorkCity !=null and siteWorkCity !=''">
+			and work.CITY = #{siteWorkCity}
+		</if>
+		<if test="siteWorkArea !=null and siteWorkArea !=''">
+			and work.AREA = #{siteWorkArea}
+		</if>
+		<if test="btsSiteId !=null and btsSiteId !=''">
+			and work.BTS_SITE_ID = #{btsSiteId}
+		</if>
+		<if test="siteName !=null and siteName !=''">
+			and work.SITE_NAME like '%'+#{siteName}+'%'
+		</if>
+		<if test="comSiteFeq !=null and comSiteFeq !=''">
+			and work.FEQ_ID = #{comSiteFeq}
+		</if>
+		<if test="appDept !=null and appDept !=''">
+			and work.APP_DEPT = #{appDept}
+		</if> 
+		<if test="siteHuntEqpTemp !=null and siteHuntEqpTemp !=''">
+			and work.EQP_TYPE_ID = #{siteHuntEqpTemp}
+		</if>
+		<if test="workStatus !=null and workStatus !=''">
+			and work.WORK_STATUS = #{workStatus}
+		</if>		
+		and work.WORK_TYPE = 'SGL') as sgl
+	</where>
+  </select>
+</mapper>

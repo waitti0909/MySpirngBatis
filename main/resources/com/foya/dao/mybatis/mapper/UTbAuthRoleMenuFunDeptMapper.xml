@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.foya.dao.mybatis.mapper.UTbAuthRoleMenuFunDeptMapper">
+  <resultMap id="BaseResultMap" type="com.foya.dao.mybatis.model.TbAuthRoleMenuFunDept">
+    <result column="ROLE_MENU_FUN_ID" jdbcType="DECIMAL" property="ROLE_MENU_FUN_ID" />
+    <result column="DEPT_ID" jdbcType="DECIMAL" property="DEPT_ID" />
+    <result column="MD_USER" jdbcType="VARCHAR" property="MD_USER" />
+    <result column="MD_TIME" jdbcType="TIMESTAMP" property="MD_TIME" />
+  </resultMap>
+  
+  <resultMap id="RoleMenuFunDepDTO" type="com.foya.noms.dto.auth.RoleMenuFunDepDTO">
+		<result column="role_id" property="roleId" jdbcType="NUMERIC" />
+		<result column="menu_id" property="menuId" jdbcType="NUMERIC" />
+		<result column="md_user" property="md_user" jdbcType="VARCHAR" />
+		<result column="menu_name" property="menuName" jdbcType="VARCHAR" />
+		<result column="menu_desc" property="menuDesc" jdbcType="VARCHAR" />
+		<result column="role_name" property="roleName" jdbcType="VARCHAR" />
+		<result column="role_desc" property="roleDesc" jdbcType="VARCHAR" />
+		<result column="md_time" property="md_time" jdbcType="TIMESTAMP" />
+		<result column="fun_code" property="funCode" jdbcType="VARCHAR" />
+		<result column="fun_name" property="funName" jdbcType="VARCHAR" />
+		<result column="depId" property="depId" jdbcType="VARCHAR" />
+		<result column="depName" property="depName" jdbcType="VARCHAR" />
+		<result column="menu_fun_id" property="menuFunId" jdbcType="NUMERIC" />	
+	</resultMap>
+	
+  <select id="selectUsedDeptByRoleMenu" resultMap="BaseResultMap">
+  	 select rmfd.DEPT_ID from TB_AUTH_ROLE_MENU_FUN rmf, TB_AUTH_ROLE_MENU_FUN_DEPT rmfd
+	 where rmf.ROLE_MENU_FUN_ID = rmfd.ROLE_MENU_FUN_ID
+	 and rmf.ROLE_ID = #{roleId}
+	 and rmf.MENU_ID = #{menuId}
+	 group by rmfd.DEPT_ID
+  </select>
+  
+  
+  <select id="getAccessDeptByUser" resultMap="RoleMenuFunDepDTO">
+  	 select  rmf.menu_Id,rmfd.DEPT_ID as depId from TB_AUTH_ROLE_MENU_FUN rmf, TB_AUTH_ROLE_MENU_FUN_DEPT rmfd
+	 where rmf.ROLE_MENU_FUN_ID = rmfd.ROLE_MENU_FUN_ID
+	 and rmf.ROLE_ID in (select distinct role_id from tb_auth_psn_role a, tb_auth_personnel b  where a.psn_id=b.psn_id and  psn_no= #{psnNo}) 
+  </select>
+  
+  
+  
+</mapper>
