@@ -1,0 +1,189 @@
+package com.foya.noms.dto.inv;
+
+import java.util.Date;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.foya.dao.mybatis.model.TbInvAsset;
+import com.foya.noms.util.DateTimeJsonSerializer;
+
+public class TbInvAssetDTO extends TbInvAsset {
+
+	private String wh_id;
+	private String wh_name;
+	private String tag_no;
+	private String mat_no;
+	private String mat_name;
+	private String mat_status_dscr;
+	private String dept_id;
+	private String dept_name;
+	private String domain;
+	private String domain_name;
+	private String ven_sn;
+	private String catg1_code;
+	private String catg1_name;
+	private String catg2_code;
+	private String catg2_name;
+	private String catg3_code;
+	private String catg3_name;
+
+	@JsonSerialize(using = DateTimeJsonSerializer.class)
+	public Date getAp_date() {
+		return super.getAp_date();
+	}
+
+	@JsonSerialize(using = DateTimeJsonSerializer.class)
+	public Date getFa_date() {
+		return super.getFa_date();
+	}
+
+	@JsonSerialize(using = DateTimeJsonSerializer.class)
+	public Date getScrp_date() {
+		return super.getScrp_date();
+	}
+
+	@JsonSerialize(using = DateTimeJsonSerializer.class)
+	public Date getCr_time() {
+		return super.getCr_time();
+	}
+
+	@JsonSerialize(using = DateTimeJsonSerializer.class)
+	public Date getMd_time() {
+		return super.getMd_time();
+	}
+
+	public String getWh_id() {
+		return wh_id;
+	}
+
+	public void setWh_id(String wh_id) {
+		this.wh_id = wh_id == null ? null : wh_id.trim();
+	}
+
+	public String getWh_name() {
+		return wh_name;
+	}
+
+	public void setWh_name(String wh_name) {
+		this.wh_name = wh_name == null ? null : wh_name.trim();
+	}
+
+	public String getTag_no() {
+		return tag_no;
+	}
+
+	public void setTag_no(String tag_no) {
+		this.tag_no = tag_no == null ? null : tag_no.trim();
+	}
+
+	public String getMat_no() {
+		return mat_no;
+	}
+
+	public void setMat_no(String mat_no) {
+		this.mat_no = mat_no == null ? null : mat_no.trim();
+	}
+
+	public String getMat_name() {
+		return mat_name;
+	}
+
+	public void setMat_name(String mat_name) {
+		this.mat_name = mat_name == null ? null : mat_name.trim();
+	}
+
+	public String getMat_status_dscr() {
+		return mat_status_dscr;
+	}
+
+	public void setMat_status_dscr(String mat_status_dscr) {
+		this.mat_status_dscr = mat_status_dscr == null ? null : mat_status_dscr.trim();
+	}
+
+	public String getDept_id() {
+		return dept_id;
+	}
+
+	public void setDept_id(String dept_id) {
+		this.dept_id = dept_id == null ? null : dept_id.trim();
+	}
+
+	public String getDept_name() {
+		return dept_name;
+	}
+
+	public void setDept_name(String dept_name) {
+		this.dept_name = dept_name == null ? null : dept_name.trim();
+	}
+
+	public String getDomain() {
+		return domain;
+	}
+
+	public void setDomain(String domain) {
+		this.domain = domain == null ? null : domain.trim();
+	}
+
+	public String getDomain_name() {
+		return domain_name;
+	}
+
+	public void setDomain_name(String domain_name) {
+		this.domain_name = domain_name == null ? null : domain_name.trim();
+	}
+
+	public String getVen_sn() {
+		return ven_sn;
+	}
+
+	public void setVen_sn(String ven_sn) {
+		this.ven_sn = ven_sn == null ? null : ven_sn.trim();
+	}
+
+	public String getCatg1_code() {
+		return catg1_code;
+	}
+
+	public void setCatg1_code(String catg1_code) {
+		this.catg1_code = catg1_code == null ? null : catg1_code.trim();
+	}
+
+	public String getCatg1_name() {
+		return catg1_name;
+	}
+
+	public void setCatg1_name(String catg1_name) {
+		this.catg1_name = catg1_name == null ? null : catg1_name.trim();
+	}
+
+	public String getCatg2_code() {
+		return catg2_code;
+	}
+
+	public void setCatg2_code(String catg2_code) {
+		this.catg2_code = catg2_code == null ? null : catg2_code.trim();
+	}
+
+	public String getCatg2_name() {
+		return catg2_name;
+	}
+
+	public void setCatg2_name(String catg2_name) {
+		this.catg2_name = catg2_name == null ? null : catg2_name.trim();
+	}
+
+	public String getCatg3_code() {
+		return catg3_code;
+	}
+
+	public void setCatg3_code(String catg3_code) {
+		this.catg3_code = catg3_code == null ? null : catg3_code.trim();
+	}
+
+	public String getCatg3_name() {
+		return catg3_name;
+	}
+
+	public void setCatg3_name(String catg3_name) {
+		this.catg3_name = catg3_name == null ? null : catg3_name.trim();
+	}
+}

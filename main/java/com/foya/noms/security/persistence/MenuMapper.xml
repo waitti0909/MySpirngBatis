@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.foya.noms.security.persistence.MenuMapper">
+
+
+	<resultMap id="Menu" type="com.foya.noms.security.model.Menu">
+		<id column="menu_id" property="id" jdbcType="INTEGER" />
+		<result column="menu_name" property="name" jdbcType="VARCHAR" />
+		<result column="pgm_path" property="url" jdbcType="VARCHAR" />
+		<result column="parent_id" property="parentId" jdbcType="INTEGER" />
+		<result column="is_fodr" property="isFolder" jdbcType="VARCHAR" />
+		<result column="menu_desc" property="desc" jdbcType="VARCHAR" />
+		<result column="menu_sort" property="sort" jdbcType="VARCHAR" />
+		<result column="cr_id" property="crID" jdbcType="INTEGER" />
+		<result column="cr_tm" property="crTM" jdbcType="VARCHAR" />
+		<result column="MDY_TSTMP" property="mdyTSTMP" jdbcType="VARCHAR" />
+		<result column="MDY_PSN_ID" property="mdyPSNID" jdbcType="VARCHAR" />
+		<result column="level" property="level" jdbcType="INTEGER" />
+		<result column="used" property="used" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<sql id="base_columns">
+		menu_id,menu_name,pgm_path,parent_id,is_fodr
+	</sql>
+	<sql id="column">
+		menu_id,menu_name,pgm_path,parent_id,is_fodr,menu_desc,menu_sort,cr_id,cr_tm,MDY_TSTMP,MDY_PSN_ID
+	</sql>
+
+	<select id="getRootMenuByRoleId" resultMap="Menu">
+		select distinct
+		menu.menu_id,menu.menu_name,menu.menu_desc,menu.menu_sort,menu.is_fodr,menu.pgm_path
+		from tb_auth_menu menu , tb_auth_role_menu r_menu
+		where r_menu.menu_id = menu.menu_id and
+		r_menu.role_id in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+		and (menu.parent_id is null)
+		order by menu.menu_sort
+
+	</select>
+
+	<select id="getRootMenuByPsnId" resultMap="Menu" parameterType="java.lang.Integer">
+		select distinct
+		menu.menu_id,menu.menu_name,menu.menu_desc,menu.menu_sort,menu.is_fodr,menu.pgm_path
+		from tb_auth_menu menu , tb_auth_role_menu r_menu
+		where r_menu.menu_id = menu.menu_id and r_menu.role_id in (select role_id
+		from tb_auth_psn_role where psn_id=#{psnId} )
+		and (menu.parent_id is null)
+		order by menu.menu_sort
+	</select>
+
+	<select id="getChildMenuByParentIdRoldId" resultMap="Menu"
+		parameterType="java.lang.Integer">
+		SELECT distinct b.*
+		FROM tb_auth_role_menu a, tb_auth_menu b
+		where a.menu_id = b. menu_id
+		and b.parent_id=#{parentMenuId}
+		and a.role_id in (select role_id from tb_auth_psn_role where
+		psn_id=#{psnId})
+		order by b.menu_sort
+	</select>
+
+	<select id="getAllMenu" resultMap="Menu">
+		SELECT
+		<include refid="base_columns" />
+		FROM tb_auth_menu
+		order by menu_sort
+	</select>
+	
+	<select id="getParentMenuByChildMenuId" resultMap="Menu"
+		parameterType="java.lang.Integer">
+		select distinct a.* from tb_auth_menu a ,tb_auth_menu b where a.menu_id=b.parent_Id  and b.menu_id=#{menuId}
+	</select>
+	
+	<select id="getNonFolderMenu" resultMap="Menu">
+		SELECT
+		<include refid="base_columns" />
+		FROM tb_auth_menu where parent_id is not null 
+		order by parent_id, menu_sort
+	</select>
+	
+	<select id="selectAllMenuTree" resultMap="Menu">
+	WITH menutree (menu_id, menu_name,Parent_ID, MENU_SORT,level,is_fodr) AS (
+    SELECT menu_id, menu_name,Parent_ID,MENU_SORT, 1,is_fodr
+   FROM tb_auth_menu
+     WHERE Parent_ID is Null
+       UNION ALL
+    SELECT t.menu_id, t.menu_name, t.Parent_ID,t.MENU_SORT,level+1,t.is_fodr
+     FROM tb_auth_menu t
+     INNER JOIN menutree ON menutree.menu_id =t.Parent_ID
+)
+SELECT DISTINCT m.* FROM menutree m 
+  order by parent_id,level,MENU_SORT
+	</select>
+	
+<select id="selectAllMenuTreeByRole" resultMap="Menu">
+
+	WITH menutree (menu_id, menu_name,Parent_ID, MENU_SORT,level,is_fodr) AS (
+    SELECT menu_id, menu_name,Parent_ID,MENU_SORT, 1,is_fodr
+   FROM tb_auth_menu
+     WHERE Parent_ID is Null
+       UNION ALL
+    SELECT t.menu_id, t.menu_name, t.Parent_ID,t.MENU_SORT,level+1,t.is_fodr
+     FROM tb_auth_menu t
+     INNER JOIN menutree ON menutree.menu_id =t.Parent_ID
+)
+SELECT DISTINCT m.*,rm.menu_id as used FROM menutree m left outer join (select * from  TB_AUTH_ROLE_MENU where role_id=#{roleId} ) rm on m.menu_id=rm.menu_id
+  order by parent_id,level,MENU_SORT
+	
+	</select>
+	
+	
+	<select id="selectMenuTreeByRole" resultMap="Menu">
+			<![CDATA[
+	WITH menutree (menu_id, menu_name,Parent_ID, MENU_SORT,level) AS
+(
+   SELECT menu_id, menu_name,Parent_ID,MENU_SORT, 1
+  FROM tb_auth_menu
+    WHERE Parent_ID is Null 
+      UNION ALL
+   SELECT t.menu_id, t.menu_name, t.Parent_ID,t.MENU_SORT,level+1
+    FROM tb_auth_menu t
+    INNER JOIN menutree ON menutree.menu_id =t.Parent_ID
+)
+SELECT DISTINCT m.* FROM menutree m, TB_AUTH_ROLE_MENU rm where rm.menu_id=m.menu_id 
+ and rm.ROLE_ID = #{roleId} order by parent_id,level,MENU_SORT
+]]>
+	</select>
+</mapper>
+
+
